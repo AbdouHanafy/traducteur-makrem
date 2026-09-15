@@ -1,0 +1,187 @@
+// Schéma de référence : voir ARCHITECTURE.md §4 pour le raisonnement (Decimal pour l'argent,
+// snapshot financier sur Order, historique append-only, idempotence des paiements par providerRef).
+// Ce schéma sera étendu phase par phase (Phase 2: User/Role; Phase 3: Service/PricingRule;
+// Phase 4-5: Order; Phase 6: Payment; Phase 8: Document; Phase 12: AuditLog).
+// Non migré pour l'instant — nécessite une base MySQL configurée via DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  TRANSLATOR
+  ADMIN
+}
+
+enum OrderStatus {
+  DEMANDE
+  DEVIS_A_VALIDER
+  EN_ATTENTE_ACOMPTE
+  ACOMPTE_PAYE
+  EN_TRADUCTION
+  TRADUCTION_TERMINEE
+  FICHIER_EN_ATTENTE_DE_SOLDE
+  SOLDE_PAYE
+  TELECHARGEABLE
+  TERMINEE
+  ANNULEE
+}
+
+enum PaymentPhase {
+  ADVANCE
+  BALANCE
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum DocumentKind {
+  SOURCE
+  TRANSLATED
+}
+
+enum DocumentStatus {
+  UPLOADED
+  SCANNING
+  READY
+  REJECTED
+}
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  passwordHash  String?
+  role          Role       @default(CLIENT)
+  firstName     String
+  lastName      String
+  phone         String?
+  emailVerified DateTime?
+  orders        Order[]
+  auditLogs     AuditLog[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model Service {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  description  String   @db.Text
+  pricePerPage Decimal  @db.Decimal(10, 3)
+  active       Boolean  @default(true)
+  orders       Order[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PricingRule {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  label      String
+  multiplier Decimal? @db.Decimal(6, 3)
+  flatFee    Decimal? @db.Decimal(10, 3)
+  active     Boolean  @default(true)
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  reference String      @unique
+
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  serviceId String
+  service   Service     @relation(fields: [serviceId], references: [id])
+
+  sourceLang String
+  targetLang String
+  pages      Int
+  delayKey   String
+  status     OrderStatus @default(DEMANDE)
+
+  // Snapshot financier — figé à la validation du devis, jamais recalculé rétroactivement.
+  totalAmount   Decimal @db.Decimal(10, 3)
+  advanceAmount Decimal @db.Decimal(10, 3)
+  balanceAmount Decimal @db.Decimal(10, 3)
+  advancePaid   Boolean @default(false)
+  balancePaid   Boolean @default(false)
+
+  documents     Document[]
+  payments      Payment[]
+  statusHistory OrderStatusHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(cuid())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id])
+  status    OrderStatus
+  actorId   String?
+  note      String?
+  createdAt DateTime    @default(now())
+
+  @@index([orderId])
+}
+
+model Document {
+  id           String         @id @default(cuid())
+  orderId      String
+  order        Order          @relation(fields: [orderId], references: [id])
+  kind         DocumentKind
+  status       DocumentStatus @default(UPLOADED)
+  storageKey   String         @unique
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+  sha256       String
+  uploadedById String
+  createdAt    DateTime       @default(now())
+
+  @@index([orderId])
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  orderId     String
+  order       Order         @relation(fields: [orderId], references: [id])
+  phase       PaymentPhase
+  status      PaymentStatus @default(PENDING)
+  amount      Decimal       @db.Decimal(10, 3)
+  currency    String        @default("TND")
+  provider    String
+  providerRef String        @unique
+  rawPayload  Json?
+  createdAt   DateTime      @default(now())
+  confirmedAt DateTime?
+
+  @@index([orderId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  user      User?    @relation(fields: [actorId], references: [id])
+  action    String
+  resource  String
+  metadata  Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([actorId])
+  @@index([resource])
+}

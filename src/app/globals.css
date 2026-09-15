@@ -1,26 +1,74 @@
 @import "tailwindcss";
 
+/*
+ * Design tokens — repris de la maquette (reference/original-prototype.html), identité
+ * "cabinet juridique premium" à conserver. Palette fixe (pas de dark mode auto) :
+ * un site d'étude/cabinet garde la même identité visuelle quel que soit le thème système.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-navy: #14284d;
+  --color-navy-2: #0c1a34;
+  --color-blue: #2456b8;
+  --color-blue-2: #1e4fa8;
+  --color-blue-soft: #e9effa;
+  --color-mist: #edf0f5;
+  --color-paper: #ffffff;
+  --color-ink: #14203a;
+  --color-muted: #5b6a83;
+  --color-line: #dce3ee;
+  --color-seal: #b4894e;
+  --color-ok: #1e9e6a;
+  --color-ok-soft: #e3f5ec;
+  --color-warn: #c9822b;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-navy: var(--color-navy);
+  --color-navy-2: var(--color-navy-2);
+  --color-blue: var(--color-blue);
+  --color-blue-2: var(--color-blue-2);
+  --color-blue-soft: var(--color-blue-soft);
+  --color-mist: var(--color-mist);
+  --color-paper: var(--color-paper);
+  --color-ink: var(--color-ink);
+  --color-muted: var(--color-muted);
+  --color-line: var(--color-line);
+  --color-seal: var(--color-seal);
+  --color-ok: var(--color-ok);
+  --color-ok-soft: var(--color-ok-soft);
+  --color-warn: var(--color-warn);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-spectral);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-mist);
+  color: var(--color-ink);
+  font-family: var(--font-sans), system-ui, -webkit-system-font, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.55;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }
