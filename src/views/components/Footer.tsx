@@ -15,20 +15,22 @@ export default function Footer() {
           <div>
             <h4 className="mb-4 text-[15px] font-semibold text-white">Services</h4>
             <ul className="grid gap-2.5 text-sm">
-              <li><Link href="/#services" className="hover:text-white">État civil</Link></li>
-              <li><Link href="/#services" className="hover:text-white">Diplômes &amp; relevés</Link></li>
-              <li><Link href="/#services" className="hover:text-white">Contrats &amp; actes</Link></li>
-              <li><Link href="/#services" className="hover:text-white">Documents judiciaires</Link></li>
-              <li><Link href="/#services" className="hover:text-white">Interprétariat</Link></li>
+              <li><Link href="/services#etat-civil" className="hover:text-white">État civil</Link></li>
+              <li><Link href="/services#diplomes" className="hover:text-white">Diplômes &amp; relevés</Link></li>
+              <li><Link href="/services#contrats" className="hover:text-white">Contrats &amp; actes</Link></li>
+              <li><Link href="/services#judiciaire" className="hover:text-white">Documents judiciaires</Link></li>
+              <li><Link href="/services#interpretariat" className="hover:text-white">Interprétariat</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="mb-4 text-[15px] font-semibold text-white">Liens</h4>
             <ul className="grid gap-2.5 text-sm">
+              <li><Link href="/a-propos" className="hover:text-white">À propos</Link></li>
               <li><Link href="/#workflow" className="hover:text-white">Comment ça marche</Link></li>
               <li><Link href="/commander" className="hover:text-white">Commander</Link></li>
               <li><Link href="/dashboard/orders" className="hover:text-white">Suivi de commande</Link></li>
               <li><Link href="/faq" className="hover:text-white">FAQ</Link></li>
+              <li><Link href="/contact" className="hover:text-white">Contact</Link></li>
             </ul>
           </div>
           <div>

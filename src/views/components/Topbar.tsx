@@ -13,11 +13,13 @@ import { useEffect, useState } from "react";
  * dynamique (→ /dashboard si connecté) une fois l'auth branchée en Phase 2.
  */
 const NAV_LINKS = [
-  { href: "/#services", label: "Services" },
+  { href: "/services", label: "Services" },
+  { href: "/a-propos", label: "À propos" },
   { href: "/#workflow", label: "Comment ça marche" },
   { href: "/commander", label: "Commander" },
   { href: "/dashboard/orders", label: "Suivi" },
-  { href: "/#contact", label: "Contact" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export default function Topbar() {
@@ -68,12 +70,12 @@ export default function Topbar() {
           </span>
         </Link>
 
-        <nav className="ml-auto hidden items-center gap-6 md:flex" aria-label="Navigation principale">
+        <nav className="ml-auto hidden items-center gap-4 xl:flex" aria-label="Navigation principale">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-[14.5px] font-medium text-[#c9d5ea] transition-colors hover:text-white"
+              className="whitespace-nowrap text-[14px] font-medium text-[#c9d5ea] transition-colors hover:text-white"
             >
               {link.label}
             </Link>
@@ -82,14 +84,14 @@ export default function Topbar() {
 
         <Link
           href="/login"
-          className="ml-1.5 hidden items-center rounded-[11px] bg-blue px-[22px] py-[13px] text-[15px] font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.28)] transition-colors hover:bg-blue-2 md:inline-flex"
+          className="ml-1.5 hidden items-center rounded-[11px] bg-blue px-[22px] py-[13px] text-[15px] font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.28)] transition-colors hover:bg-blue-2 xl:inline-flex"
         >
           Espace client
         </Link>
 
         <button
           type="button"
-          className="ml-auto rounded-lg p-2 text-white md:hidden"
+          className="ml-auto rounded-lg p-2 text-white xl:hidden"
           aria-label="Menu"
           aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((v) => !v)}
@@ -102,7 +104,7 @@ export default function Topbar() {
 
       {mobileOpen && (
         <nav
-          className="flex flex-col gap-0 border-t border-white/10 bg-navy-2 px-[22px] pb-4 pt-2 md:hidden"
+          className="flex flex-col gap-0 border-t border-white/10 bg-navy-2 px-[22px] pb-4 pt-2 xl:hidden"
           aria-label="Navigation mobile"
         >
           {NAV_LINKS.map((link) => (
