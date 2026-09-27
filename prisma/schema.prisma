@@ -57,19 +57,72 @@ enum DocumentStatus {
   REJECTED
 }
 
+// Champs id/email/name/emailVerified/image : forme imposée par Better Auth (voir
+// node_modules/@better-auth/core/src/db/schema/user.ts). role/firstName/lastName/phone
+// sont nos additionalFields (src/lib/auth.ts) ; `password` n'est plus stocké ici — Better
+// Auth le place dans Account.password (provider "credential"), voir §2 ARCHITECTURE.md.
 model User {
   id            String     @id @default(cuid())
   email         String     @unique
-  passwordHash  String?
+  name          String
+  emailVerified Boolean    @default(false)
+  image         String?
   role          Role       @default(CLIENT)
   firstName     String
   lastName      String
   phone         String?
-  emailVerified DateTime?
   orders        Order[]
   auditLogs     AuditLog[]
+  sessions      Session[]
+  accounts      Account[]
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
+}
+
+// Tables Better Auth (générées pour correspondre à sa config — voir src/lib/auth.ts).
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId             String
+  providerId            String
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?   @db.Text
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model Verification {
+  id         String    @id @default(cuid())
+  identifier String
+  value      String    @db.Text
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@index([identifier])
 }
 
 model Service {
@@ -94,13 +147,13 @@ model PricingRule {
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  reference String      @unique
+  id        String @id @default(cuid())
+  reference String @unique
 
   userId    String
-  user      User        @relation(fields: [userId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
   serviceId String
-  service   Service     @relation(fields: [serviceId], references: [id])
+  service   Service @relation(fields: [serviceId], references: [id])
 
   sourceLang String
   targetLang String

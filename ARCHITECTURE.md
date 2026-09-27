@@ -38,12 +38,25 @@ C'est du bon travail de direction artistique, à garder comme base du design sys
 
 ## 2. Stack technique retenue
 
-Comme convenu : **Next.js 15 (App Router) + TypeScript + Prisma + MySQL + NextAuth v5**, en suivant les mêmes conventions que le projet calmatrip (page/view split, repositories, schemas Zod, rate limiting maison) — stack déjà éprouvée dans ce contexte, un seul déploiement full-stack.
+Comme convenu : **Next.js 15 (App Router) + TypeScript + Prisma + MySQL + Better Auth**, en suivant les mêmes conventions que le projet calmatrip (page/view split, repositories, schemas Zod) — stack déjà éprouvée dans ce contexte, un seul déploiement full-stack.
+
+> **Choix révisé (post-Phase 2)** : NextAuth v5 avait été retenu initialement mais a été
+> remplacé par **Better Auth** — toujours en beta après plus d'un an (`5.0.0-beta.32`), API
+> encore mouvante, et son typage (types re-exportés depuis `@auth/core`) demande des
+> augmentations de module fragiles. Better Auth est stable, a une intégration Prisma plus
+> directe (`user.additionalFields` typé de bout en bout côté client via
+> `inferAdditionalFields`), et son modèle de middleware (`getSessionCookie`, simple lecture de
+> cookie) évite d'avoir à scinder la config en edge-safe / Node comme l'exigeait NextAuth.
 
 ```text
-Frontend + Backend  : Next.js 15 App Router (Node runtime, pas Edge — pour bcrypt/argon2 et accès fichiers privés)
+Frontend + Backend  : Next.js 15/16 App Router (Node runtime, pas Edge — pour argon2 et accès fichiers privés)
 ORM                 : Prisma → MySQL 8
-Auth                : NextAuth v5 (Credentials + argon2id), JWT + re-lecture rôle en DB à chaque session
+Auth                : Better Auth (email/mot de passe), hachage argon2id maison (src/lib/password.ts,
+                      @node-rs/argon2) branché via `emailAndPassword.password.hash/verify` —
+                      remplace le scrypt par défaut. Session JWT-less (table Session), rôle
+                      relu en DB à chaque `auth.api.getSession` (jamais fait confiance au seul
+                      cookie) — voir §7 (RBAC). `role` est un additionalField `input: false` :
+                      un payload de /sign-up/email ne peut jamais s'auto-attribuer un rôle.
 Validation           : Zod (schemas partagés client/serveur)
 Stockage documents   : disque privé HORS `public/` + route API authentifiée qui stream les octets (voir §5)
 Paiement             : abstraction `PaymentProvider` (voir §6), providers réels branchés en Phase 8
@@ -90,8 +103,7 @@ src/
       orders/page.tsx
       orders/[id]/page.tsx
     api/
-      auth/[...nextauth]/route.ts
-      auth/register/route.ts
+      auth/[...all]/route.ts      catch-all Better Auth (sign-up/sign-in/sign-out/get-session/...)
       services/route.ts
       orders/route.ts
       orders/[id]/route.ts
@@ -110,8 +122,9 @@ src/
   schemas/                       Zod + *.test.ts à côté
   lib/
     prisma.ts
-    auth.ts
-    rateLimit.ts
+    auth.ts                       instance serveur Better Auth
+    auth-client.ts                createAuthClient() côté navigateur
+    password.ts                   argon2id (hash/verify), branché dans auth.ts
     sanitize.ts
     seo.ts
     payments/
@@ -173,18 +186,25 @@ enum PaymentStatus { PENDING SUCCEEDED FAILED REFUNDED }
 enum DocumentKind { SOURCE TRANSLATED }
 enum DocumentStatus { UPLOADED SCANNING READY REJECTED }
 
+// Forme réelle imposée par Better Auth pour id/email/name/emailVerified/image — voir le
+// commentaire au-dessus de `model User` dans prisma/schema.prisma (source de vérité) pour le
+// détail exact. role/firstName/lastName/phone sont nos additionalFields (src/lib/auth.ts).
+// Le mot de passe n'est plus sur User : Better Auth le stocke dans Account.password
+// (providerId "credential"). Session/Account/Verification (tables Better Auth) sont aussi
+// définies dans schema.prisma et ne sont pas reproduites ici.
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  passwordHash  String?
-  role          Role     @default(CLIENT)
+  id            String     @id @default(cuid())
+  email         String     @unique
+  name          String
+  emailVerified Boolean    @default(false)
+  image         String?
+  role          Role       @default(CLIENT)
   firstName     String
   lastName      String
   phone         String?
-  emailVerified DateTime?
   orders        Order[]
   auditLogs     AuditLog[]
-  createdAt     DateTime @default(now())
+  createdAt     DateTime   @default(now())
 }
 
 model Service {
@@ -315,6 +335,22 @@ Téléchargement → GET /api/orders/:id/documents/:documentId/download
 
 Pas de bucket S3 nécessaire au lancement (VPS avec disque persistant, comme calmatrip) : un dossier privé + un contrôle d'accès strict au niveau de la route API suffit et respecte l'esprit de la section 14 (le point non négociable est "jamais d'URL publique directe", pas "obligatoirement un cloud object storage"). Si le volume ou le besoin de CDN augmente plus tard, la même interface `privateStorage.ts` pourra pointer vers S3-compatible sans changer les routes.
 
+### 5.1 Aperçu filigrané avant paiement du solde
+
+Avant paiement du solde, le client doit pouvoir **voir** la traduction pour la valider, mais
+pas l'emporter gratuitement. Aucune page web ne peut empêcher une capture d'écran (c'est une
+capacité du système d'exploitation, pas du navigateur) — la protection réelle est donc :
+
+1. Le PDF final n'est **jamais** transmis au navigateur avant paiement du solde (ni en aperçu
+   ni en téléchargement — voir `/api/orders/:id/documents/:documentId/download`, §5 ci-dessus).
+2. À la place, `lib/pdf-preview.ts` rend chaque page côté serveur (`pdfjs-dist` +
+   `@napi-rs/canvas`, jamais dans le bundle client — voir `next.config.ts#serverExternalPackages`)
+   en image JPEG basse résolution avec un filigrane ("APERÇU - NON PAYÉ") superposé, servie par
+   `/api/orders/:id/documents/:documentId/preview`.
+3. Une capture d'écran de cet aperçu ne vaut donc que l'image basse résolution filigranée, pas
+   le document certifié — la dissuasion vient de la dégradation du contenu, pas d'un blocage
+   technique de la capture elle-même.
+
 ---
 
 ## 6. Paiement 50/50 — state machine et abstraction provider
@@ -383,15 +419,15 @@ Toute l'opération 3-9 dans une transaction Prisma.
 
 | Phase | Contenu | Sortie vérifiable |
 |---|---|---|
-| **1. Scaffold** | `create-next-app`, Prisma init, structure de dossiers ci-dessus, design tokens (palette/typo du prototype en CSS/Tailwind), `.env.example` | Projet qui build, page d'accueil statique avec le nouveau topbar |
-| **2. Auth** | NextAuth Credentials + argon2id, register/login/logout, cookies HttpOnly/Secure/SameSite, verification email, forgot/reset password | Test E2E : inscription → email → login → session persistée |
-| **3. Services & pricing admin** | CRUD `Service`/`PricingRule` (admin uniquement), page publique `/services` qui lit ces données (plus aucun prix en dur) | Changer un prix en DB change l'affichage sans redeploy |
-| **4. Wizard de commande** | Étapes du §47 (document → langues → service → délai → coordonnées → résumé), upload sécurisé (MIME réel, UUID, stockage privé), calcul devis backend | Une commande `DEMANDE` créée en DB avec `Document(kind=SOURCE)` |
-| **5. Devis** | Auto (formule) + override manuel admin, snapshot des montants sur `Order`, écran client "Accepter et payer l'acompte" | `DEVIS_A_VALIDER` → `EN_ATTENTE_ACOMPTE` |
-| **6. Paiement (mock provider)** | Abstraction `PaymentProvider`, provider mock avec vrai aller-retour serveur, webhook, state machine complète, idempotence | Suite de tests "Payment tests" du §42 qui passent (double webhook, montant invalide, etc.) |
-| **7. Espace client (dashboard)** | KPI cards, graphique (Recharts), liste des commandes, page détail + timeline | Empty/loading/error states couverts |
-| **8. Fichier verrouillé/déverrouillé + téléchargement sécurisé** | UI filebox reprise du prototype, route de téléchargement avec les 5 vérifications du §5, URL signée à courte durée de vie | Test : client A ne peut pas télécharger le fichier de la commande de client B, ni avant paiement du solde |
-| **9. Espace admin/traducteur** | Table des commandes + filtres, changement de statut, dépôt du fichier final, consultation paiements | Traducteur peut faire progresser une commande de bout en bout |
+| **1. Scaffold** ✅ | `create-next-app`, Prisma init, structure de dossiers ci-dessus, design tokens (palette/typo du prototype en CSS/Tailwind), `.env.example` | Projet qui build, page d'accueil statique avec le nouveau topbar |
+| **2. Auth** ✅ | Better Auth (email/mot de passe) + argon2id, register/login/logout, cookies HttpOnly/Secure/SameSite | Testé E2E (Playwright) : inscription → login → session → logout → route protégée |
+| **3. Services & pricing admin** ⏳ | CRUD `Service`/`PricingRule` — pour l'instant seedés (`prisma/seed.ts`), pas encore d'écran admin pour les éditer | Changer un prix en DB change l'affichage sans redeploy (déjà vrai côté lecture) |
+| **4. Wizard de commande** ✅ | `/commander` : service/langues/pages/délai + upload (MIME réel via magic bytes, UUID, stockage privé hors webroot) | Une commande `DEVIS_A_VALIDER` créée en DB avec `Document(kind=SOURCE)` |
+| **5. Devis** ✅ (auto uniquement) | Calcul auto (`lib/pricing.ts`, prix × pages × multiplicateur délai), snapshot figé sur `Order`, écran "Accepter le devis". Pas d'override manuel admin. | `DEVIS_A_VALIDER` → `EN_ATTENTE_ACOMPTE` |
+| **6. Paiement (mock provider)** ✅ | `PaymentProvider` abstrait, provider mock avec vrai aller-retour serveur (`/paiement/mock/[ref]` → `/api/payments/webhook`), idempotence, vérification du montant contre la DB | Testé : paiement acompte + solde via Playwright, idempotence du webhook |
+| **7. Espace client (dashboard)** ⏳ (minimal) | `/dashboard/orders` (liste) + `/dashboard/orders/[id]` (détail, timeline, paiement). Pas de KPI/graphique. | Liste + détail fonctionnels, testés E2E |
+| **8. Fichier verrouillé/déverrouillé + téléchargement sécurisé** ✅ | Aperçu filigrané rendu serveur (`pdfjs-dist` + `@napi-rs/canvas`, jamais le vrai fichier) tant que le solde n'est pas payé ; téléchargement réel avec les 5 vérifications du §5 | Testé : propriétaire ne peut pas télécharger avant solde payé (403), un tiers ne peut ni voir ni télécharger (404/403) |
+| **9. Espace admin/traducteur** ✅ (minimal) | `/admin/orders` (table) + `/admin/orders/[id]` (démarrer la traduction, déposer le fichier final → génère l'aperçu). Pas de filtres avancés. | Testé : le traducteur fait progresser une commande de bout en bout |
 | **10. Notifications** | `NotificationService` (email d'abord), tous les événements du §29 | Chaque transition envoie le bon email |
 | **11. Provider de paiement réel** | Intégration Konnect (ou Flouci/D17 selon le compte marchand disponible), signature webhook réelle | *Dépend d'un compte marchand actif — voir §9 "dépendances externes"* |
 | **12. Sécurité transverse** | Rate limiting (login/register/upload/payment), headers CSP/HSTS/etc., sanitisation HTML, audit log complet, RGPD (pages légales + politique de rétention) | Checklist §59 "Security" cochée |

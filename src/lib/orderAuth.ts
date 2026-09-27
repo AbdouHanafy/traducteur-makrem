@@ -1,0 +1,31 @@
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
+import { findOrderById } from "@/repositories/orders";
+
+/**
+ * Vérification systématique "order.userId === session.user.id" avant toute lecture/écriture
+ * (ARCHITECTURE.md §7) — sauf pour un rôle TRANSLATOR/ADMIN qui agit sur n'importe quelle
+ * commande via les routes /api/admin/**.
+ */
+export async function requireOrderOwner(orderId: string) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) return { error: "unauthenticated" as const };
+
+  const order = await findOrderById(orderId);
+  if (!order) return { error: "not_found" as const };
+
+  if (order.userId !== session.user.id) return { error: "forbidden" as const };
+
+  return { session, order };
+}
+
+export async function requireStaffSession() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) return { error: "unauthenticated" as const };
+
+  if (session.user.role !== "ADMIN" && session.user.role !== "TRANSLATOR") {
+    return { error: "forbidden" as const };
+  }
+
+  return { session };
+}

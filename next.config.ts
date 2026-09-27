@@ -19,6 +19,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Rendu des aperçus filigranés (§8 workflow commande) : binaires natifs / gros bundles ESM
+  // que le bundler ne doit pas essayer de retraiter côté serveur.
+  serverExternalPackages: ["@napi-rs/canvas", "pdfjs-dist"],
   async headers() {
     return [
       {

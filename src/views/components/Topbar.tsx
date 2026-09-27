@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useSession } from "@/lib/auth-client";
 
 /**
  * Topbar — structure et libellés conservés de la maquette (voir ARCHITECTURE.md §3) :
@@ -9,8 +10,8 @@ import { useEffect, useState } from "react";
  * mobile avec fermeture au clavier) et pour pointer vers de vraies routes plutôt que
  * des ancres uniques (#espace pour "Commander" ET "Suivi" dans le prototype).
  *
- * Le CTA "Espace client" est statique (→ /login) pour l'instant : il deviendra
- * dynamique (→ /dashboard si connecté) une fois l'auth branchée en Phase 2.
+ * Le CTA "Espace client" pointe vers /login si déconnecté, /dashboard si connecté
+ * (ARCHITECTURE.md §3).
  */
 const NAV_LINKS = [
   { href: "/services", label: "Services" },
@@ -24,6 +25,9 @@ const NAV_LINKS = [
 
 export default function Topbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: session } = useSession();
+  const spaceHref = session ? "/dashboard" : "/login";
+  const spaceLabel = session ? "Mon espace" : "Espace client";
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -83,10 +87,10 @@ export default function Topbar() {
         </nav>
 
         <Link
-          href="/login"
+          href={spaceHref}
           className="ml-1.5 hidden items-center rounded-[11px] bg-blue px-[22px] py-[13px] text-[15px] font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.28)] transition-colors hover:bg-blue-2 xl:inline-flex"
         >
-          Espace client
+          {spaceLabel}
         </Link>
 
         <button
@@ -118,11 +122,11 @@ export default function Topbar() {
             </Link>
           ))}
           <Link
-            href="/login"
+            href={spaceHref}
             onClick={() => setMobileOpen(false)}
             className="mt-3 inline-flex items-center justify-center rounded-[11px] bg-blue px-[22px] py-[13px] text-[15px] font-semibold text-white"
           >
-            Espace client
+            {spaceLabel}
           </Link>
         </nav>
       )}

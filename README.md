@@ -4,15 +4,22 @@ Voir [ARCHITECTURE.md](ARCHITECTURE.md) pour l'analyse du prototype, l'architect
 plan d'implémentation complet. La maquette d'origine est archivée dans
 [`reference/original-prototype.html`](reference/original-prototype.html).
 
-**État actuel : Phase 2 (fondation MySQL/Prisma) terminée.** Homepage statique (Phase 1) +
-base MySQL locale via Docker, migration initiale appliquée, seed de démonstration, CRUD
-vérifié réellement contre la base. Aucune authentification, aucun paiement encore branchés.
+**État actuel : le parcours complet fonctionne, de la commande au fichier débloqué.** Pages
+publiques, authentification (Better Auth), wizard de commande (`/commander`), devis auto,
+paiement 50/50 via un provider mock (vrai aller-retour serveur, pas de simulation frontend),
+aperçu filigrané du fichier traduit tant que le solde n'est pas payé, et un espace
+traducteur minimal (`/admin/orders`) pour déposer le fichier final. Testé de bout en bout avec
+Playwright, y compris les cas IDOR (un tiers ne peut ni voir ni télécharger la commande d'un
+autre). Ce qui manque encore : CRUD admin pour les prix, KPI dashboard, notifications email,
+provider de paiement réel.
 
 ## Stack
 
-Next.js (App Router) · TypeScript · Tailwind CSS v4 · Prisma 6.19.3 (MySQL 8.0, Docker) —
-conventions alignées sur le projet calmatrip (page/view split, repositories, schemas Zod à
-venir).
+Next.js (App Router) · TypeScript · Tailwind CSS v4 · Prisma 6.19.3 (MySQL 8.0, Docker) ·
+Better Auth (email/mot de passe, argon2id via `@node-rs/argon2`) · `pdfjs-dist` +
+`@napi-rs/canvas` (aperçus filigranés, voir ARCHITECTURE.md §5.1) · `file-type` (validation MIME
+réelle des uploads) — conventions alignées sur le projet calmatrip (page/view split,
+repositories, schemas Zod à venir).
 
 ## Démarrage local
 
@@ -73,8 +80,14 @@ docker-compose.yml  MySQL local, lié à 127.0.0.1 uniquement, volume persistant
 - Prisma n'est importé que côté serveur (`src/lib/prisma.ts`) ; aucun composant client ne le
   touche.
 
+## Comptes de démo (dev uniquement)
+
+`npm run db:seed` crée 3 comptes via le vrai flux Better Auth (mot de passe : `Demo1234!`) :
+`admin@makram-arfaoui.local` (ADMIN), `traducteur@makram-arfaoui.local` (TRANSLATOR),
+`client-demo@makram-arfaoui.local` (CLIENT).
+
 ## Prochaines phases
 
-Voir la table des phases dans ARCHITECTURE.md §8 — la suite est l'authentification
-(NextAuth v5 + argon2id, Phase 3), qui adaptera `prisma/seed.ts` pour définir de vrais mots
-de passe de démo hachés.
+Voir la table des phases dans ARCHITECTURE.md §8 — la suite logique est le wizard de commande
+(Phase 4) et le CRUD services/pricing admin (Phase 3), `/dashboard` n'étant pour l'instant
+qu'un placeholder qui prouve que la session fonctionne.

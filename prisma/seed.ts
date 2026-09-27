@@ -1,57 +1,87 @@
 /**
- * Seed de développement — Phase 2 (DB foundation only, PAS d'authentification).
+ * Seed de développement.
  *
- * IMPORTANT — mots de passe :
- * `User.passwordHash` est volontairement laissé à `null` pour ces comptes de démo.
- * Il n'y a pas encore de mécanisme de hachage (argon2id) dans le projet : le créer ici
- * reviendrait soit à stocker un mot de passe en clair sous un nom trompeur, soit à
- * inventer un faux hash. Aucune des deux options n'est acceptable, même en dev.
- * → Phase 3 (Authentication) ajoutera le hachage réel et adaptera ce seed pour définir
- *   un mot de passe utilisable sur ces 3 comptes.
+ * Les comptes de démo passent par `auth.api.signUpEmail` (Better Auth — voir src/lib/auth.ts)
+ * pour créer le couple User+Account exactement comme le ferait un vrai visiteur : le mot de
+ * passe est haché en argon2id (src/lib/password.ts) par le même chemin que la vraie
+ * inscription. `role` est ensuite élevé directement en DB pour admin/traducteur — Better Auth
+ * refuse de le fixer via le payload public (voir `input: false` dans src/lib/auth.ts).
  *
- * Ce script est idempotent (upsert par clé unique) : `npx prisma db seed` peut être
- * relancé sans dupliquer les données.
+ * Ce script est idempotent : si le compte existe déjà, on se contente de réaligner son mot
+ * de passe et son rôle plutôt que de re-créer.
  */
 import { PrismaClient } from "@prisma/client";
+import { auth } from "../src/lib/auth";
+import { hashPassword } from "../src/lib/password";
 
 const prisma = new PrismaClient();
 
+const DEV_PASSWORD = "Demo1234!";
+
+interface DemoUser {
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: "ADMIN" | "TRANSLATOR" | "CLIENT";
+}
+
+const DEMO_USERS: DemoUser[] = [
+  { email: "admin@makram-arfaoui.local", firstName: "Makram", lastName: "Arfaoui", role: "ADMIN" },
+  { email: "traducteur@makram-arfaoui.local", firstName: "Sami", lastName: "Traducteur", role: "TRANSLATOR" },
+  { email: "client-demo@makram-arfaoui.local", firstName: "Sarra", lastName: "Ben Ali", role: "CLIENT" },
+];
+
+async function upsertDemoUser(demo: DemoUser) {
+  const existing = await prisma.user.findUnique({ where: { email: demo.email } });
+
+  if (!existing) {
+    await auth.api.signUpEmail({
+      body: {
+        name: `${demo.firstName} ${demo.lastName}`,
+        email: demo.email,
+        password: DEV_PASSWORD,
+        firstName: demo.firstName,
+        lastName: demo.lastName,
+      },
+    });
+  } else {
+    const passwordHash = await hashPassword(DEV_PASSWORD);
+    const credentialAccount = await prisma.account.findFirst({
+      where: { userId: existing.id, providerId: "credential" },
+    });
+
+    if (credentialAccount) {
+      await prisma.account.update({
+        where: { id: credentialAccount.id },
+        data: { password: passwordHash },
+      });
+    } else {
+      // Compte antérieur à Better Auth (créé avant la Phase 2 bis) : il n'a jamais eu
+      // de ligne Account "credential" — on la crée pour qu'il redevienne connectable.
+      await prisma.account.create({
+        data: {
+          userId: existing.id,
+          accountId: existing.id,
+          providerId: "credential",
+          password: passwordHash,
+        },
+      });
+    }
+  }
+
+  const user = await prisma.user.update({
+    where: { email: demo.email },
+    data: { role: demo.role },
+  });
+
+  return user;
+}
+
 async function main() {
-  const admin = await prisma.user.upsert({
-    where: { email: "admin@makram-arfaoui.local" },
-    update: {},
-    create: {
-      email: "admin@makram-arfaoui.local",
-      firstName: "Makram",
-      lastName: "Arfaoui",
-      role: "ADMIN",
-      passwordHash: null,
-    },
-  });
-
-  const translator = await prisma.user.upsert({
-    where: { email: "traducteur@makram-arfaoui.local" },
-    update: {},
-    create: {
-      email: "traducteur@makram-arfaoui.local",
-      firstName: "Sami",
-      lastName: "Traducteur",
-      role: "TRANSLATOR",
-      passwordHash: null,
-    },
-  });
-
-  const client = await prisma.user.upsert({
-    where: { email: "client-demo@makram-arfaoui.local" },
-    update: {},
-    create: {
-      email: "client-demo@makram-arfaoui.local",
-      firstName: "Sarra",
-      lastName: "Ben Ali",
-      role: "CLIENT",
-      passwordHash: null,
-    },
-  });
+  const users = [];
+  for (const demo of DEMO_USERS) {
+    users.push(await upsertDemoUser(demo));
+  }
 
   // Prix placeholders de développement uniquement — 0 = "sur devis" (même convention que
   // le prototype pour l'interprétariat). La vraie politique tarifaire sera définie avec
@@ -97,9 +127,26 @@ async function main() {
     });
   }
 
+  // Multiplicateurs de délai — placeholders de dev au même titre que pricePerPage ci-dessus.
+  const pricingRules = [
+    { key: "delay.standard", label: "Standard (5-7 jours)", multiplier: "1.000" },
+    { key: "delay.express", label: "Express (48h)", multiplier: "1.300" },
+    { key: "delay.urgent", label: "Urgent (24h)", multiplier: "1.600" },
+  ];
+
+  for (const rule of pricingRules) {
+    await prisma.pricingRule.upsert({
+      where: { key: rule.key },
+      update: {},
+      create: rule,
+    });
+  }
+
   console.log("Seed OK :", {
-    users: [admin.email, translator.email, client.email],
+    users: users.map((u) => `${u.email} (${u.role})`),
+    devPassword: DEV_PASSWORD,
     services: services.map((s) => s.slug),
+    pricingRules: pricingRules.map((r) => r.key),
   });
 }
 
