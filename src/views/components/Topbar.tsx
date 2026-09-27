@@ -6,9 +6,10 @@ import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 
 /**
- * Topbar — structure inspirée d'un header "booking direct" (nav en petites capitales avec
- * lien actif souligné, connexion en texte simple, un seul CTA plein contrasté) adaptée à
- * l'identité navy/or du site plutôt qu'un copier-coller de palette.
+ * Topbar — header clair (fond blanc), typo sans-serif fine en petites capitales, lien actif
+ * souligné en or, un seul CTA plein (navy) contrasté. Repris de plus près d'une référence
+ * "booking direct" fournie par le client, palette et poids de police corrigés après un
+ * premier essai trop sombre/trop gras.
  */
 const NAV_LINKS = [
   { href: "/a-propos", label: "À propos" },
@@ -34,11 +35,11 @@ export default function Topbar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-navy-2/95 backdrop-blur-md">
-      <div className="mx-auto flex h-[76px] max-w-[1160px] items-center gap-6 px-[22px]">
-        <Link href="/" aria-label="Accueil" className="flex items-center gap-3 text-white">
-          <svg className="h-11 w-11 shrink-0" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <circle cx="32" cy="32" r="30" stroke="#4C79D4" strokeWidth="2" />
+    <header className="sticky top-0 z-50 border-b border-line bg-white/95 backdrop-blur-md">
+      <div className="mx-auto flex h-[72px] max-w-[1160px] items-center gap-6 px-[22px]">
+        <Link href="/" aria-label="Accueil" className="flex items-center gap-2.5 text-navy">
+          <svg className="h-9 w-9 shrink-0" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+            <circle cx="32" cy="32" r="30" stroke="#2456B8" strokeWidth="2" />
             <circle
               cx="32"
               cy="32"
@@ -50,37 +51,37 @@ export default function Topbar() {
             />
             <text
               x="32"
-              y="40"
+              y="39"
               textAnchor="middle"
-              fontFamily="Spectral, serif"
+              fontFamily="Inter, sans-serif"
               fontWeight="700"
-              fontSize="24"
-              fill="#fff"
+              fontSize="20"
+              fill="#14284D"
             >
               MA
             </text>
           </svg>
           <span>
-            <span className="block font-serif text-[18px] font-bold uppercase leading-tight tracking-wide">
-              Maître Makram Arfaoui
+            <span className="block text-[15px] font-bold uppercase leading-tight tracking-[.02em] text-navy">
+              Makram Arfaoui
             </span>
-            <span className="mt-0.5 block text-[11px] uppercase tracking-[.14em] text-[#9fb2d6]">
-              Traducteur &amp; Interprète Assermenté
+            <span className="mt-0.5 block text-[10.5px] uppercase tracking-[.14em] text-muted">
+              Traducteur &middot; Assermenté
             </span>
           </span>
         </Link>
 
-        <nav className="ml-auto hidden items-center gap-7 lg:flex" aria-label="Navigation principale">
+        <nav className="ml-auto hidden items-center gap-6 lg:flex" aria-label="Navigation principale">
           {NAV_LINKS.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`whitespace-nowrap border-b-2 pb-1 text-[12.5px] font-semibold uppercase tracking-[.08em] transition-colors ${
+                className={`whitespace-nowrap border-b-[1.5px] pb-1 text-[12px] font-medium uppercase tracking-[.09em] transition-colors ${
                   isActive
                     ? "border-seal text-seal"
-                    : "border-transparent text-[#c9d5ea] hover:text-white"
+                    : "border-transparent text-muted hover:text-navy"
                 }`}
               >
                 {link.label}
@@ -89,20 +90,20 @@ export default function Topbar() {
           })}
         </nav>
 
-        <div className="ml-2 hidden items-center gap-5 lg:flex">
+        <div className="ml-2 hidden items-center gap-4 lg:flex">
           <Link
             href={spaceHref}
-            className="whitespace-nowrap text-[12.5px] font-semibold uppercase tracking-[.08em] text-[#c9d5ea] transition-colors hover:text-white"
+            className="whitespace-nowrap text-[12px] font-medium uppercase tracking-[.09em] text-muted transition-colors hover:text-navy"
           >
             {spaceLabel}
           </Link>
-          <span className="h-6 w-px bg-white/15" aria-hidden="true" />
+          <span className="h-5 w-px bg-line" aria-hidden="true" />
           <Link
             href="/commander"
-            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-[10px] bg-seal px-[20px] py-[12px] text-[13px] font-bold uppercase tracking-[.05em] text-navy-2 transition-colors hover:bg-[#c49a5e]"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-[9px] bg-navy px-[18px] py-[10px] text-[12px] font-semibold uppercase tracking-[.04em] text-white transition-colors hover:bg-navy-2"
           >
             Commander
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
               <path d="M7 17L17 7M8 7h9v9" />
             </svg>
           </Link>
@@ -110,12 +111,12 @@ export default function Topbar() {
 
         <button
           type="button"
-          className="ml-auto rounded-lg p-2 text-white lg:hidden"
+          className="ml-auto rounded-lg p-2 text-navy lg:hidden"
           aria-label="Menu"
           aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((v) => !v)}
         >
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M3 6h18M3 12h18M3 18h18" />
           </svg>
         </button>
@@ -123,7 +124,7 @@ export default function Topbar() {
 
       {mobileOpen && (
         <nav
-          className="flex flex-col gap-0 border-t border-white/10 bg-navy-2 px-[22px] pb-4 pt-2 lg:hidden"
+          className="flex flex-col gap-0 border-t border-line bg-white px-[22px] pb-4 pt-2 lg:hidden"
           aria-label="Navigation mobile"
         >
           {NAV_LINKS.map((link) => {
@@ -133,8 +134,8 @@ export default function Topbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className={`border-b border-white/[.07] py-3 text-[13px] font-semibold uppercase tracking-[.08em] ${
-                  isActive ? "text-seal" : "text-[#c9d5ea]"
+                className={`border-b border-line py-3 text-[12.5px] font-medium uppercase tracking-[.09em] ${
+                  isActive ? "text-seal" : "text-muted"
                 }`}
               >
                 {link.label}
@@ -145,17 +146,17 @@ export default function Topbar() {
             <Link
               href={spaceHref}
               onClick={() => setMobileOpen(false)}
-              className="inline-flex items-center justify-center rounded-[11px] border-[1.5px] border-white/[.28] px-[22px] py-[13px] text-[13px] font-semibold uppercase tracking-[.08em] text-white"
+              className="inline-flex items-center justify-center rounded-[10px] border-[1.5px] border-line px-[22px] py-[12px] text-[12.5px] font-semibold uppercase tracking-[.06em] text-navy"
             >
               {spaceLabel}
             </Link>
             <Link
               href="/commander"
               onClick={() => setMobileOpen(false)}
-              className="inline-flex items-center justify-center gap-1.5 rounded-[11px] bg-seal px-[22px] py-[13px] text-[13px] font-bold uppercase tracking-[.05em] text-navy-2"
+              className="inline-flex items-center justify-center gap-1.5 rounded-[10px] bg-navy px-[22px] py-[12px] text-[12.5px] font-semibold uppercase tracking-[.04em] text-white"
             >
               Commander
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
                 <path d="M7 17L17 7M8 7h9v9" />
               </svg>
             </Link>
