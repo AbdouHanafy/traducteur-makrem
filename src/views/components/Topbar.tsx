@@ -5,20 +5,14 @@ import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 
 /**
- * Topbar — structure et libellés conservés de la maquette (voir ARCHITECTURE.md §3) :
- * logo/sceau, nom + rôle, nav, CTA "Espace client". Affiné pour l'accessibilité (menu
- * mobile avec fermeture au clavier) et pour pointer vers de vraies routes plutôt que
- * des ancres uniques (#espace pour "Commander" ET "Suivi" dans le prototype).
- *
- * Le CTA "Espace client" pointe vers /login si déconnecté, /dashboard si connecté
- * (ARCHITECTURE.md §3).
+ * Topbar — nav simplifiée sur demande : À propos (qui est Maître Arfaoui), Services,
+ * Articles, FAQ, Contact comme liens ; Commander et Se connecter/Mon espace comme boutons
+ * d'action distincts plutôt que noyés dans la liste de liens.
  */
 const NAV_LINKS = [
-  { href: "/services", label: "Services" },
   { href: "/a-propos", label: "À propos" },
-  { href: "/#workflow", label: "Comment ça marche" },
-  { href: "/commander", label: "Commander" },
-  { href: "/dashboard/orders", label: "Suivi" },
+  { href: "/services", label: "Services" },
+  { href: "/articles", label: "Articles" },
   { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
 ];
@@ -27,7 +21,7 @@ export default function Topbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: session } = useSession();
   const spaceHref = session ? "/dashboard" : "/login";
-  const spaceLabel = session ? "Mon espace" : "Espace client";
+  const spaceLabel = session ? "Mon espace" : "Se connecter";
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -74,7 +68,7 @@ export default function Topbar() {
           </span>
         </Link>
 
-        <nav className="ml-auto hidden items-center gap-4 xl:flex" aria-label="Navigation principale">
+        <nav className="ml-auto hidden items-center gap-6 lg:flex" aria-label="Navigation principale">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -86,16 +80,24 @@ export default function Topbar() {
           ))}
         </nav>
 
-        <Link
-          href={spaceHref}
-          className="ml-1.5 hidden items-center rounded-[11px] bg-blue px-[22px] py-[13px] text-[15px] font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.28)] transition-colors hover:bg-blue-2 xl:inline-flex"
-        >
-          {spaceLabel}
-        </Link>
+        <div className="ml-1.5 hidden items-center gap-3 lg:flex">
+          <Link
+            href="/commander"
+            className="whitespace-nowrap rounded-[11px] border-[1.5px] border-white/[.28] px-[20px] py-[12px] text-[14.5px] font-semibold text-white transition-colors hover:border-white"
+          >
+            Commander
+          </Link>
+          <Link
+            href={spaceHref}
+            className="whitespace-nowrap rounded-[11px] bg-blue px-[20px] py-[13px] text-[14.5px] font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.28)] transition-colors hover:bg-blue-2"
+          >
+            {spaceLabel}
+          </Link>
+        </div>
 
         <button
           type="button"
-          className="ml-auto rounded-lg p-2 text-white xl:hidden"
+          className="ml-auto rounded-lg p-2 text-white lg:hidden"
           aria-label="Menu"
           aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((v) => !v)}
@@ -108,7 +110,7 @@ export default function Topbar() {
 
       {mobileOpen && (
         <nav
-          className="flex flex-col gap-0 border-t border-white/10 bg-navy-2 px-[22px] pb-4 pt-2 xl:hidden"
+          className="flex flex-col gap-0 border-t border-white/10 bg-navy-2 px-[22px] pb-4 pt-2 lg:hidden"
           aria-label="Navigation mobile"
         >
           {NAV_LINKS.map((link) => (
@@ -121,13 +123,22 @@ export default function Topbar() {
               {link.label}
             </Link>
           ))}
-          <Link
-            href={spaceHref}
-            onClick={() => setMobileOpen(false)}
-            className="mt-3 inline-flex items-center justify-center rounded-[11px] bg-blue px-[22px] py-[13px] text-[15px] font-semibold text-white"
-          >
-            {spaceLabel}
-          </Link>
+          <div className="mt-3 grid gap-2.5">
+            <Link
+              href="/commander"
+              onClick={() => setMobileOpen(false)}
+              className="inline-flex items-center justify-center rounded-[11px] border-[1.5px] border-white/[.28] px-[22px] py-[13px] text-[15px] font-semibold text-white"
+            >
+              Commander
+            </Link>
+            <Link
+              href={spaceHref}
+              onClick={() => setMobileOpen(false)}
+              className="inline-flex items-center justify-center rounded-[11px] bg-blue px-[22px] py-[13px] text-[15px] font-semibold text-white"
+            >
+              {spaceLabel}
+            </Link>
+          </div>
         </nav>
       )}
     </header>
