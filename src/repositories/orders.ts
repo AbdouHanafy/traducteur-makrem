@@ -110,7 +110,12 @@ export function listOrdersWithDocumentsForUser(userId: string) {
 
 export function listAllOrders() {
   return prisma.order.findMany({
-    include: { service: true, user: { select: { firstName: true, lastName: true, email: true } } },
+    include: {
+      service: true,
+      documents: { select: { kind: true, status: true } },
+      payments: { select: { phase: true, status: true, amount: true, currency: true } },
+      user: { select: { firstName: true, lastName: true, email: true } },
+    },
     orderBy: { createdAt: "desc" },
   });
 }

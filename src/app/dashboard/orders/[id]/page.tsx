@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { buildMetadata } from "@/lib/seo";
+import { getTranslatedFileAccess } from "@/lib/order-file-access";
 import { findOrderById } from "@/repositories/orders";
 import OrderDetailPage from "@/views/OrderDetailPage";
 
@@ -28,15 +29,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         advanceAmount: order.advanceAmount.toString(),
         balanceAmount: order.balanceAmount.toString(),
         advancePaid: order.advancePaid,
-        balancePaid:
-          order.balancePaid &&
-          order.payments.some(
-            (payment) =>
-              payment.phase === "BALANCE" &&
-              payment.status === "SUCCEEDED" &&
-              payment.currency === "TND" &&
-              payment.amount.equals(order.balanceAmount),
-          ),
+        balancePaid: getTranslatedFileAccess(order) === "UNLOCKED",
         service: { name: order.service.name },
         documents: order.documents.map((d) => ({ id: d.id, kind: d.kind, originalName: d.originalName })),
         statusHistory: order.statusHistory.map((h) => ({

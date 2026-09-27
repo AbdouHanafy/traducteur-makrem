@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import type { TranslatedFileAccess } from "@/lib/order-file-access";
+import FileAccessBadge from "@/views/components/FileAccessBadge";
 
 const STATUS_LABELS: Record<string, string> = {
   DEMANDE: "Demande",
@@ -25,15 +27,18 @@ interface AdminOrderRow {
   id: string;
   reference: string;
   status: string;
+  fileAccess: TranslatedFileAccess;
   totalAmount: string;
   service: { name: string };
   user: { firstName: string; lastName: string; email: string };
 }
 
 const FILTERS = [
-  { key: "action", label: "À traiter", match: (s: string) => ACTION_NEEDED_STATUSES.has(s) },
-  { key: "waiting", label: "En attente client", match: (s: string) => ["EN_ATTENTE_ACOMPTE", "FICHIER_EN_ATTENTE_DE_SOLDE"].includes(s) },
-  { key: "done", label: "Terminées", match: (s: string) => ["TELECHARGEABLE", "TERMINEE"].includes(s) },
+  { key: "action", label: "À traiter", match: (o: AdminOrderRow) => ACTION_NEEDED_STATUSES.has(o.status) },
+  { key: "waiting", label: "En attente client", match: (o: AdminOrderRow) => ["EN_ATTENTE_ACOMPTE", "FICHIER_EN_ATTENTE_DE_SOLDE"].includes(o.status) },
+  { key: "locked", label: "Fichiers verrouillés", match: (o: AdminOrderRow) => o.fileAccess === "LOCKED" },
+  { key: "unlocked", label: "Fichiers ouverts", match: (o: AdminOrderRow) => o.fileAccess === "UNLOCKED" },
+  { key: "done", label: "Terminées", match: (o: AdminOrderRow) => ["TELECHARGEABLE", "TERMINEE"].includes(o.status) },
   { key: "all", label: "Toutes", match: () => true },
 ] as const;
 
@@ -41,12 +46,12 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
   const [filterKey, setFilterKey] = useState<(typeof FILTERS)[number]["key"]>("action");
 
   const counts = useMemo(
-    () => Object.fromEntries(FILTERS.map((f) => [f.key, orders.filter((o) => f.match(o.status)).length])),
+    () => Object.fromEntries(FILTERS.map((f) => [f.key, orders.filter((o) => f.match(o)).length])),
     [orders],
   );
 
   const activeFilter = FILTERS.find((f) => f.key === filterKey) ?? FILTERS[0];
-  const filteredOrders = orders.filter((o) => activeFilter.match(o.status));
+  const filteredOrders = orders.filter((o) => activeFilter.match(o));
 
   return (
     <div className="mx-auto max-w-[1180px] px-4 py-8 sm:px-7 lg:px-10 lg:py-10">
@@ -56,7 +61,7 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
         <p className="mt-2 text-[13.5px] text-muted">Priorisez les dossiers à traiter et suivez chaque livraison.</p>
       </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
         {FILTERS.map((f) => (
           <button
             key={f.key}
@@ -91,6 +96,7 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
                   <th className="px-5 py-3">Client</th>
                   <th className="px-5 py-3">Service</th>
                   <th className="px-5 py-3">Statut</th>
+                  <th className="px-5 py-3">Accès fichier</th>
                   <th className="px-5 py-3">Montant</th>
                 </tr>
               </thead>
@@ -119,6 +125,7 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
                           {STATUS_LABELS[order.status] ?? order.status}
                         </span>
                       </td>
+                      <td className="px-5 py-3.5"><FileAccessBadge access={order.fileAccess} /></td>
                       <td className="px-5 py-3.5 font-semibold text-ink">{order.totalAmount} TND</td>
                     </tr>
                   );
@@ -157,6 +164,9 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
                     >
                       {STATUS_LABELS[order.status] ?? order.status}
                     </span>
+                  </div>
+                  <div className="mt-3 border-t border-[#edf0f5] pt-3">
+                    <FileAccessBadge access={order.fileAccess} />
                   </div>
                 </Link>
               );

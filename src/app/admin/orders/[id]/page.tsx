@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { buildMetadata } from "@/lib/seo";
+import { getTranslatedFileAccess, hasConfirmedBalanceProof } from "@/lib/order-file-access";
 import { findOrderById } from "@/repositories/orders";
 import AdminOrderDetailPage from "@/views/AdminOrderDetailPage";
 
@@ -23,7 +24,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         advanceAmount: order.advanceAmount.toString(),
         balanceAmount: order.balanceAmount.toString(),
         advancePaid: order.advancePaid,
-        balancePaid: order.balancePaid,
+        balancePaid: hasConfirmedBalanceProof(order),
+        fileAccess: getTranslatedFileAccess(order),
         user: order.user,
         service: { name: order.service.name },
         documents: order.documents.map((d) => ({ id: d.id, kind: d.kind, originalName: d.originalName })),

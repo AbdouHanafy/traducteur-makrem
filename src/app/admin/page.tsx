@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireAdminSession } from "@/lib/rbac";
 import { buildMetadata } from "@/lib/seo";
+import { getTranslatedFileAccess } from "@/lib/order-file-access";
 import { getDashboardStats } from "@/repositories/dashboard";
 import AdminDashboardPage from "@/views/AdminDashboardPage";
 
@@ -28,6 +29,7 @@ export default async function Page() {
           id: o.id,
           reference: o.reference,
           status: o.status,
+          fileAccess: getTranslatedFileAccess(o),
           totalAmount: o.totalAmount.toString(),
           createdAt: o.createdAt.toISOString(),
           service: { name: o.service.name },

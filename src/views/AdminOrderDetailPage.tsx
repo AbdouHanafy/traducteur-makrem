@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { TranslatedFileAccess } from "@/lib/order-file-access";
+import FileAccessBadge from "@/views/components/FileAccessBadge";
 
 const STATUS_LABELS: Record<string, string> = {
   DEMANDE: "Demande",
@@ -29,6 +31,7 @@ export interface AdminOrderDetailData {
   balanceAmount: string;
   advancePaid: boolean;
   balancePaid: boolean;
+  fileAccess: TranslatedFileAccess;
   user: { firstName: string; lastName: string; email: string; phone: string | null };
   service: { name: string };
   documents: { id: string; kind: "SOURCE" | "TRANSLATED"; originalName: string }[];
@@ -137,13 +140,16 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
     <div className="mx-auto max-w-[980px] px-6 py-14">
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <span
-            className={`mb-2 inline-flex items-center rounded-full px-3 py-1 text-[12.5px] font-semibold ${
-              isCancelled ? "bg-mist text-muted" : "bg-blue-soft text-blue-2"
-            }`}
-          >
-            {STATUS_LABELS[order.status] ?? order.status}
-          </span>
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span
+              className={`inline-flex items-center rounded-full px-3 py-1 text-[12.5px] font-semibold ${
+                isCancelled ? "bg-mist text-muted" : "bg-blue-soft text-blue-2"
+              }`}
+            >
+              {STATUS_LABELS[order.status] ?? order.status}
+            </span>
+            <FileAccessBadge access={order.fileAccess} />
+          </div>
           <h1 className="font-serif text-[26px] text-navy">{order.reference}</h1>
           <p className="mt-1 text-[14px] text-muted">
             {order.service.name} · {order.sourceLang.toUpperCase()} → {order.targetLang.toUpperCase()} ·{" "}
@@ -274,17 +280,30 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
                 <p className="text-muted">Aucun document source.</p>
               )}
               {translatedDoc ? (
-                <a
-                  href={`/api/orders/${order.id}/documents/${translatedDoc.id}/download`}
-                  className="flex items-center gap-2 font-semibold text-blue hover:text-blue-2"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
-                  </svg>
-                  Traduction : {translatedDoc.originalName}
-                </a>
+                <div className="rounded-xl border border-line bg-[#fafbfd] p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <a
+                      href={`/api/orders/${order.id}/documents/${translatedDoc.id}/download`}
+                      className="flex min-w-0 items-center gap-2 font-semibold text-blue hover:text-blue-2"
+                    >
+                      <svg className="shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
+                      </svg>
+                      <span className="truncate">Traduction : {translatedDoc.originalName}</span>
+                    </a>
+                    <FileAccessBadge access={order.fileAccess} />
+                  </div>
+                  <p className="mt-2 text-[11.5px] leading-relaxed text-muted">
+                    {order.fileAccess === "UNLOCKED"
+                      ? "Le client peut télécharger ce fichier."
+                      : "Visible par l’admin uniquement ; aucun contenu n’est transmis au client avant paiement."}
+                  </p>
+                </div>
               ) : (
-                <p className="text-muted">Traduction pas encore déposée.</p>
+                <div className="flex items-center justify-between gap-2 text-muted">
+                  <p>Traduction pas encore déposée.</p>
+                  <FileAccessBadge access="NOT_READY" />
+                </div>
               )}
             </div>
           </section>

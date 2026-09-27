@@ -38,7 +38,12 @@ export async function getDashboardStats() {
     prisma.order.findMany({
       take: 6,
       orderBy: { createdAt: "desc" },
-      include: { service: true, user: { select: { firstName: true, lastName: true, email: true } } },
+      include: {
+        service: true,
+        documents: { select: { kind: true, status: true } },
+        payments: { select: { phase: true, status: true, amount: true, currency: true } },
+        user: { select: { firstName: true, lastName: true, email: true } },
+      },
     }),
   ]);
 

@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { buildMetadata } from "@/lib/seo";
+import { getTranslatedFileAccess } from "@/lib/order-file-access";
 import { listOrdersWithDocumentsForUser } from "@/repositories/orders";
 import FilesPage from "@/views/FilesPage";
 
@@ -19,15 +20,7 @@ export default async function Page() {
         id: o.id,
         reference: o.reference,
         service: { name: o.service.name },
-        balancePaid:
-          o.balancePaid &&
-          o.payments.some(
-            (payment) =>
-              payment.phase === "BALANCE" &&
-              payment.status === "SUCCEEDED" &&
-              payment.currency === "TND" &&
-              payment.amount.equals(o.balanceAmount),
-          ),
+        balancePaid: getTranslatedFileAccess(o) === "UNLOCKED",
         documents: o.documents.map((d) => ({ id: d.id, kind: d.kind, originalName: d.originalName })),
       }))}
     />

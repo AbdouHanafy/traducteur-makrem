@@ -1,4 +1,5 @@
 import { buildMetadata } from "@/lib/seo";
+import { getTranslatedFileAccess } from "@/lib/order-file-access";
 import { listAllOrders } from "@/repositories/orders";
 import AdminOrdersListPage from "@/views/AdminOrdersListPage";
 
@@ -13,6 +14,7 @@ export default async function Page() {
         id: o.id,
         reference: o.reference,
         status: o.status,
+        fileAccess: getTranslatedFileAccess(o),
         totalAmount: o.totalAmount.toString(),
         service: { name: o.service.name },
         user: o.user,
