@@ -71,8 +71,10 @@ export default function MockPaymentPage({ payment }: { payment: MockPaymentData 
   const loading = status === "processing";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-mist px-6 py-10">
-      <div className="w-full max-w-[440px] rounded-[16px] border border-line bg-white p-8">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(145deg,#0b1830_0%,#14284d_70%,#1a376b_100%)] px-4 py-10 sm:px-6">
+      <div className="absolute -right-28 -top-36 h-96 w-96 rounded-full border-[70px] border-white/[0.035]" />
+      <div className="relative w-full max-w-[460px] rounded-[22px] border border-white/20 bg-white p-6 shadow-[0_25px_70px_rgba(0,0,0,0.28)] sm:p-8">
+        <Link href="/" className="mx-auto mb-6 flex w-fit items-center gap-2.5"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft font-serif text-[13px] font-bold text-navy">MA</span><span className="font-serif text-[15px] font-semibold text-navy">Makram Arfaoui</span></Link>
         <div className="text-center">
           <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-blue-soft px-3 py-1 text-[12.5px] font-semibold text-blue-2">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -85,8 +87,8 @@ export default function MockPaymentPage({ payment }: { payment: MockPaymentData 
             {payment.phase === "ADVANCE" ? "Paiement de l'acompte" : "Paiement du solde"}
           </h1>
           <p className="mt-2 text-[14px] text-muted">Commande {payment.orderReference}</p>
-          <div className="my-6 rounded-[12px] bg-mist py-5">
-            <div className="font-serif text-[32px] text-navy">{payment.amount} TND</div>
+          <div className="my-6 rounded-xl border border-line bg-[#f7f9fc] py-5">
+            <div className="text-[30px] font-semibold tracking-tight text-navy">{payment.amount} <small className="text-[12px]">TND</small></div>
           </div>
         </div>
 
@@ -105,7 +107,7 @@ export default function MockPaymentPage({ payment }: { payment: MockPaymentData 
               inputMode="numeric"
               placeholder="4242 4242 4242 4242"
               required
-              className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] tracking-wide text-ink outline-none focus:border-blue"
+              className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] tracking-wide text-ink outline-none transition focus:border-blue focus:ring-3 focus:ring-blue/10"
             />
           </div>
 
@@ -116,7 +118,7 @@ export default function MockPaymentPage({ payment }: { payment: MockPaymentData 
               onChange={(e) => setCardName(e.target.value)}
               placeholder="Nom Prénom"
               required
-              className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+              className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-3 focus:ring-blue/10"
             />
           </div>
 
@@ -129,7 +131,7 @@ export default function MockPaymentPage({ payment }: { payment: MockPaymentData 
                 inputMode="numeric"
                 placeholder="MM/AA"
                 required
-                className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+                className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-3 focus:ring-blue/10"
               />
             </div>
             <div>
@@ -140,7 +142,7 @@ export default function MockPaymentPage({ payment }: { payment: MockPaymentData 
                 inputMode="numeric"
                 placeholder="123"
                 required
-                className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+                className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-3 focus:ring-blue/10"
               />
             </div>
           </div>
@@ -148,7 +150,7 @@ export default function MockPaymentPage({ payment }: { payment: MockPaymentData 
           <button
             type="submit"
             disabled={loading}
-            className="mt-1.5 inline-flex w-full items-center justify-center gap-2 rounded-[11px] bg-ok px-6 py-3.5 text-[15px] font-semibold text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-1.5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-ok px-6 py-3.5 text-[14px] font-semibold text-white shadow-[0_9px_22px_rgba(30,158,106,0.22)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? (
               <>

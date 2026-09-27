@@ -11,6 +11,7 @@ import { signUp, useSession } from "@/lib/auth-client";
 
 interface ServiceOption {
   id: string;
+  slug: string;
   name: string;
   pricePerPage: string;
 }
@@ -21,8 +22,8 @@ const LANGUAGES = [
   { value: "en", label: "Anglais" },
 ];
 
-/** "Sarra Ben Ali" -> { firstName: "Sarra", lastName: "Ben Ali" } — un seul champ à
- * remplir côté utilisateur, Better Auth exige les deux séparément côté schéma. */
+const fieldClass = "w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-3 focus:ring-blue/10";
+
 function splitFullName(fullName: string): { firstName: string; lastName: string } {
   const trimmed = fullName.trim().replace(/\s+/g, " ");
   const spaceIndex = trimmed.indexOf(" ");
@@ -30,11 +31,10 @@ function splitFullName(fullName: string): { firstName: string; lastName: string 
   return { firstName: trimmed.slice(0, spaceIndex), lastName: trimmed.slice(spaceIndex + 1) };
 }
 
-export default function OrderWizardPage({ services }: { services: ServiceOption[] }) {
+export default function OrderWizardPage({ services, initialServiceId }: { services: ServiceOption[]; initialServiceId?: string }) {
   const router = useRouter();
   const { data: session, isPending: sessionPending } = useSession();
-
-  const [serviceId, setServiceId] = useState(services[0]?.id ?? "");
+  const [serviceId, setServiceId] = useState(initialServiceId ?? services[0]?.id ?? "");
   const [sourceLang, setSourceLang] = useState("ar");
   const [targetLang, setTargetLang] = useState("fr");
   const [pages, setPages] = useState(1);
@@ -44,47 +44,34 @@ export default function OrderWizardPage({ services }: { services: ServiceOption[
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const selectedService = services.find((s) => s.id === serviceId);
+  const selectedService = services.find((service) => service.id === serviceId);
+  const selectedDelay = DELAY_OPTIONS.find((delay) => delay.key === delayKey);
   const estimatedTotal = selectedService ? Number(selectedService.pricePerPage) * pages : 0;
   const needsAccount = !sessionPending && !session;
 
   function updateAccount(field: keyof typeof account) {
-    return (e: React.ChangeEvent<HTMLInputElement>) =>
-      setAccount((a) => ({ ...a, [field]: e.target.value }));
+    return (event: React.ChangeEvent<HTMLInputElement>) => setAccount((current) => ({ ...current, [field]: event.target.value }));
   }
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
     setError(null);
-
+    if (sourceLang === targetLang) {
+      setError("La langue source et la langue cible doivent être différentes.");
+      return;
+    }
     if (!file) {
       setError("Merci de déposer votre document.");
       return;
     }
 
     setLoading(true);
-
-    // Visiteur non connecté : le compte est créé à partir des informations du formulaire,
-    // puis la commande est soumise avec la session qui vient de s'ouvrir — un seul geste pour
-    // le client, pas un aller-retour "créez d'abord un compte, puis recommencez".
     if (needsAccount) {
       const { firstName, lastName } = splitFullName(account.fullName);
-      const { error: signUpError } = await signUp.email({
-        name: account.fullName.trim(),
-        email: account.email,
-        password: account.password,
-        firstName,
-        lastName,
-        phone: account.phone || undefined,
-      });
-
+      const { error: signUpError } = await signUp.email({ name: account.fullName.trim(), email: account.email, password: account.password, firstName, lastName, phone: account.phone || undefined });
       if (signUpError) {
         setLoading(false);
-        setError(
-          signUpError.status === 422
-            ? "Un compte existe déjà avec cette adresse email. Connectez-vous puis réessayez."
-            : signUpError.message || "Impossible de créer le compte. Vérifiez les informations.",
-        );
+        setError(signUpError.status === 422 ? "Un compte existe déjà avec cette adresse email. Connectez-vous puis réessayez." : signUpError.message || "Impossible de créer le compte. Vérifiez les informations.");
         return;
       }
     }
@@ -96,22 +83,18 @@ export default function OrderWizardPage({ services }: { services: ServiceOption[
     formData.set("pages", String(pages));
     formData.set("delayKey", delayKey);
     formData.set("file", file);
-
-    const res = await fetch("/api/orders", { method: "POST", body: formData });
+    const response = await fetch("/api/orders", { method: "POST", body: formData });
     setLoading(false);
-
-    if (res.status === 401) {
+    if (response.status === 401) {
       router.push("/login?callbackUrl=/commander");
       return;
     }
-
-    if (!res.ok) {
-      const data = await res.json().catch(() => null);
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
       setError(data?.error || "Une erreur est survenue.");
       return;
     }
-
-    const data = await res.json();
+    const data = await response.json();
     router.push(`/dashboard/orders/${data.id}`);
     router.refresh();
   }
@@ -119,218 +102,61 @@ export default function OrderWizardPage({ services }: { services: ServiceOption[
   return (
     <>
       <Topbar />
-      <main className="flex-1">
-        <section className="bg-[linear-gradient(180deg,#0C1A34_0%,#14284D_100%)] py-16 text-white">
-          <div className="mx-auto max-w-[820px] px-[22px]">
-            <span className="mb-3 inline-flex items-center gap-2 text-[13.5px] font-semibold text-[#8fb4ff]">
-              <span className="h-0.5 w-5.5 rounded bg-[#8fb4ff]" />
-              Commander
-            </span>
-            <h1 className="text-[clamp(28px,3.6vw,38px)] text-white">
-              Déposez votre document, recevez un devis immédiat
-            </h1>
-            {needsAccount && (
-              <p className="mt-3 max-w-[56ch] text-[14.5px] text-[#c4d2ea]">
-                Pas besoin de créer un compte avant de commander : indiquez vos coordonnées
-                ci-dessous, votre espace client sera créé automatiquement avec votre commande.
-              </p>
-            )}
+      <main className="flex-1 bg-[#f5f7fb]">
+        <section className="relative overflow-hidden bg-[linear-gradient(145deg,#0b1830_0%,#14284d_70%,#1a376b_100%)] py-12 text-white sm:py-14">
+          <div className="absolute -right-24 -top-32 h-80 w-80 rounded-full border-[55px] border-white/[0.035]" />
+          <div className="relative mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8">
+            <p className="mb-2 text-[10.5px] font-bold uppercase tracking-[.18em] text-[#8fb4ff]">Demande de traduction</p>
+            <h1 className="max-w-[24ch] text-[clamp(28px,4vw,42px)] text-white">Obtenez votre devis en quelques minutes</h1>
+            <p className="mt-3 max-w-[62ch] text-[14px] leading-6 text-slate-300">Déposez votre document et précisez votre besoin. Aucun paiement n’est demandé avant la validation du devis.</p>
+            <div className="mt-7 flex max-w-[620px] items-center">
+              {["Votre besoin", "Vos coordonnées", "Devis & suivi"].map((label, index) => <div key={label} className="flex min-w-0 flex-1 items-center last:flex-none"><span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-bold ${index === 0 ? "bg-white text-navy" : "border border-white/25 bg-white/5 text-slate-300"}`}>{index + 1}</span><span className={`ml-2 hidden text-[11px] font-medium sm:block ${index === 0 ? "text-white" : "text-slate-400"}`}>{label}</span>{index < 2 && <span className="mx-3 h-px flex-1 bg-white/20" />}</div>)}
+            </div>
           </div>
         </section>
 
-        <section className="py-16">
-          <div className="mx-auto max-w-[820px] px-[22px]">
+        <section className="py-8 sm:py-12">
+          <div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8">
             {services.length === 0 ? (
-              <div className="rounded-[14px] border border-line bg-white p-8 text-center text-muted">
-                Aucun service disponible pour une commande en ligne pour le moment.{" "}
-                <Link href="/contact" className="font-semibold text-blue">
-                  Contactez-nous
-                </Link>
-                .
-              </div>
+              <div className="rounded-2xl border border-line bg-white p-10 text-center text-muted">Aucun service disponible pour le moment. <Link href="/contact" className="font-semibold text-blue">Contactez-nous</Link>.</div>
             ) : (
-              <form onSubmit={onSubmit} className="grid gap-6 rounded-[16px] border border-line bg-white p-8">
-                {error && (
-                  <div className="rounded-[10px] border border-[#f3c6c6] bg-[#fdecec] px-4 py-3 text-[13.5px] text-[#9c2c2c]">
-                    {error}
-                  </div>
-                )}
+              <form onSubmit={onSubmit} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_330px]">
+                <div className="grid gap-5">
+                  {error && <div role="alert" className="rounded-xl border border-[#f3c6c6] bg-[#fff3f3] px-4 py-3 text-[13px] text-[#9c2c2c]">{error}</div>}
 
-                {needsAccount && (
-                  <div className="grid gap-4 border-b border-line pb-6">
-                    <h2 className="text-[15px] font-semibold text-navy">Vos coordonnées</h2>
-                    <div>
-                      <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Nom complet</label>
-                      <input
-                        required
-                        value={account.fullName}
-                        onChange={updateAccount("fullName")}
-                        autoComplete="name"
-                        placeholder="Sarra Ben Ali"
-                        className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div>
-                        <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Email</label>
-                        <input
-                          required
-                          type="email"
-                          value={account.email}
-                          onChange={updateAccount("email")}
-                          autoComplete="email"
-                          placeholder="vous@exemple.com"
-                          className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
-                        />
+                  <section className="rounded-2xl border border-[#e3e8f0] bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
+                    <div className="mb-6 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">01</span><div><h2 className="text-[17px] text-navy">Votre besoin</h2><p className="text-[11.5px] text-muted">Type de document, langues et délai</p></div></div>
+                    <div className="grid gap-5">
+                      <div><label htmlFor="service" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Service demandé</label><select id="service" value={serviceId} onChange={(event) => setServiceId(event.target.value)} className={fieldClass}>{services.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}</select></div>
+                      <div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr] sm:items-end">
+                        <div><label htmlFor="sourceLang" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Langue du document</label><select id="sourceLang" value={sourceLang} onChange={(event) => setSourceLang(event.target.value)} className={fieldClass}>{LANGUAGES.map((language) => <option key={language.value} value={language.value}>{language.label}</option>)}</select></div>
+                        <span className="mb-3 hidden text-slate-400 sm:block" aria-hidden="true">→</span>
+                        <div><label htmlFor="targetLang" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Langue souhaitée</label><select id="targetLang" value={targetLang} onChange={(event) => setTargetLang(event.target.value)} className={fieldClass}>{LANGUAGES.map((language) => <option key={language.value} value={language.value}>{language.label}</option>)}</select></div>
                       </div>
-                      <div>
-                        <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Téléphone</label>
-                        <input
-                          required
-                          type="tel"
-                          value={account.phone}
-                          onChange={updateAccount("phone")}
-                          autoComplete="tel"
-                          placeholder="(+216) 22 200 170"
-                          className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
-                        />
-                      </div>
+                      <div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="pages" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Nombre de pages</label><input id="pages" type="number" min={1} max={500} value={pages} onChange={(event) => setPages(Math.max(1, Number(event.target.value)))} className={fieldClass} /></div><div><label htmlFor="delay" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Délai souhaité</label><select id="delay" value={delayKey} onChange={(event) => setDelayKey(event.target.value)} className={fieldClass}>{DELAY_OPTIONS.map((delay) => <option key={delay.key} value={delay.key}>{delay.label}</option>)}</select></div></div>
                     </div>
-                    <div>
-                      <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Mot de passe</label>
-                      <input
-                        required
-                        type="password"
-                        minLength={10}
-                        value={account.password}
-                        onChange={updateAccount("password")}
-                        autoComplete="new-password"
-                        placeholder="10 caractères minimum"
-                        className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
-                      />
-                      <p className="mt-1.5 text-[12.5px] text-muted">
-                        Utilisé pour retrouver vos commandes ensuite — modifiable à tout moment
-                        depuis votre espace client.
-                      </p>
-                    </div>
-                    <p className="text-[13px] text-muted">
-                      Déjà client ?{" "}
-                      <Link href="/login?callbackUrl=/commander" className="font-semibold text-blue hover:text-blue-2">
-                        Connectez-vous
-                      </Link>{" "}
-                      pour retrouver vos commandes.
-                    </p>
-                  </div>
-                )}
+                  </section>
 
-                <div>
-                  <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Service</label>
-                  <select
-                    value={serviceId}
-                    onChange={(e) => setServiceId(e.target.value)}
-                    className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
-                  >
-                    {services.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
+                  <section className="rounded-2xl border border-[#e3e8f0] bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
+                    <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">02</span><div><h2 className="text-[17px] text-navy">Document source</h2><p className="text-[11.5px] text-muted">Votre fichier reste privé et sécurisé</p></div></div>
+                    <FileDropzone file={file} onChange={setFile} accept=".pdf,.jpg,.jpeg,.png" hint="PDF, JPEG ou PNG — 20 Mo maximum" />
+                  </section>
+
+                  {needsAccount && <section className="rounded-2xl border border-[#e3e8f0] bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
+                    <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">03</span><div><h2 className="text-[17px] text-navy">Vos coordonnées</h2><p className="text-[11.5px] text-muted">Votre espace de suivi sera créé automatiquement</p></div></div>
+                    <div className="grid gap-4"><div><label htmlFor="fullName" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Nom complet</label><input id="fullName" required value={account.fullName} onChange={updateAccount("fullName")} autoComplete="name" placeholder="Sarra Ben Ali" className={fieldClass} /></div><div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="orderEmail" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Email</label><input id="orderEmail" required type="email" value={account.email} onChange={updateAccount("email")} autoComplete="email" placeholder="vous@exemple.com" className={fieldClass} /></div><div><label htmlFor="orderPhone" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Téléphone</label><input id="orderPhone" required type="tel" value={account.phone} onChange={updateAccount("phone")} autoComplete="tel" placeholder="(+216) 22 200 170" className={fieldClass} /></div></div><div><label htmlFor="orderPassword" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Mot de passe de votre espace</label><input id="orderPassword" required type="password" minLength={10} value={account.password} onChange={updateAccount("password")} autoComplete="new-password" placeholder="10 caractères minimum" className={fieldClass} /></div><p className="text-[11.5px] text-muted">Déjà client ? <Link href="/login?callbackUrl=/commander" className="font-semibold text-blue">Connectez-vous</Link> pour conserver le même espace.</p></div>
+                  </section>}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-                      Langue source
-                    </label>
-                    <select
-                      value={sourceLang}
-                      onChange={(e) => setSourceLang(e.target.value)}
-                      className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
-                    >
-                      {LANGUAGES.map((l) => (
-                        <option key={l.value} value={l.value}>
-                          {l.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-                      Langue cible
-                    </label>
-                    <select
-                      value={targetLang}
-                      onChange={(e) => setTargetLang(e.target.value)}
-                      className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
-                    >
-                      {LANGUAGES.map((l) => (
-                        <option key={l.value} value={l.value}>
-                          {l.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-                      Nombre de pages
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={500}
-                      value={pages}
-                      onChange={(e) => setPages(Number(e.target.value))}
-                      className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Délai</label>
-                    <select
-                      value={delayKey}
-                      onChange={(e) => setDelayKey(e.target.value)}
-                      className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
-                    >
-                      {DELAY_OPTIONS.map((d) => (
-                        <option key={d.key} value={d.key}>
-                          {d.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Document source</label>
-                  <FileDropzone
-                    file={file}
-                    onChange={setFile}
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    hint="PDF, JPEG ou PNG — 20 Mo max"
-                  />
-                </div>
-
-                {selectedService && (
-                  <div className="rounded-[10px] bg-blue-soft px-4 py-3 text-[14px] text-navy">
-                    Estimation : <b>{estimatedTotal.toFixed(3)} TND</b> (hors majoration de délai —
-                    le devis exact avec délai appliqué est calculé à l&apos;étape suivante).
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading || sessionPending}
-                  className="inline-flex items-center justify-center rounded-[11px] bg-blue px-6 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {loading
-                    ? needsAccount
-                      ? "Création du compte et envoi…"
-                      : "Envoi en cours…"
-                    : "Obtenir mon devis"}
-                </button>
+                <aside className="rounded-2xl border border-[#dfe5ef] bg-white p-5 shadow-[0_12px_38px_rgba(20,40,77,0.08)] lg:sticky lg:top-[96px] sm:p-6">
+                  <h2 className="text-[17px] text-navy">Récapitulatif</h2>
+                  <dl className="mt-5 grid gap-3 text-[12.5px]"><div className="flex justify-between gap-4"><dt className="text-muted">Service</dt><dd className="text-right font-semibold text-ink">{selectedService?.name}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">Traduction</dt><dd className="font-semibold text-ink">{LANGUAGES.find((item) => item.value === sourceLang)?.label} → {LANGUAGES.find((item) => item.value === targetLang)?.label}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">Volume</dt><dd className="font-semibold text-ink">{pages} page{pages > 1 ? "s" : ""}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">Délai</dt><dd className="text-right font-semibold text-ink">{selectedDelay?.label}</dd></div></dl>
+                  <div className="my-5 border-t border-line" />
+                  <div className="flex items-end justify-between gap-3"><span className="text-[12.5px] text-muted">Estimation initiale</span><span className="text-[23px] font-semibold text-navy">{estimatedTotal.toFixed(3)} <small className="text-[11px] font-semibold">TND</small></span></div>
+                  <p className="mt-2 rounded-lg bg-[#f6f8fb] px-3 py-2.5 text-[10.5px] leading-4 text-muted">Le devis final tient compte du délai et de la complexité. Vous le validerez avant tout paiement.</p>
+                  <button type="submit" disabled={loading || sessionPending} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue px-5 py-3.5 text-[14px] font-semibold text-white shadow-[0_10px_24px_rgba(36,86,184,0.22)] transition hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60">{loading ? needsAccount ? "Création et envoi…" : "Envoi en cours…" : "Recevoir mon devis"}<span aria-hidden="true">→</span></button>
+                  <div className="mt-5 grid gap-2.5 border-t border-line pt-5 text-[10.5px] text-muted"><div className="flex items-center gap-2"><span className="text-ok">✓</span>Aucun paiement immédiat</div><div className="flex items-center gap-2"><span className="text-ok">✓</span>Documents confidentiels</div><div className="flex items-center gap-2"><span className="text-ok">✓</span>Suivi complet dans votre espace</div></div>
+                </aside>
               </form>
             )}
           </div>

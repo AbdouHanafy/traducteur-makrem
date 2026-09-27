@@ -5,278 +5,103 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 
-/**
- * Topbar — header clair (fond blanc), typo sans-serif fine en petites capitales, lien actif
- * souligné en or, un seul CTA plein (navy) contrasté. "Services" a un sous-menu au survol
- * (chevron, comme les rubriques à tiroir de la référence "booking direct" fournie par le
- * client) ; les slugs listés ici reprennent ceux de /services (voir aussi Footer.tsx).
- */
-const SERVICES_DROPDOWN = [
-  { slug: "etat-civil", label: "État civil" },
-  { slug: "diplomes-releves", label: "Diplômes & relevés" },
-  { slug: "contrats-actes", label: "Contrats & actes" },
-  { slug: "documents-judiciaires", label: "Documents judiciaires" },
-  { slug: "interpretariat", label: "Interprétariat" },
+const SERVICES = [
+  { slug: "etat-civil", label: "État civil", detail: "Naissance, mariage, divorce" },
+  { slug: "diplomes-releves", label: "Diplômes & relevés", detail: "Études et équivalences" },
+  { slug: "contrats-actes", label: "Contrats & actes", detail: "Documents professionnels" },
+  { slug: "documents-judiciaires", label: "Documents judiciaires", detail: "Jugements et procédures" },
+  { slug: "interpretariat", label: "Interprétariat", detail: "Missions officielles" },
 ];
 
 const NAV_LINKS = [
+  { href: "/", label: "Accueil" },
+  { href: "/a-propos", label: "Le cabinet" },
   { href: "/articles", label: "Articles" },
   { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
 ];
 
-function ChevronDown() {
+function Brand() {
   return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" className="transition-transform group-hover:rotate-180">
-      <path d="M6 9l6 6 6-6" />
-    </svg>
+    <Link href="/" aria-label="Accueil — Maître Makram Arfaoui" className="flex min-w-0 items-center gap-3 text-navy">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-blue/20 bg-blue-soft font-serif text-[15px] font-bold text-navy">MA</span>
+      <span className="min-w-0">
+        <span className="block truncate font-serif text-[16px] font-semibold leading-tight text-navy">Makram Arfaoui</span>
+        <span className="mt-0.5 block truncate text-[9.5px] font-semibold uppercase tracking-[.14em] text-muted">Traducteur assermenté</span>
+      </span>
+    </Link>
   );
 }
 
+function isActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export default function Topbar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const pathname = usePathname();
   const { data: session } = useSession();
-  const spaceHref = session ? "/dashboard" : "/login";
-  const spaceLabel = session ? "Mon espace" : "Se connecter";
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(pathname.startsWith("/services"));
+  const accountHref = session?.user.role === "ADMIN" ? "/admin" : session ? "/dashboard" : "/login";
+  const accountLabel = session?.user.role === "ADMIN" ? "Administration" : session ? "Mon espace" : "Connexion";
 
   useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setMobileOpen(false);
-    }
+    if (!mobileOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => event.key === "Escape" && setMobileOpen(false);
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, []);
-
-  const isServicesActive = pathname.startsWith("/services");
+    return () => {
+      document.body.style.overflow = previous;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [mobileOpen]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-white/95 backdrop-blur-md">
-      <div className="mx-auto flex h-[72px] max-w-[1160px] items-center gap-6 px-[22px]">
-        <Link href="/" aria-label="Accueil" className="flex items-center gap-2.5 text-navy">
-          <svg className="h-9 w-9 shrink-0" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <circle cx="32" cy="32" r="30" stroke="#2456B8" strokeWidth="2" />
-            <circle
-              cx="32"
-              cy="32"
-              r="24.5"
-              stroke="#B4894E"
-              strokeWidth="1"
-              strokeDasharray="2 3"
-              opacity=".7"
-            />
-            <text
-              x="32"
-              y="39"
-              textAnchor="middle"
-              fontFamily="Inter, sans-serif"
-              fontWeight="700"
-              fontSize="20"
-              fill="#14284D"
-            >
-              MA
-            </text>
-          </svg>
-          <span>
-            <span className="block text-[15px] font-bold uppercase leading-tight tracking-[.02em] text-navy">
-              Makram Arfaoui
-            </span>
-            <span className="mt-0.5 block text-[10.5px] uppercase tracking-[.14em] text-muted">
-              Traducteur &middot; Assermenté
-            </span>
-          </span>
-        </Link>
+    <header className="sticky top-0 z-50 border-b border-[#e7ebf2] bg-white/90 backdrop-blur-xl">
+      <div className="mx-auto flex h-[76px] max-w-[1200px] items-center px-4 sm:px-6 lg:px-8">
+        <Brand />
 
-        <nav className="ml-auto hidden items-center gap-6 lg:flex" aria-label="Navigation principale">
-          <Link
-            href="/a-propos"
-            className={`whitespace-nowrap border-b-[1.5px] pb-1 text-[12px] font-medium uppercase tracking-[.09em] transition-colors ${
-              pathname === "/a-propos" ? "border-seal text-seal" : "border-transparent text-muted hover:text-navy"
-            }`}
-          >
-            Le Cabinet
-          </Link>
+        <nav className="ml-auto hidden items-center gap-1 lg:flex" aria-label="Navigation principale">
+          {NAV_LINKS.slice(0, 2).map((link) => (
+            <Link key={link.href} href={link.href} aria-current={isActive(pathname, link.href) ? "page" : undefined} className={`rounded-lg px-3 py-2 text-[12.5px] font-semibold transition ${isActive(pathname, link.href) ? "bg-blue-soft text-blue-2" : "text-muted hover:bg-[#f6f8fb] hover:text-navy"}`}>{link.label}</Link>
+          ))}
 
           <div className="group relative">
-            <Link
-              href="/services"
-              className={`flex items-center gap-1 whitespace-nowrap border-b-[1.5px] pb-1 text-[12px] font-medium uppercase tracking-[.09em] transition-colors ${
-                isServicesActive ? "border-seal text-seal" : "border-transparent text-muted group-hover:text-navy"
-              }`}
-            >
-              Services
-              <ChevronDown />
-            </Link>
-
-            <div className="invisible absolute left-1/2 top-full w-[260px] -translate-x-1/2 pt-3 opacity-0 transition-opacity group-hover:visible group-hover:opacity-100">
-              <div className="overflow-hidden rounded-[12px] border border-line bg-white shadow-[var(--shadow-lg)]">
-                {SERVICES_DROPDOWN.map((item) => (
-                  <Link
-                    key={item.slug}
-                    href={`/services#${item.slug}`}
-                    className="block px-4 py-2.5 text-[13px] text-ink transition-colors hover:bg-mist hover:text-navy"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-                <Link
-                  href="/services"
-                  className="block border-t border-line px-4 py-2.5 text-[12.5px] font-semibold text-blue hover:bg-mist"
-                >
-                  Voir tous les services →
-                </Link>
+            <Link href="/services" aria-current={pathname.startsWith("/services") ? "page" : undefined} className={`flex items-center gap-1 rounded-lg px-3 py-2 text-[12.5px] font-semibold transition ${pathname.startsWith("/services") ? "bg-blue-soft text-blue-2" : "text-muted hover:bg-[#f6f8fb] hover:text-navy"}`}>Services <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="transition group-hover:rotate-180 group-focus-within:rotate-180"><path d="m6 9 6 6 6-6" /></svg></Link>
+            <div className="invisible absolute left-1/2 top-full w-[330px] -translate-x-1/2 pt-3 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+              <div className="overflow-hidden rounded-2xl border border-[#e5eaf2] bg-white p-2 shadow-[0_20px_55px_rgba(20,40,77,0.16)]">
+                {SERVICES.map((service) => <Link key={service.slug} href={`/services#${service.slug}`} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 transition hover:bg-[#f5f8fd]"><span><span className="block text-[12.5px] font-semibold text-ink">{service.label}</span><span className="block text-[10.5px] text-muted">{service.detail}</span></span><span className="text-slate-300">→</span></Link>)}
+                <Link href="/services" className="mt-1 flex items-center justify-between rounded-xl bg-blue-soft px-3 py-2.5 text-[12px] font-semibold text-blue-2">Tous les services <span>→</span></Link>
               </div>
             </div>
           </div>
 
-          {NAV_LINKS.map((link) => {
-            const isActive = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`whitespace-nowrap border-b-[1.5px] pb-1 text-[12px] font-medium uppercase tracking-[.09em] transition-colors ${
-                  isActive
-                    ? "border-seal text-seal"
-                    : "border-transparent text-muted hover:text-navy"
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
+          {NAV_LINKS.slice(2).map((link) => (
+            <Link key={link.href} href={link.href} aria-current={isActive(pathname, link.href) ? "page" : undefined} className={`rounded-lg px-3 py-2 text-[12.5px] font-semibold transition ${isActive(pathname, link.href) ? "bg-blue-soft text-blue-2" : "text-muted hover:bg-[#f6f8fb] hover:text-navy"}`}>{link.label}</Link>
+          ))}
         </nav>
 
-        <div className="ml-8 hidden items-center gap-5 lg:flex">
-          <Link
-            href={spaceHref}
-            className="whitespace-nowrap text-[12px] font-medium uppercase tracking-[.09em] text-muted transition-colors hover:text-navy"
-          >
-            {spaceLabel}
-          </Link>
-          <span className="h-5 w-px bg-line" aria-hidden="true" />
-          <Link
-            href="/commander"
-            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-[9px] bg-navy px-[18px] py-[10px] text-[12px] font-semibold uppercase tracking-[.04em] text-white transition-colors hover:bg-navy-2"
-          >
-            Commander
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
-              <path d="M7 17L17 7M8 7h9v9" />
-            </svg>
-          </Link>
+        <div className="ml-5 hidden items-center gap-2 border-l border-line pl-5 lg:flex">
+          <Link href={accountHref} className="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-[12.5px] font-semibold text-navy transition hover:bg-[#f5f7fb]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>{accountLabel}</Link>
+          <Link href="/commander" className="inline-flex items-center gap-2 rounded-xl bg-navy px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-[0_8px_20px_rgba(20,40,77,0.16)] transition hover:-translate-y-0.5 hover:bg-navy-2">Commander <span aria-hidden="true">→</span></Link>
         </div>
 
-        <button
-          type="button"
-          className="ml-auto rounded-lg p-2 text-navy lg:hidden"
-          aria-label="Menu"
-          aria-expanded={mobileOpen}
-          onClick={() => setMobileOpen((v) => !v)}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 6h18M3 12h18M3 18h18" />
-          </svg>
-        </button>
+        <button type="button" className="ml-auto grid h-10 w-10 place-items-center rounded-xl border border-line bg-white text-navy shadow-sm lg:hidden" aria-label="Ouvrir le menu" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
       </div>
 
-      {mobileOpen && (
-        <nav
-          className="flex flex-col gap-0 border-t border-line bg-white px-[22px] pb-4 pt-2 lg:hidden"
-          aria-label="Navigation mobile"
-        >
-          <Link
-            href="/a-propos"
-            onClick={() => setMobileOpen(false)}
-            className={`border-b border-line py-3 text-[12.5px] font-medium uppercase tracking-[.09em] ${
-              pathname === "/a-propos" ? "text-seal" : "text-muted"
-            }`}
-          >
-            Le Cabinet
-          </Link>
-
-          <div className="border-b border-line">
-            <button
-              type="button"
-              onClick={() => setMobileServicesOpen((v) => !v)}
-              aria-expanded={mobileServicesOpen}
-              className={`flex w-full items-center justify-between py-3 text-[12.5px] font-medium uppercase tracking-[.09em] ${
-                isServicesActive ? "text-seal" : "text-muted"
-              }`}
-            >
-              Services
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.6"
-                className={`transition-transform ${mobileServicesOpen ? "rotate-180" : ""}`}
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-            {mobileServicesOpen && (
-              <div className="grid gap-0 pb-3 pl-3">
-                {SERVICES_DROPDOWN.map((item) => (
-                  <Link
-                    key={item.slug}
-                    href={`/services#${item.slug}`}
-                    onClick={() => setMobileOpen(false)}
-                    className="py-2 text-[12.5px] text-muted"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-                <Link
-                  href="/services"
-                  onClick={() => setMobileOpen(false)}
-                  className="py-2 text-[12.5px] font-semibold text-blue"
-                >
-                  Voir tous les services →
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {NAV_LINKS.map((link) => {
-            const isActive = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={`border-b border-line py-3 text-[12.5px] font-medium uppercase tracking-[.09em] ${
-                  isActive ? "text-seal" : "text-muted"
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-
-          <div className="mt-3 grid gap-2.5">
-            <Link
-              href={spaceHref}
-              onClick={() => setMobileOpen(false)}
-              className="inline-flex items-center justify-center rounded-[10px] border-[1.5px] border-line px-[22px] py-[12px] text-[12.5px] font-semibold uppercase tracking-[.06em] text-navy"
-            >
-              {spaceLabel}
-            </Link>
-            <Link
-              href="/commander"
-              onClick={() => setMobileOpen(false)}
-              className="inline-flex items-center justify-center gap-1.5 rounded-[10px] bg-navy px-[22px] py-[12px] text-[12.5px] font-semibold uppercase tracking-[.04em] text-white"
-            >
-              Commander
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
-                <path d="M7 17L17 7M8 7h9v9" />
-              </svg>
-            </Link>
-          </div>
+      {mobileOpen && <button type="button" className="fixed inset-0 top-[76px] h-[calc(100vh-76px)] w-screen bg-[#07101f]/55 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Fermer le menu" />}
+      <aside role="dialog" aria-modal="true" aria-label="Navigation mobile" aria-hidden={!mobileOpen} inert={!mobileOpen ? true : undefined} className={`fixed bottom-0 right-0 top-0 z-[60] flex w-[min(88vw,360px)] flex-col bg-white p-5 shadow-2xl transition-transform duration-300 lg:hidden ${mobileOpen ? "translate-x-0" : "translate-x-full"}`}>
+        <div className="flex items-center justify-between gap-3 border-b border-line pb-5"><Brand /><button type="button" onClick={() => setMobileOpen(false)} className="grid h-9 w-9 place-items-center rounded-lg bg-mist text-navy" aria-label="Fermer le menu"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg></button></div>
+        <nav className="mt-5 flex-1 overflow-y-auto" aria-label="Navigation principale mobile">
+          {NAV_LINKS.slice(0, 2).map((link) => <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className={`flex items-center justify-between rounded-xl px-3 py-3 text-[14px] font-semibold ${isActive(pathname, link.href) ? "bg-blue-soft text-blue-2" : "text-ink"}`}>{link.label}<span className="text-slate-300">→</span></Link>)}
+          <button type="button" onClick={() => setMobileServicesOpen((value) => !value)} className={`flex w-full items-center justify-between rounded-xl px-3 py-3 text-[14px] font-semibold ${pathname.startsWith("/services") ? "bg-blue-soft text-blue-2" : "text-ink"}`}>Services <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`transition ${mobileServicesOpen ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg></button>
+          {mobileServicesOpen && <div className="mb-2 ml-3 border-l border-line pl-3">{SERVICES.map((service) => <Link key={service.slug} href={`/services#${service.slug}`} onClick={() => setMobileOpen(false)} className="block py-2 text-[12.5px] text-muted">{service.label}</Link>)}<Link href="/services" onClick={() => setMobileOpen(false)} className="block py-2 text-[12.5px] font-semibold text-blue">Tous les services</Link></div>}
+          {NAV_LINKS.slice(2).map((link) => <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className={`flex items-center justify-between rounded-xl px-3 py-3 text-[14px] font-semibold ${isActive(pathname, link.href) ? "bg-blue-soft text-blue-2" : "text-ink"}`}>{link.label}<span className="text-slate-300">→</span></Link>)}
         </nav>
-      )}
+        <div className="grid gap-2 border-t border-line pt-5"><Link href="/commander" onClick={() => setMobileOpen(false)} className="inline-flex items-center justify-center rounded-xl bg-navy px-5 py-3.5 text-[13.5px] font-semibold text-white">Commander une traduction</Link><Link href={accountHref} onClick={() => setMobileOpen(false)} className="inline-flex items-center justify-center rounded-xl border border-line px-5 py-3 text-[13px] font-semibold text-navy">{accountLabel}</Link></div>
+      </aside>
     </header>
   );
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Topbar from "@/views/components/Topbar";
 import Footer from "@/views/components/Footer";
+import PublicPageHero from "@/views/components/PublicPageHero";
 
 export interface ArticleListItem {
   slug: string;
@@ -14,20 +15,10 @@ export default function ArticlesListPage({ articles }: { articles: ArticleListIt
     <>
       <Topbar />
       <main className="flex-1">
-        <section className="bg-[linear-gradient(180deg,#0C1A34_0%,#14284D_100%)] py-18 text-white">
-          <div className="mx-auto max-w-[1160px] px-[22px]">
-            <span className="mb-3 inline-flex items-center gap-2 text-[13.5px] font-semibold text-[#8fb4ff]">
-              <span className="h-0.5 w-5.5 rounded bg-[#8fb4ff]" />
-              Actualités
-            </span>
-            <h1 className="max-w-[24ch] text-[clamp(30px,4vw,44px)] text-white">
-              Articles &amp; actualités du cabinet
-            </h1>
-          </div>
-        </section>
+        <PublicPageHero eyebrow="Conseils & actualités" title="Comprendre vos démarches de traduction" description="Guides pratiques, actualités et réponses du cabinet pour préparer vos documents officiels." />
 
-        <section className="py-20">
-          <div className="mx-auto max-w-[1160px] px-[22px]">
+        <section className="py-16 sm:py-20">
+          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             {articles.length === 0 ? (
               <div className="rounded-[16px] border border-line bg-white p-10 text-center text-muted">
                 Aucun article publié pour l&apos;instant.

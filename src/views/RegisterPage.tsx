@@ -53,7 +53,8 @@ export default function RegisterPage() {
       title="Un compte, toutes vos commandes de traduction au même endroit."
       subtitle="Déposez vos documents, réglez l'acompte, suivez la traduction et téléchargez vos actes certifiés une fois le solde payé."
     >
-      <h1 className="text-[26px] text-navy">Créer un compte</h1>
+      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[.17em] text-blue">Espace personnel</p>
+      <h1 className="text-[27px] text-navy">Créer un compte</h1>
       <p className="mt-1.5 text-[14.5px] text-muted">
         Déjà client ?{" "}
         <Link href="/login" className="font-semibold text-blue hover:text-blue-2">
@@ -61,7 +62,7 @@ export default function RegisterPage() {
         </Link>
       </p>
 
-      <form onSubmit={onSubmit} className="mt-8 grid gap-4.5" noValidate>
+      <form onSubmit={onSubmit} className="mt-7 grid gap-4.5" noValidate>
         {error && (
           <div className="rounded-[10px] border border-[#f3c6c6] bg-[#fdecec] px-4 py-3 text-[13.5px] text-[#9c2c2c]">
             {error}

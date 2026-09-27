@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Topbar from "@/views/components/Topbar";
 import Footer from "@/views/components/Footer";
+import PublicPageHero from "@/views/components/PublicPageHero";
 
 const CHANNELS = [
   {
@@ -40,29 +41,14 @@ export default function ContactPage() {
     <>
       <Topbar />
       <main className="flex-1">
-        <section className="bg-[linear-gradient(180deg,#0C1A34_0%,#14284D_100%)] py-18 text-white">
-          <div className="mx-auto max-w-[1160px] px-[22px]">
-            <span className="mb-3 inline-flex items-center gap-2 text-[13.5px] font-semibold text-[#8fb4ff]">
-              <span className="h-0.5 w-5.5 rounded bg-[#8fb4ff]" />
-              Contact
-            </span>
-            <h1 className="max-w-[24ch] text-[clamp(30px,4vw,44px)] text-white">
-              Une question avant de commander ?
-            </h1>
-            <p className="mt-4 max-w-[62ch] text-[17px] text-[#c4d2ea]">
-              Appelez-nous, écrivez-nous ou passez au cabinet. Pour une traduction, le plus
-              rapide reste de déposer directement votre document et de recevoir un devis en
-              ligne.
-            </p>
-          </div>
-        </section>
+        <PublicPageHero eyebrow="Contact" title="Une question avant de commander ?" description="Appelez-nous, écrivez-nous ou passez au cabinet. Pour une traduction, le plus rapide reste de déposer votre document et de recevoir un devis en ligne." />
 
-        <section className="py-20">
-          <div className="mx-auto max-w-[1160px] px-[22px]">
+        <section className="py-16 sm:py-20">
+          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {CHANNELS.map((c) => {
                 const cardClass =
-                  "block rounded-[14px] border border-line bg-white px-6 py-7 transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]";
+                  "block rounded-[18px] border border-line bg-white px-6 py-7 shadow-[0_8px_28px_rgba(20,40,77,0.04)] transition hover:-translate-y-0.5 hover:border-blue/25 hover:shadow-[0_14px_35px_rgba(20,40,77,0.08)]";
                 const content = (
                   <>
                     <div className="mb-4 grid h-11.5 w-11.5 place-items-center rounded-[11px] bg-blue-soft text-blue-2">

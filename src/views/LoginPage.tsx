@@ -9,7 +9,8 @@ import AuthShell from "@/views/components/AuthShell";
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const requestedCallback = searchParams.get("callbackUrl");
+  const callbackUrl = requestedCallback?.startsWith("/") && !requestedCallback.startsWith("//") ? requestedCallback : "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,7 +41,8 @@ export default function LoginPage() {
       title="Suivez votre commande de traduction, du devis au téléchargement."
       subtitle="Chaque étape — acompte, traduction, solde, fichier débloqué — est visible en temps réel depuis votre espace."
     >
-      <h1 className="text-[26px] text-navy">Connexion</h1>
+      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[.17em] text-blue">Accès sécurisé</p>
+      <h1 className="text-[27px] text-navy">Bienvenue</h1>
       <p className="mt-1.5 text-[14.5px] text-muted">
         Pas encore de compte ?{" "}
         <Link href="/register" className="font-semibold text-blue hover:text-blue-2">
@@ -48,7 +50,7 @@ export default function LoginPage() {
         </Link>
       </p>
 
-      <form onSubmit={onSubmit} className="mt-8 grid gap-4.5" noValidate>
+      <form onSubmit={onSubmit} className="mt-7 grid gap-4.5" noValidate>
         {error && (
           <div className="rounded-[10px] border border-[#f3c6c6] bg-[#fdecec] px-4 py-3 text-[13.5px] text-[#9c2c2c]">
             {error}
@@ -66,7 +68,7 @@ export default function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition-colors focus:border-blue"
+            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-3 focus:ring-blue/10"
             placeholder="vous@exemple.com"
           />
         </div>
@@ -82,7 +84,7 @@ export default function LoginPage() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition-colors focus:border-blue"
+            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-3 focus:ring-blue/10"
             placeholder="••••••••••"
           />
         </div>
@@ -90,7 +92,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-1.5 inline-flex items-center justify-center rounded-[11px] bg-blue px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.28)] transition-colors hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-1.5 inline-flex items-center justify-center rounded-xl bg-blue px-6 py-3.5 text-[14px] font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.22)] transition hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? "Connexion…" : "Se connecter"}
         </button>

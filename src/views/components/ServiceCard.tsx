@@ -48,7 +48,7 @@ export default function ServiceCard({ service, anchor = true }: { service: Servi
             {Number(service.pricePerPage) > 0 ? `Dès ${service.pricePerPage} TND/page` : "Sur devis"}
           </span>
           <Link
-            href="/commander"
+            href={`/commander?service=${encodeURIComponent(service.slug)}`}
             className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white transition-colors group-hover:bg-blue"
           >
             Commander

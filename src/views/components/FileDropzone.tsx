@@ -48,7 +48,7 @@ export default function FileDropzone({
       />
 
       {file ? (
-        <div className="flex items-center gap-3 rounded-[10px] border border-line bg-mist px-4 py-3.5">
+        <div className="flex items-center gap-3 rounded-xl border border-blue/20 bg-blue-soft/60 px-4 py-3.5">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[8px] bg-blue-soft text-blue-2">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
@@ -89,8 +89,8 @@ export default function FileDropzone({
           }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
-          className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[10px] border-2 border-dashed px-4 py-8 text-center transition-colors ${
-            dragOver ? "border-blue bg-blue-soft" : "border-line bg-mist hover:border-blue"
+          className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-9 text-center transition-all ${
+            dragOver ? "scale-[1.01] border-blue bg-blue-soft" : "border-[#ccd5e3] bg-[#f8f9fc] hover:border-blue hover:bg-blue-soft/40"
           }`}
         >
           <div className="grid h-11 w-11 place-items-center rounded-full bg-white text-blue-2 shadow-[var(--shadow-sm)]">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Topbar from "@/views/components/Topbar";
 import Footer from "@/views/components/Footer";
+import PublicPageHero from "@/views/components/PublicPageHero";
 
 const VALUES = [
   {
@@ -26,24 +27,10 @@ export default function AboutPage() {
     <>
       <Topbar />
       <main className="flex-1">
-        <section className="bg-[linear-gradient(180deg,#0C1A34_0%,#14284D_100%)] py-18 text-white">
-          <div className="mx-auto max-w-[1160px] px-[22px]">
-            <span className="mb-3 inline-flex items-center gap-2 text-[13.5px] font-semibold text-[#8fb4ff]">
-              <span className="h-0.5 w-5.5 rounded bg-[#8fb4ff]" />
-              À propos
-            </span>
-            <h1 className="max-w-[26ch] text-[clamp(30px,4vw,44px)] text-white">
-              Maître Makram Arfaoui, traducteur &amp; interprète assermenté
-            </h1>
-            <p className="mt-4 max-w-[62ch] text-[17px] text-[#c4d2ea]">
-              Traducteur assermenté près la Cour d&apos;appel de Tunis, intervenant pour les
-              particuliers, entreprises, administrations et institutions judiciaires.
-            </p>
-          </div>
-        </section>
+        <PublicPageHero eyebrow="Le cabinet" title="Maître Makram Arfaoui, traducteur & interprète assermenté" description="Traducteur assermenté près la Cour d’appel de Tunis, intervenant pour les particuliers, entreprises, administrations et institutions judiciaires." />
 
-        <section className="py-20">
-          <div className="mx-auto grid max-w-[1160px] gap-14 px-[22px] md:grid-cols-[1.1fr_.9fr]">
+        <section className="py-16 sm:py-20">
+          <div className="mx-auto grid max-w-[1200px] gap-10 px-4 sm:px-6 md:grid-cols-[1.1fr_.9fr] lg:gap-16 lg:px-8">
             <div>
               <h2 className="text-[26px] text-navy">Un interlocuteur unique, du dépôt à la livraison</h2>
               <p className="mt-4 text-[15.5px] leading-relaxed text-muted">
@@ -63,7 +50,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="rounded-[16px] border border-line bg-white p-7">
+            <div className="rounded-[20px] border border-line bg-white p-7 shadow-[0_12px_38px_rgba(20,40,77,0.06)]">
               <h3 className="text-[17px] text-navy">En pratique</h3>
               <dl className="mt-4 grid gap-4 text-[14.5px]">
                 <div className="flex items-start justify-between gap-4 border-b border-line pb-4">
@@ -92,7 +79,7 @@ export default function AboutPage() {
         </section>
 
         <section className="bg-white py-18">
-          <div className="mx-auto max-w-[1160px] px-[22px]">
+          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <div className="mb-11 max-w-[660px]">
               <span className="mb-3 inline-flex items-center gap-2 text-[13.5px] font-semibold text-blue">
                 <span className="h-0.5 w-5.5 rounded bg-blue" />
@@ -104,7 +91,7 @@ export default function AboutPage() {
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {VALUES.map((v) => (
-                <div key={v.title} className="rounded-[14px] border border-line px-5 py-6">
+                <div key={v.title} className="rounded-[18px] border border-line px-5 py-6 transition hover:-translate-y-0.5 hover:border-blue/25 hover:shadow-[0_10px_28px_rgba(20,40,77,0.06)]">
                   <h3 className="text-[16.5px] text-navy">{v.title}</h3>
                   <p className="mt-2 text-[13.5px] text-muted">{v.desc}</p>
                 </div>
