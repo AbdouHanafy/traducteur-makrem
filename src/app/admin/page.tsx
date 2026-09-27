@@ -7,9 +7,7 @@ import AdminDashboardPage from "@/views/AdminDashboardPage";
 export const metadata = buildMetadata({ title: "Tableau de bord (admin)", path: "/admin", noIndex: true });
 
 export default async function Page() {
-  // Le chiffre d'affaires est une donnée métier — même restriction ADMIN seul que
-  // services/FAQ/médiathèque (voir lib/rbac.ts#requireAdminSession) ; un traducteur atterrit
-  // directement sur la liste des commandes, son vrai outil de travail.
+  // Le chiffre d'affaires et les opérations sont réunis dans l'espace de l'admin-traducteur.
   const result = await requireAdminSession();
   if ("error" in result) redirect("/admin/orders");
 

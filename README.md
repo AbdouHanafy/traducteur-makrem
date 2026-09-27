@@ -95,7 +95,7 @@ docker-compose.yml  MySQL local, lié à 127.0.0.1 uniquement, volume persistant
 ## Comptes de démo (dev uniquement)
 
 `npm run db:seed` crée 3 comptes via le vrai flux Better Auth (mot de passe : `Demo1234!`) :
-`admin@makram-arfaoui.local` (ADMIN), `traducteur@makram-arfaoui.local` (TRANSLATOR),
+`admin@makram-arfaoui.local` (ADMIN — assure aussi la traduction) et
 `client-demo@makram-arfaoui.local` (CLIENT).
 
 ## Prochaines phases

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-type Role = "CLIENT" | "TRANSLATOR" | "ADMIN";
+type Role = "CLIENT" | "ADMIN";
 
 interface UserRow {
   id: string;
@@ -14,36 +14,35 @@ interface UserRow {
 
 const ROLE_LABELS: Record<Role, string> = {
   CLIENT: "Client",
-  TRANSLATOR: "Traducteur",
   ADMIN: "Admin",
 };
 
 const ROLE_BADGE_CLASS: Record<Role, string> = {
   CLIENT: "bg-mist text-muted",
-  TRANSLATOR: "bg-blue-soft text-blue-2",
   ADMIN: "bg-ok-soft text-ok",
 };
 
 export default function AdminUsersListPage({ users }: { users: UserRow[] }) {
   return (
-    <div className="mx-auto max-w-[1100px] px-6 py-14">
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+    <div className="mx-auto max-w-[1180px] px-4 py-8 sm:px-7 lg:px-10 lg:py-10">
+      <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[26px] text-navy">Utilisateurs</h1>
-          <p className="mt-1 text-[13.5px] text-muted">{users.length} compte{users.length > 1 ? "s" : ""}</p>
+          <p className="mb-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-blue">Accès & relation client</p>
+          <h1 className="text-[27px] text-navy sm:text-[30px]">Clients & accès</h1>
+          <p className="mt-2 text-[13.5px] text-muted">{users.length} compte{users.length > 1 ? "s" : ""} · gérez les coordonnées et les droits d’accès.</p>
         </div>
         <Link
           href="/admin/users/new"
-          className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
+          className="inline-flex items-center gap-2 rounded-xl bg-navy px-5 py-3 text-[13.5px] font-semibold text-white shadow-[0_8px_22px_rgba(20,40,77,0.18)] transition hover:bg-navy-2"
         >
           Nouvel utilisateur
         </Link>
       </div>
 
       {/* Desktop */}
-      <div className="hidden overflow-hidden rounded-[14px] border border-line bg-white md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-[#e4e9f1] bg-white shadow-[0_8px_25px_rgba(20,40,77,0.04)] md:block">
         <table className="w-full text-left text-[13.5px]">
-          <thead className="bg-mist text-[12px] uppercase tracking-wide text-muted">
+          <thead className="bg-[#f8f9fc] text-[10.5px] uppercase tracking-[0.1em] text-muted">
             <tr>
               <th className="px-5 py-3">Utilisateur</th>
               <th className="px-5 py-3">Téléphone</th>
@@ -55,7 +54,7 @@ export default function AdminUsersListPage({ users }: { users: UserRow[] }) {
           </thead>
           <tbody>
             {users.map((user) => (
-              <tr key={user.id} className="border-t border-line">
+              <tr key={user.id} className="border-t border-[#edf0f5] transition hover:bg-[#f8faff]">
                 <td className="px-5 py-3.5">
                   <div className="font-semibold text-ink">{user.name}</div>
                   <div className="text-[12px] text-muted">{user.email}</div>
@@ -89,7 +88,7 @@ export default function AdminUsersListPage({ users }: { users: UserRow[] }) {
           <Link
             key={user.id}
             href={`/admin/users/${user.id}`}
-            className="block rounded-[14px] border border-line bg-white p-4"
+            className="block rounded-2xl border border-[#e4e9f1] bg-white p-4 shadow-[0_6px_20px_rgba(20,40,77,0.04)]"
           >
             <div className="min-w-0">
               <div className="truncate font-semibold text-ink">{user.name}</div>

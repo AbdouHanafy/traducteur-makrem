@@ -18,11 +18,11 @@ export default function FilesPage({ orders }: { orders: OrderWithDocuments[] }) 
   const ordersWithDocuments = orders.filter((o) => o.documents.length > 0);
 
   return (
-    <div className="mx-auto max-w-[960px] px-6 py-10 md:py-14">
-      <h1 className="mb-8 text-[22px] text-navy sm:text-[26px]">Mes fichiers</h1>
+    <div className="mx-auto max-w-[1050px] px-4 py-8 sm:px-7 lg:px-10 lg:py-10">
+      <div className="mb-8"><p className="mb-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-blue">Documents sécurisés</p><h1 className="text-[27px] text-navy sm:text-[30px]">Mes documents</h1><p className="mt-2 text-[13.5px] text-muted">Retrouvez vos fichiers sources et vos traductions certifiées.</p></div>
 
       {ordersWithDocuments.length === 0 ? (
-        <div className="rounded-[14px] border border-line bg-white p-10 text-center text-muted">
+        <div className="rounded-2xl border border-[#e4e9f1] bg-white p-12 text-center text-muted shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
           Aucun fichier pour l&apos;instant.
         </div>
       ) : (
@@ -31,7 +31,7 @@ export default function FilesPage({ orders }: { orders: OrderWithDocuments[] }) 
             const sourceDoc = order.documents.find((d) => d.kind === "SOURCE");
             const translatedDoc = order.documents.find((d) => d.kind === "TRANSLATED");
             return (
-              <div key={order.id} className="rounded-[14px] border border-line bg-white p-6">
+              <div key={order.id} className="rounded-2xl border border-[#e4e9f1] bg-white p-6 shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <div className="font-serif text-[16.5px] text-navy">{order.reference}</div>

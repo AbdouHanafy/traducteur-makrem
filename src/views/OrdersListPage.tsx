@@ -25,19 +25,23 @@ interface OrderRow {
 
 export default function OrdersListPage({ orders }: { orders: OrderRow[] }) {
   return (
-    <div className="mx-auto max-w-[960px] px-6 py-10 md:py-14">
+    <div className="mx-auto max-w-[1050px] px-4 py-8 sm:px-7 lg:px-10 lg:py-10">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-[22px] text-navy sm:text-[26px]">Mes commandes</h1>
+        <div>
+          <p className="mb-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-blue">Mes traductions</p>
+          <h1 className="text-[27px] text-navy sm:text-[30px]">Mes commandes</h1>
+          <p className="mt-2 text-[13.5px] text-muted">Consultez l’avancement, les paiements et les documents de chaque dossier.</p>
+        </div>
         <Link
           href="/commander"
-          className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
+          className="inline-flex items-center gap-2 rounded-xl bg-navy px-5 py-3 text-[13.5px] font-semibold text-white shadow-[0_8px_22px_rgba(20,40,77,0.18)] transition hover:bg-navy-2"
         >
           Nouvelle commande
         </Link>
       </div>
 
       {orders.length === 0 ? (
-        <div className="rounded-[14px] border border-line bg-white p-10 text-center text-muted">
+        <div className="rounded-2xl border border-[#e4e9f1] bg-white p-12 text-center text-muted shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
           Aucune commande pour l&apos;instant.
         </div>
       ) : (
@@ -46,7 +50,7 @@ export default function OrdersListPage({ orders }: { orders: OrderRow[] }) {
             <Link
               key={order.id}
               href={`/dashboard/orders/${order.id}`}
-              className="grid grid-cols-1 gap-3 rounded-[14px] border border-line bg-white px-6 py-5 transition hover:border-blue sm:grid-cols-[1fr_auto] sm:items-center sm:gap-4"
+              className="group grid grid-cols-1 gap-3 rounded-2xl border border-[#e4e9f1] bg-white px-6 py-5 shadow-[0_6px_20px_rgba(20,40,77,0.035)] transition hover:-translate-y-0.5 hover:border-blue/30 hover:shadow-[0_12px_30px_rgba(20,40,77,0.07)] sm:grid-cols-[1fr_auto] sm:items-center sm:gap-4"
             >
               <div className="min-w-0">
                 <div className="font-serif text-[17px] text-navy">{order.reference}</div>

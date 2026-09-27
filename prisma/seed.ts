@@ -4,7 +4,7 @@
  * Les comptes de démo passent par `auth.api.signUpEmail` (Better Auth — voir src/lib/auth.ts)
  * pour créer le couple User+Account exactement comme le ferait un vrai visiteur : le mot de
  * passe est haché en argon2id (src/lib/password.ts) par le même chemin que la vraie
- * inscription. `role` est ensuite élevé directement en DB pour admin/traducteur — Better Auth
+ * inscription. `role` est ensuite élevé directement en DB pour l'admin — Better Auth
  * refuse de le fixer via le payload public (voir `input: false` dans src/lib/auth.ts).
  *
  * Ce script est idempotent : si le compte existe déjà, on se contente de réaligner son mot
@@ -22,12 +22,11 @@ interface DemoUser {
   email: string;
   firstName: string;
   lastName: string;
-  role: "ADMIN" | "TRANSLATOR" | "CLIENT";
+  role: "ADMIN" | "CLIENT";
 }
 
 const DEMO_USERS: DemoUser[] = [
   { email: "admin@makram-arfaoui.local", firstName: "Makram", lastName: "Arfaoui", role: "ADMIN" },
-  { email: "traducteur@makram-arfaoui.local", firstName: "Sami", lastName: "Traducteur", role: "TRANSLATOR" },
   { email: "client-demo@makram-arfaoui.local", firstName: "Sarra", lastName: "Ben Ali", role: "CLIENT" },
 ];
 

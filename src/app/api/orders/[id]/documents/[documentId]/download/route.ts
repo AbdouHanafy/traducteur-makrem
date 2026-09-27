@@ -23,7 +23,7 @@ export async function GET(
   const order = await findOrderById(id);
   if (!order) return NextResponse.json({ error: "Introuvable." }, { status: 404 });
 
-  const isStaff = session.user.role === "ADMIN" || session.user.role === "TRANSLATOR";
+  const isStaff = session.user.role === "ADMIN";
   if (order.userId !== session.user.id && !isStaff) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }

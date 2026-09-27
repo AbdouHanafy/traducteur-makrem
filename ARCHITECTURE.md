@@ -99,7 +99,7 @@ src/
       page.tsx                  KPI + graphique
       orders/page.tsx
       orders/[id]/page.tsx
-    admin/                       espace traducteur/admin (RBAC ADMIN|TRANSLATOR)
+    admin/                       espace administrateur-traducteur (RBAC ADMIN)
       orders/page.tsx
       orders/[id]/page.tsx
     api/
@@ -163,7 +163,6 @@ Points clés : montants en `Decimal(10,3)` (le millime tunisien a 3 décimales, 
 ```prisma
 enum Role {
   CLIENT
-  TRANSLATOR
   ADMIN
 }
 
@@ -409,8 +408,8 @@ Toute l'opération 3-9 dans une transaction Prisma.
 
 ## 7. RBAC & autorisation
 
-- Rôles `CLIENT` / `TRANSLATOR` / `ADMIN` sur `User.role`, même pattern que calmatrip (relecture DB à chaque session, pas de confiance au JWT seul).
-- Middleware : `/dashboard/**` → CLIENT connecté ; `/admin/**` → TRANSLATOR ou ADMIN ; redirections croisées comme dans calmatrip.
+- Rôles `CLIENT` / `ADMIN` sur `User.role` ; l'administrateur assure également le travail de traduction (relecture DB à chaque session, pas de confiance au JWT seul).
+- Middleware : `/dashboard/**` → CLIENT connecté ; `/admin/**` → ADMIN ; redirections croisées comme dans calmatrip.
 - Chaque route `/api/orders/:id/**` vérifie systématiquement `order.userId === session.user.id` **avant** toute lecture/écriture (sauf routes `/api/admin/**` qui vérifient le rôle à la place) — c'est le contrôle qui manque totalement dans le prototype et qui est explicitement exigé en §23/§55.
 
 ---

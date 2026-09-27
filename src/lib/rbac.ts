@@ -4,7 +4,7 @@ import { findOrderById } from "@/repositories/orders";
 
 /**
  * Vérification systématique "order.userId === session.user.id" avant toute lecture/écriture
- * (ARCHITECTURE.md §7) — sauf pour un rôle TRANSLATOR/ADMIN qui agit sur n'importe quelle
+ * (ARCHITECTURE.md §7) — sauf pour un ADMIN qui agit sur n'importe quelle
  * commande via les routes /api/admin/**.
  */
 export async function requireOrderOwner(orderId: string) {
@@ -23,7 +23,7 @@ export async function requireStaffSession() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return { error: "unauthenticated" as const };
 
-  if (session.user.role !== "ADMIN" && session.user.role !== "TRANSLATOR") {
+  if (session.user.role !== "ADMIN") {
     return { error: "forbidden" as const };
   }
 
@@ -32,8 +32,7 @@ export async function requireStaffSession() {
 
 /**
  * Contenu métier (prix, FAQ, médiathèque) — décisions du cabinet, pas du travail de
- * traduction : réservé au rôle ADMIN, contrairement aux routes de commandes ouvertes à
- * TRANSLATOR également.
+ * traduction : réservé au rôle ADMIN, qui assure également le travail de traduction.
  */
 export async function requireAdminSession() {
   const session = await auth.api.getSession({ headers: await headers() });

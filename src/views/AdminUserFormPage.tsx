@@ -3,11 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Role = "CLIENT" | "TRANSLATOR" | "ADMIN";
+type Role = "CLIENT" | "ADMIN";
 
 const ROLE_LABELS: Record<Role, string> = {
   CLIENT: "Client",
-  TRANSLATOR: "Traducteur",
   ADMIN: "Admin",
 };
 

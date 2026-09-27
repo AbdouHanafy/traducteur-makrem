@@ -45,18 +45,20 @@ export default function AccountPage({ email, name }: { email: string; name: stri
   }
 
   return (
-    <div className="mx-auto max-w-[640px] px-6 py-10 md:py-14">
+    <div className="mx-auto max-w-[760px] px-4 py-8 sm:px-7 lg:px-10 lg:py-10">
       <div className="mb-8">
-        <h1 className="text-[22px] text-navy sm:text-[26px]">Paramètres</h1>
+        <p className="mb-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-blue">Sécurité & identité</p>
+        <h1 className="text-[27px] text-navy sm:text-[30px]">Mon compte</h1>
+        <p className="mt-2 text-[13.5px] text-muted">Consultez vos informations et sécurisez votre accès.</p>
       </div>
 
-      <div className="mb-6 rounded-[14px] border border-line bg-white p-6">
+      <div className="mb-6 rounded-2xl border border-[#e4e9f1] bg-white p-6 shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
         <h2 className="mb-3 text-[15px] font-semibold text-navy">Informations</h2>
         <p className="text-[14px] text-ink">{name}</p>
         <p className="text-[14px] text-muted">{email}</p>
       </div>
 
-      <div className="rounded-[14px] border border-line bg-white p-6">
+      <div className="rounded-2xl border border-[#e4e9f1] bg-white p-6 shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
         <h2 className="mb-1 text-[15px] font-semibold text-navy">Changer mon mot de passe</h2>
         <p className="mb-5 text-[13.5px] text-muted">
           Vous pouvez modifier le mot de passe défini lors de votre commande à tout moment.

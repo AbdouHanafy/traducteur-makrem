@@ -24,9 +24,10 @@ const CHANNELS = [
 
 export default function SupportPage() {
   return (
-    <div className="mx-auto max-w-[760px] px-6 py-10 md:py-14">
-      <h1 className="mb-2 text-[22px] text-navy sm:text-[26px]">Support</h1>
-      <p className="mb-8 text-[14.5px] text-muted">
+    <div className="mx-auto max-w-[900px] px-4 py-8 sm:px-7 lg:px-10 lg:py-10">
+      <p className="mb-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-blue">Nous sommes disponibles</p>
+      <h1 className="mb-2 text-[27px] text-navy sm:text-[30px]">Aide & contact</h1>
+      <p className="mb-8 max-w-2xl text-[14px] leading-6 text-muted">
         Un souci avec une commande, un paiement ou votre document ? Contactez directement le
         cabinet — pensez à indiquer la référence de votre commande (ex. CMD-2026-XXXXX).
       </p>
@@ -36,7 +37,7 @@ export default function SupportPage() {
           <Link
             key={c.label}
             href={c.href}
-            className="block rounded-[14px] border border-line bg-white px-6 py-6 transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
+            className="block rounded-2xl border border-[#e4e9f1] bg-white px-6 py-6 shadow-[0_8px_25px_rgba(20,40,77,0.04)] transition hover:-translate-y-0.5 hover:border-blue/30 hover:shadow-[0_14px_35px_rgba(20,40,77,0.08)]"
           >
             <div className="mb-3.5 grid h-10.5 w-10.5 place-items-center rounded-[11px] bg-blue-soft text-blue-2">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -53,7 +54,7 @@ export default function SupportPage() {
         ))}
       </div>
 
-      <div className="mt-8 grid gap-2 rounded-[14px] border border-line bg-white p-6 text-[14px]">
+      <div className="mt-8 grid gap-2 rounded-2xl border border-[#e4e9f1] bg-white p-6 text-[14px] shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
         <p className="text-ink">
           Vous pouvez aussi consulter la{" "}
           <Link href="/faq" className="font-semibold text-blue hover:text-blue-2">

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const roleSchema = z.enum(["CLIENT", "TRANSLATOR", "ADMIN"]);
+const roleSchema = z.enum(["CLIENT", "ADMIN"]);
 
 export const createUserSchema = z.object({
   firstName: z.string().trim().min(1, "Prénom requis.").max(80),

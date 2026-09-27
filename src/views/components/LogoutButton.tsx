@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { signOut } from "@/lib/auth-client";
 
-export default function LogoutButton() {
+export default function LogoutButton({ variant = "default" }: { variant?: "default" | "sidebar" }) {
   const router = useRouter();
 
   return (
@@ -19,7 +19,7 @@ export default function LogoutButton() {
           },
         })
       }
-      className="text-[13.5px] font-semibold text-muted hover:text-navy"
+      className={variant === "sidebar" ? "text-[12px] font-medium text-slate-400 hover:text-white" : "text-[13.5px] font-semibold text-muted hover:text-navy"}
     >
       Se déconnecter
     </button>
