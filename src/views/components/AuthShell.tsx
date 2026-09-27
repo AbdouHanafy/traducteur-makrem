@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BrandLogo from "@/views/components/BrandLogo";
 
 /**
  * Habillage commun login/register — panneau navy éditorial (repris de l'identité Hero)
@@ -31,13 +32,7 @@ export default function AuthShell({
         </svg>
 
         <Link href="/" className="relative flex items-center gap-3">
-          <svg className="h-11 w-11 shrink-0" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <circle cx="32" cy="32" r="30" stroke="#4C79D4" strokeWidth="2" />
-            <circle cx="32" cy="32" r="24.5" stroke="#B4894E" strokeWidth="1" strokeDasharray="2 3" opacity=".7" />
-            <text x="32" y="40" textAnchor="middle" fontFamily="Spectral, serif" fontWeight="700" fontSize="24" fill="#fff">
-              MA
-            </text>
-          </svg>
+          <BrandLogo size="lg" onDark priority />
           <span>
             <span className="block font-serif text-[19px] font-semibold leading-tight">
               Maître Makram Arfaoui
@@ -68,12 +63,7 @@ export default function AuthShell({
       <div className="flex items-center justify-center px-4 py-10 sm:px-8 lg:py-14">
         <div className="w-full max-w-[460px] rounded-[22px] border border-[#e2e7ef] bg-white p-6 shadow-[0_18px_55px_rgba(20,40,77,0.08)] sm:p-9">
           <Link href="/" className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <svg className="h-9 w-9 shrink-0" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-              <circle cx="32" cy="32" r="30" stroke="#2456B8" strokeWidth="2" />
-              <text x="32" y="40" textAnchor="middle" fontFamily="Spectral, serif" fontWeight="700" fontSize="24" fill="#14284D">
-                MA
-              </text>
-            </svg>
+            <BrandLogo size="sm" priority />
             <span className="font-serif text-[17px] font-semibold text-navy">Maître Makram Arfaoui</span>
           </Link>
           {children}

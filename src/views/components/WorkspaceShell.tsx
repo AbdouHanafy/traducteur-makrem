@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import LogoutButton from "@/views/components/LogoutButton";
+import BrandLogo from "@/views/components/BrandLogo";
 
 export type WorkspaceIcon = "home" | "orders" | "users" | "page" | "services" | "articles" | "reviews" | "faq" | "media" | "files" | "support" | "account";
 
@@ -35,10 +36,6 @@ function Icon({ name, className = "h-5 w-5" }: { name: WorkspaceIcon; className?
   };
 
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
-}
-
-function Mark() {
-  return <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/15 bg-white/10 font-serif text-[15px] font-semibold text-white shadow-inner">MA</span>;
 }
 
 function isActive(pathname: string, href: string) {
@@ -93,7 +90,7 @@ export default function WorkspaceShell({ mode, user, groups, children, primaryAc
     <>
       <div className="flex items-center justify-between gap-3 px-1">
         <Link href={homeHref} className="flex min-w-0 items-center gap-3">
-          <Mark />
+          <BrandLogo size="sm" onDark priority />
           <span className="min-w-0">
             <span className="block truncate font-serif text-[15px] font-semibold text-white">Makram Arfaoui</span>
             <span className="block text-[10.5px] font-medium uppercase tracking-[0.13em] text-slate-400">{mode === "admin" ? "Administration" : "Espace client"}</span>

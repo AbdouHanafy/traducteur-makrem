@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BrandLogo from "@/views/components/BrandLogo";
 
 export default function Footer() {
   return (
@@ -16,7 +17,7 @@ export default function Footer() {
       <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
         <div className="grid grid-cols-1 gap-10 border-b border-white/10 pb-10 sm:grid-cols-2 lg:grid-cols-[1.45fr_.85fr_.85fr_1.1fr]">
           <div>
-            <Link href="/" className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-xl border border-white/15 bg-white/[0.06] font-serif text-[15px] font-bold text-white">MA</span><span><span className="block font-serif text-[18px] font-semibold text-white">Makram Arfaoui</span><span className="block text-[9.5px] font-semibold uppercase tracking-[.14em] text-slate-400">Traducteur assermenté</span></span></Link>
+            <Link href="/" className="flex items-center gap-3"><BrandLogo size="md" onDark /><span><span className="block font-serif text-[18px] font-semibold text-white">Makram Arfaoui</span><span className="block text-[9.5px] font-semibold uppercase tracking-[.14em] text-slate-400">Traducteur assermenté</span></span></Link>
             <p className="mt-5 max-w-[38ch] text-[13px] leading-6 text-slate-400">Traductions juridiques certifiées en français, arabe et anglais, destinées aux particuliers, entreprises et institutions.</p>
             <Link href="/commander" className="mt-5 inline-flex items-center gap-2 text-[12.5px] font-semibold text-[#8fb4ff] hover:text-white">Demander un devis <span>→</span></Link>
           </div>
