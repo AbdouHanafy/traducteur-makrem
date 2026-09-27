@@ -90,7 +90,7 @@ export default function Topbar() {
           })}
         </nav>
 
-        <div className="ml-2 hidden items-center gap-4 lg:flex">
+        <div className="ml-8 hidden items-center gap-5 lg:flex">
           <Link
             href={spaceHref}
             className="whitespace-nowrap text-[12px] font-medium uppercase tracking-[.09em] text-muted transition-colors hover:text-navy"
