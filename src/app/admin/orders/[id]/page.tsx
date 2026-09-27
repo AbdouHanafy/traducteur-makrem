@@ -20,6 +20,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         sourceLang: order.sourceLang,
         targetLang: order.targetLang,
         totalAmount: order.totalAmount.toString(),
+        advanceAmount: order.advanceAmount.toString(),
+        balanceAmount: order.balanceAmount.toString(),
         advancePaid: order.advancePaid,
         balancePaid: order.balancePaid,
         user: order.user,

@@ -1,3 +1,6 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import Link from "next/link";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -14,6 +17,10 @@ const STATUS_LABELS: Record<string, string> = {
   ANNULEE: "Annulée",
 };
 
+/** Statuts où la balle est dans le camp du traducteur, pas du client — c'est ce qui doit
+ * sauter aux yeux dans une liste d'ops, pas l'exhaustivité du statut brut. */
+const ACTION_NEEDED_STATUSES = new Set(["ACOMPTE_PAYE", "EN_TRADUCTION"]);
+
 interface AdminOrderRow {
   id: string;
   reference: string;
@@ -23,14 +30,49 @@ interface AdminOrderRow {
   user: { firstName: string; lastName: string; email: string };
 }
 
+const FILTERS = [
+  { key: "action", label: "À traiter", match: (s: string) => ACTION_NEEDED_STATUSES.has(s) },
+  { key: "waiting", label: "En attente client", match: (s: string) => ["EN_ATTENTE_ACOMPTE", "FICHIER_EN_ATTENTE_DE_SOLDE"].includes(s) },
+  { key: "done", label: "Terminées", match: (s: string) => ["TELECHARGEABLE", "TERMINEE"].includes(s) },
+  { key: "all", label: "Toutes", match: () => true },
+] as const;
+
 export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[] }) {
+  const [filterKey, setFilterKey] = useState<(typeof FILTERS)[number]["key"]>("action");
+
+  const counts = useMemo(
+    () => Object.fromEntries(FILTERS.map((f) => [f.key, orders.filter((o) => f.match(o.status)).length])),
+    [orders],
+  );
+
+  const activeFilter = FILTERS.find((f) => f.key === filterKey) ?? FILTERS[0];
+  const filteredOrders = orders.filter((o) => activeFilter.match(o.status));
+
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-14">
-      <h1 className="mb-8 text-[26px] text-navy">Commandes</h1>
+      <h1 className="mb-6 text-[26px] text-navy">Commandes</h1>
 
-      {orders.length === 0 ? (
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {FILTERS.map((f) => (
+          <button
+            key={f.key}
+            type="button"
+            onClick={() => setFilterKey(f.key)}
+            className={`rounded-[12px] border px-4 py-3 text-left transition-colors ${
+              filterKey === f.key ? "border-blue bg-blue-soft" : "border-line bg-white hover:border-blue"
+            }`}
+          >
+            <div className={`font-serif text-[24px] ${filterKey === f.key ? "text-blue-2" : "text-navy"}`}>
+              {counts[f.key]}
+            </div>
+            <div className="text-[12.5px] font-medium text-muted">{f.label}</div>
+          </button>
+        ))}
+      </div>
+
+      {filteredOrders.length === 0 ? (
         <div className="rounded-[14px] border border-line bg-white p-10 text-center text-muted">
-          Aucune commande.
+          Aucune commande dans ce filtre.
         </div>
       ) : (
         <div className="overflow-hidden rounded-[14px] border border-line bg-white">
@@ -45,26 +87,34 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
-                <tr key={order.id} className="border-t border-line hover:bg-mist/50">
-                  <td className="px-5 py-3.5">
-                    <Link href={`/admin/orders/${order.id}`} className="font-semibold text-blue hover:text-blue-2">
-                      {order.reference}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3.5 text-ink">
-                    {order.user.firstName} {order.user.lastName}
-                    <div className="text-[12px] text-muted">{order.user.email}</div>
-                  </td>
-                  <td className="px-5 py-3.5 text-ink">{order.service.name}</td>
-                  <td className="px-5 py-3.5">
-                    <span className="inline-flex items-center rounded-full bg-blue-soft px-2.5 py-1 text-[11.5px] font-semibold text-blue-2">
-                      {STATUS_LABELS[order.status] ?? order.status}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3.5 font-semibold text-ink">{order.totalAmount} TND</td>
-                </tr>
-              ))}
+              {filteredOrders.map((order) => {
+                const needsAction = ACTION_NEEDED_STATUSES.has(order.status);
+                return (
+                  <tr key={order.id} className="border-t border-line hover:bg-mist/50">
+                    <td className="px-5 py-3.5">
+                      <Link href={`/admin/orders/${order.id}`} className="flex items-center gap-2 font-semibold text-blue hover:text-blue-2">
+                        {needsAction && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-seal" aria-hidden="true" />}
+                        {order.reference}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3.5 text-ink">
+                      {order.user.firstName} {order.user.lastName}
+                      <div className="text-[12px] text-muted">{order.user.email}</div>
+                    </td>
+                    <td className="px-5 py-3.5 text-ink">{order.service.name}</td>
+                    <td className="px-5 py-3.5">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${
+                          needsAction ? "bg-[#fdf1e2] text-[#9a5b12]" : "bg-blue-soft text-blue-2"
+                        }`}
+                      >
+                        {STATUS_LABELS[order.status] ?? order.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 font-semibold text-ink">{order.totalAmount} TND</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
