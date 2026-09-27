@@ -6,6 +6,7 @@ import Link from "next/link";
 import Topbar from "@/views/components/Topbar";
 import Footer from "@/views/components/Footer";
 import { DELAY_OPTIONS } from "@/repositories/pricingRules";
+import { signUp, useSession } from "@/lib/auth-client";
 
 interface ServiceOption {
   id: string;
@@ -21,17 +22,26 @@ const LANGUAGES = [
 
 export default function OrderWizardPage({ services }: { services: ServiceOption[] }) {
   const router = useRouter();
+  const { data: session, isPending: sessionPending } = useSession();
+
   const [serviceId, setServiceId] = useState(services[0]?.id ?? "");
   const [sourceLang, setSourceLang] = useState("ar");
   const [targetLang, setTargetLang] = useState("fr");
   const [pages, setPages] = useState(1);
   const [delayKey, setDelayKey] = useState<string>(DELAY_OPTIONS[0].key);
   const [file, setFile] = useState<File | null>(null);
+  const [account, setAccount] = useState({ firstName: "", lastName: "", email: "", phone: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const selectedService = services.find((s) => s.id === serviceId);
   const estimatedTotal = selectedService ? Number(selectedService.pricePerPage) * pages : 0;
+  const needsAccount = !sessionPending && !session;
+
+  function updateAccount(field: keyof typeof account) {
+    return (e: React.ChangeEvent<HTMLInputElement>) =>
+      setAccount((a) => ({ ...a, [field]: e.target.value }));
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,6 +53,31 @@ export default function OrderWizardPage({ services }: { services: ServiceOption[
     }
 
     setLoading(true);
+
+    // Visiteur non connecté : le compte est créé à partir des informations du formulaire,
+    // puis la commande est soumise avec la session qui vient de s'ouvrir — un seul geste pour
+    // le client, pas un aller-retour "créez d'abord un compte, puis recommencez".
+    if (needsAccount) {
+      const { error: signUpError } = await signUp.email({
+        name: `${account.firstName} ${account.lastName}`.trim(),
+        email: account.email,
+        password: account.password,
+        firstName: account.firstName,
+        lastName: account.lastName,
+        phone: account.phone || undefined,
+      });
+
+      if (signUpError) {
+        setLoading(false);
+        setError(
+          signUpError.status === 422
+            ? "Un compte existe déjà avec cette adresse email. Connectez-vous puis réessayez."
+            : signUpError.message || "Impossible de créer le compte. Vérifiez les informations.",
+        );
+        return;
+      }
+    }
+
     const formData = new FormData();
     formData.set("serviceId", serviceId);
     formData.set("sourceLang", sourceLang);
@@ -67,6 +102,7 @@ export default function OrderWizardPage({ services }: { services: ServiceOption[
 
     const data = await res.json();
     router.push(`/dashboard/orders/${data.id}`);
+    router.refresh();
   }
 
   return (
@@ -82,6 +118,12 @@ export default function OrderWizardPage({ services }: { services: ServiceOption[
             <h1 className="text-[clamp(28px,3.6vw,38px)] text-white">
               Déposez votre document, recevez un devis immédiat
             </h1>
+            {needsAccount && (
+              <p className="mt-3 max-w-[56ch] text-[14.5px] text-[#c4d2ea]">
+                Pas besoin de créer un compte avant de commander : indiquez vos coordonnées
+                ci-dessous, votre espace client sera créé automatiquement avec votre commande.
+              </p>
+            )}
           </div>
         </section>
 
@@ -100,6 +142,81 @@ export default function OrderWizardPage({ services }: { services: ServiceOption[
                 {error && (
                   <div className="rounded-[10px] border border-[#f3c6c6] bg-[#fdecec] px-4 py-3 text-[13.5px] text-[#9c2c2c]">
                     {error}
+                  </div>
+                )}
+
+                {needsAccount && (
+                  <div className="grid gap-4 border-b border-line pb-6">
+                    <h2 className="text-[15px] font-semibold text-navy">Vos coordonnées</h2>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Prénom</label>
+                        <input
+                          required
+                          value={account.firstName}
+                          onChange={updateAccount("firstName")}
+                          autoComplete="given-name"
+                          className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Nom</label>
+                        <input
+                          required
+                          value={account.lastName}
+                          onChange={updateAccount("lastName")}
+                          autoComplete="family-name"
+                          className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Email</label>
+                      <input
+                        required
+                        type="email"
+                        value={account.email}
+                        onChange={updateAccount("email")}
+                        autoComplete="email"
+                        placeholder="vous@exemple.com"
+                        className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">
+                          Téléphone <span className="font-normal text-muted">(optionnel)</span>
+                        </label>
+                        <input
+                          type="tel"
+                          value={account.phone}
+                          onChange={updateAccount("phone")}
+                          autoComplete="tel"
+                          placeholder="(+216) 22 200 170"
+                          className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Mot de passe</label>
+                        <input
+                          required
+                          type="password"
+                          minLength={10}
+                          value={account.password}
+                          onChange={updateAccount("password")}
+                          autoComplete="new-password"
+                          placeholder="10 caractères minimum"
+                          className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-[13px] text-muted">
+                      Déjà client ?{" "}
+                      <Link href="/login?callbackUrl=/commander" className="font-semibold text-blue hover:text-blue-2">
+                        Connectez-vous
+                      </Link>{" "}
+                      pour retrouver vos commandes.
+                    </p>
                   </div>
                 )}
 
@@ -204,10 +321,14 @@ export default function OrderWizardPage({ services }: { services: ServiceOption[
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || sessionPending}
                   className="inline-flex items-center justify-center rounded-[11px] bg-blue px-6 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {loading ? "Envoi en cours…" : "Obtenir mon devis"}
+                  {loading
+                    ? needsAccount
+                      ? "Création du compte et envoi…"
+                      : "Envoi en cours…"
+                    : "Obtenir mon devis"}
                 </button>
               </form>
             )}
