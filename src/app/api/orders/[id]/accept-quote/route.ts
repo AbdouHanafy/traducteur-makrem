@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireOrderOwner } from "@/lib/orderAuth";
+import { requireOrderOwner } from "@/lib/rbac";
 import { acceptQuote } from "@/repositories/orders";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {

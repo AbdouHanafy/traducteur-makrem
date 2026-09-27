@@ -1,6 +1,4 @@
-import { headers } from "next/headers";
-import { redirect, notFound } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { buildMetadata } from "@/lib/seo";
 import { findOrderById } from "@/repositories/orders";
 import AdminOrderDetailPage from "@/views/AdminOrderDetailPage";
@@ -9,10 +7,6 @@ export const metadata = buildMetadata({ title: "Commande (admin)", path: "/admin
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) redirect(`/login?callbackUrl=/admin/orders/${id}`);
-  if (session.user.role !== "ADMIN" && session.user.role !== "TRANSLATOR") redirect("/dashboard");
-
   const order = await findOrderById(id);
   if (!order) notFound();
 

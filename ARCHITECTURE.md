@@ -421,7 +421,7 @@ Toute l'opération 3-9 dans une transaction Prisma.
 |---|---|---|
 | **1. Scaffold** ✅ | `create-next-app`, Prisma init, structure de dossiers ci-dessus, design tokens (palette/typo du prototype en CSS/Tailwind), `.env.example` | Projet qui build, page d'accueil statique avec le nouveau topbar |
 | **2. Auth** ✅ | Better Auth (email/mot de passe) + argon2id, register/login/logout, cookies HttpOnly/Secure/SameSite | Testé E2E (Playwright) : inscription → login → session → logout → route protégée |
-| **3. Services & pricing admin** ⏳ | CRUD `Service`/`PricingRule` — pour l'instant seedés (`prisma/seed.ts`), pas encore d'écran admin pour les éditer | Changer un prix en DB change l'affichage sans redeploy (déjà vrai côté lecture) |
+| **3. Services & pricing admin** ✅ (services) / ⏳ (PricingRule) | CRUD `Service` complet (`/admin/services`, ADMIN uniquement) avec photo via une médiathèque (`/admin/media`, `MediaAsset`, stockage public `public/uploads/media/`) ; `PricingRule` (multiplicateurs de délai) encore seedé, pas d'écran admin | Changer un service ou son prix dans le backoffice le change immédiatement sur `/`, `/services` et le wizard `/commander` — testé E2E |
 | **4. Wizard de commande** ✅ | `/commander` : service/langues/pages/délai + upload (MIME réel via magic bytes, UUID, stockage privé hors webroot) | Une commande `DEVIS_A_VALIDER` créée en DB avec `Document(kind=SOURCE)` |
 | **5. Devis** ✅ (auto uniquement) | Calcul auto (`lib/pricing.ts`, prix × pages × multiplicateur délai), snapshot figé sur `Order`, écran "Accepter le devis". Pas d'override manuel admin. | `DEVIS_A_VALIDER` → `EN_ATTENTE_ACOMPTE` |
 | **6. Paiement (mock provider)** ✅ | `PaymentProvider` abstrait, provider mock avec vrai aller-retour serveur (`/paiement/mock/[ref]` → `/api/payments/webhook`), idempotence, vérification du montant contre la DB | Testé : paiement acompte + solde via Playwright, idempotence du webhook |
@@ -437,6 +437,11 @@ Toute l'opération 3-9 dans une transaction Prisma.
 | **16. Production** | TLS, monitoring, backups testés (restauration réelle), déploiement prod | Checklist §59 complète |
 
 Chaque phase est livrée testée avant de passer à la suivante — pas de "big bang" en fin de projet.
+
+**Ajout hors plan initial** : gestion de la FAQ depuis le backoffice (`/admin/faq`, modèle
+`FaqItem`, réordonnancement monter/descendre) — la page `/faq` lit maintenant la DB au lieu
+d'un contenu en dur. Le même pattern de réordonnancement sera repris pour un futur
+page-builder de la home (sections ajoutables/réordonnables), pas encore construit.
 
 ---
 

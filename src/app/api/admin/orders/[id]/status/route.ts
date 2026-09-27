@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireStaffSession } from "@/lib/orderAuth";
+import { requireStaffSession } from "@/lib/rbac";
 import { startTranslation } from "@/repositories/orders";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {

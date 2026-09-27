@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireOrderOwner } from "@/lib/orderAuth";
+import { requireOrderOwner } from "@/lib/rbac";
 import { getPaymentProvider } from "@/lib/payments/mock";
 import { createPaymentRecord } from "@/repositories/payments";
 

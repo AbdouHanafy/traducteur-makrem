@@ -29,3 +29,17 @@ export async function requireStaffSession() {
 
   return { session };
 }
+
+/**
+ * Contenu métier (prix, FAQ, médiathèque) — décisions du cabinet, pas du travail de
+ * traduction : réservé au rôle ADMIN, contrairement aux routes de commandes ouvertes à
+ * TRANSLATOR également.
+ */
+export async function requireAdminSession() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) return { error: "unauthenticated" as const };
+
+  if (session.user.role !== "ADMIN") return { error: "forbidden" as const };
+
+  return { session };
+}

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireStaffSession } from "@/lib/orderAuth";
+import { requireStaffSession } from "@/lib/rbac";
 import { findOrderById, attachTranslatedDocument } from "@/repositories/orders";
 import { validateUpload, UploadValidationError } from "@/lib/upload";
 import { writePrivateFile, readPrivateFile } from "@/lib/storage/privateStorage";

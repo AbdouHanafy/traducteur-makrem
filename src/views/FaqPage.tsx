@@ -2,42 +2,13 @@ import Link from "next/link";
 import Topbar from "@/views/components/Topbar";
 import Footer from "@/views/components/Footer";
 
-const FAQS = [
-  {
-    q: "Une traduction assermentée est-elle acceptée par toutes les administrations ?",
-    a: "Une traduction assermentée est certifiée conforme à l'original, cachetée et signée par un traducteur assermenté. Elle est reconnue par les administrations tunisiennes, ambassades, universités et tribunaux. En cas de doute sur un dossier précis, l'organisme destinataire reste la référence sur ses propres exigences.",
-  },
-  {
-    q: "Comment le prix est-il calculé ?",
-    a: "Le prix dépend du type de document, de la paire de langues, du nombre de pages et du délai souhaité. Aucun prix n'est fixé à l'avance sur le site : un devis exact est communiqué après dépôt du document, avant tout engagement.",
-  },
-  {
-    q: "Comment se déroule le paiement ?",
-    a: "Le paiement se fait en deux temps : un acompte de 50 % au lancement de la traduction, puis le solde de 50 % une fois la traduction terminée. Le fichier final est livré verrouillé et se débloque au paiement du solde.",
-  },
-  {
-    q: "Mes documents sont-ils confidentiels ?",
-    a: "Oui. Les documents déposés sont des actes personnels et sont traités comme tels : accès restreint, aucune diffusion publique, et suppression selon la politique de conservation du cabinet.",
-  },
-  {
-    q: "Quels formats de fichiers sont acceptés ?",
-    a: "Les formats courants sont acceptés : PDF, JPEG, PNG, ainsi que les scans de bonne qualité. Un document illisible peut retarder l'établissement du devis.",
-  },
-  {
-    q: "Combien de temps prend une traduction ?",
-    a: "Le délai dépend du volume et de la complexité du document ainsi que du type de délai choisi (standard, express, urgent). Le délai précis est communiqué avec le devis et suivi en ligne depuis votre espace client.",
-  },
-  {
-    q: "Puis-je suivre ma commande en ligne ?",
-    a: "Oui, chaque commande dispose d'un espace de suivi indiquant l'étape en cours : devis, acompte, traduction en cours, fichier prêt, solde, téléchargement.",
-  },
-  {
-    q: "Proposez-vous aussi de l'interprétariat ?",
-    a: "Oui, pour les mariages mixtes, audiences, actes notariés et rendez-vous administratifs nécessitant un interprète assermenté.",
-  },
-];
+export interface FaqEntry {
+  id: string;
+  question: string;
+  answer: string;
+}
 
-export default function FaqPage() {
+export default function FaqPage({ faqs }: { faqs: FaqEntry[] }) {
   return (
     <>
       <Topbar />
@@ -60,13 +31,13 @@ export default function FaqPage() {
         <section className="py-20">
           <div className="mx-auto max-w-[820px] px-[22px]">
             <div className="grid gap-3">
-              {FAQS.map((item) => (
+              {faqs.map((item) => (
                 <details
-                  key={item.q}
+                  key={item.id}
                   className="group rounded-[14px] border border-line bg-white px-5 py-4 open:shadow-[var(--shadow-sm)]"
                 >
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[16px] font-medium text-navy marker:content-none">
-                    {item.q}
+                    {item.question}
                     <svg
                       width="18"
                       height="18"
@@ -79,7 +50,7 @@ export default function FaqPage() {
                       <path d="M12 5v14M5 12h14" />
                     </svg>
                   </summary>
-                  <p className="mt-3 text-[14.5px] leading-relaxed text-muted">{item.a}</p>
+                  <p className="mt-3 text-[14.5px] leading-relaxed text-muted">{item.answer}</p>
                 </details>
               ))}
             </div>

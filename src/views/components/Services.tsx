@@ -1,12 +1,17 @@
 import Link from "next/link";
-import { SERVICES } from "@/views/data/services";
+
+export interface ServiceTeaserItem {
+  slug: string;
+  name: string;
+  description: string;
+}
 
 /**
- * Section Services — présentation éditoriale (liste numérotée façon sommaire
- * d'acte) plutôt qu'une grille d'icônes générique. Données partagées avec la
- * page dédiée /services via src/views/data/services.tsx.
+ * Section Services — présentation éditoriale (liste numérotée façon sommaire d'acte) plutôt
+ * qu'une grille d'icônes générique. Contenu géré depuis le backoffice (/admin/services), plus
+ * aucune donnée en dur ici.
  */
-export default function Services() {
+export default function Services({ services }: { services: ServiceTeaserItem[] }) {
   return (
     <section id="services" className="py-22">
       <div className="mx-auto max-w-[1160px] px-[22px]">
@@ -27,7 +32,7 @@ export default function Services() {
         </div>
 
         <div className="border-t border-line">
-          {SERVICES.map((s, i) => (
+          {services.map((s, i) => (
             <Link
               key={s.slug}
               href={`/services#${s.slug}`}
@@ -38,7 +43,7 @@ export default function Services() {
               </span>
               <span>
                 <span className="block font-serif text-[19px] text-navy transition-transform group-hover:translate-x-1 sm:text-[22px]">
-                  {s.title}
+                  {s.name}
                 </span>
                 <span className="mt-1 block max-w-[52ch] text-[13.5px] text-muted sm:text-[14.5px]">
                   {s.description}

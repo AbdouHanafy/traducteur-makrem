@@ -38,6 +38,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# médiathèque backoffice — fichiers uploadés en runtime, jamais versionnés (voir
+# lib/storage/publicStorage.ts). Le dossier lui-même reste tracké via .gitkeep.
+/public/uploads/media/*
+!/public/uploads/media/.gitkeep
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

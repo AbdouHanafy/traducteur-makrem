@@ -1,4 +1,5 @@
 import { buildMetadata } from "@/lib/seo";
+import { listActiveFaqs } from "@/repositories/faq";
 import FaqPage from "@/views/FaqPage";
 
 export const metadata = buildMetadata({
@@ -8,6 +9,8 @@ export const metadata = buildMetadata({
   path: "/faq",
 });
 
-export default function Page() {
-  return <FaqPage />;
+export default async function Page() {
+  const faqs = await listActiveFaqs();
+
+  return <FaqPage faqs={faqs.map((f) => ({ id: f.id, question: f.question, answer: f.answer }))} />;
 }

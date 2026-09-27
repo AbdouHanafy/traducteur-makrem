@@ -1,5 +1,4 @@
 import Link from "next/link";
-import LogoutButton from "@/views/components/LogoutButton";
 
 const STATUS_LABELS: Record<string, string> = {
   DEMANDE: "Demande",
@@ -27,10 +26,7 @@ interface AdminOrderRow {
 export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[] }) {
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-14">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-[26px] text-navy">Commandes — espace traducteur</h1>
-        <LogoutButton />
-      </div>
+      <h1 className="mb-8 text-[26px] text-navy">Commandes</h1>
 
       {orders.length === 0 ? (
         <div className="rounded-[14px] border border-line bg-white p-10 text-center text-muted">

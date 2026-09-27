@@ -1,9 +1,16 @@
 import Link from "next/link";
 import Topbar from "@/views/components/Topbar";
 import Footer from "@/views/components/Footer";
-import { SERVICES } from "@/views/data/services";
 
-export default function ServicesPage() {
+export interface ServiceDetailItem {
+  slug: string;
+  name: string;
+  description: string;
+  imageUrl: string | null;
+  pricePerPage: string;
+}
+
+export default function ServicesPage({ services }: { services: ServiceDetailItem[] }) {
   return (
     <>
       <Topbar />
@@ -28,34 +35,34 @@ export default function ServicesPage() {
         <section className="py-20">
           <div className="mx-auto max-w-[1160px] px-[22px]">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {SERVICES.map((s) => (
+              {services.map((s) => (
                 <div
                   key={s.slug}
                   id={s.slug}
-                  className="rounded-[16px] border border-line bg-white px-6 pb-7 pt-7 shadow-[var(--shadow-md)]"
+                  className="overflow-hidden rounded-[16px] border border-line bg-white shadow-[var(--shadow-md)]"
                 >
-                  <div className="mb-4 grid h-11.5 w-11.5 place-items-center rounded-[11px] bg-blue-soft text-blue-2">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                      {s.icon}
-                    </svg>
-                  </div>
-                  <h2 className="text-[19px] text-navy">{s.title}</h2>
-                  <p className="mt-2 text-[14.5px] text-muted">{s.description}</p>
-                  <ul className="mt-4 grid gap-1.5 border-t border-line pt-4 text-[13.5px] text-ink">
-                    {s.documents.map((d) => (
-                      <li key={d} className="flex items-center gap-2">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1E9E6A" strokeWidth="2.5" className="shrink-0">
-                          <path d="M20 6L9 17l-5-5" />
-                        </svg>
-                        {d}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-5 flex items-center justify-between border-t border-line pt-4">
-                    <span className="text-[13.5px] font-semibold text-muted">Sur devis</span>
-                    <Link href="/commander" className="text-[13.5px] font-semibold text-blue hover:text-blue-2">
-                      Commander →
-                    </Link>
+                  {s.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={s.imageUrl} alt={s.name} className="h-40 w-full object-cover" />
+                  ) : (
+                    <div className="grid h-40 w-full place-items-center bg-[linear-gradient(135deg,#EDF0F5,#DCE3EE)]">
+                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2456B8" strokeWidth="1.6">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <path d="M14 2v6h6M8 13h8M8 17h5" />
+                      </svg>
+                    </div>
+                  )}
+                  <div className="px-6 pb-7 pt-6">
+                    <h2 className="text-[19px] text-navy">{s.name}</h2>
+                    <p className="mt-2 text-[14.5px] text-muted">{s.description}</p>
+                    <div className="mt-5 flex items-center justify-between border-t border-line pt-4">
+                      <span className="text-[13.5px] font-semibold text-muted">
+                        {Number(s.pricePerPage) > 0 ? `À partir de ${s.pricePerPage} TND/page` : "Sur devis"}
+                      </span>
+                      <Link href="/commander" className="text-[13.5px] font-semibold text-blue hover:text-blue-2">
+                        Commander →
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))}

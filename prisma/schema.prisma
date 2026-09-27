@@ -131,6 +131,7 @@ model Service {
   name         String
   description  String   @db.Text
   pricePerPage Decimal  @db.Decimal(10, 3)
+  imageUrl     String?
   active       Boolean  @default(true)
   orders       Order[]
   createdAt    DateTime @default(now())
@@ -144,6 +145,31 @@ model PricingRule {
   multiplier Decimal? @db.Decimal(6, 3)
   flatFee    Decimal? @db.Decimal(10, 3)
   active     Boolean  @default(true)
+}
+
+// Backoffice — fondations (médiathèque, FAQ). Le page-builder de la home (sections
+// réordonnables) et les articles viendront dans une itération suivante sur les mêmes bases.
+model MediaAsset {
+  id           String   @id @default(cuid())
+  url          String
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+  altText      String?
+  uploadedById String
+  createdAt    DateTime @default(now())
+}
+
+model FaqItem {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String   @db.Text
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order])
 }
 
 model Order {
