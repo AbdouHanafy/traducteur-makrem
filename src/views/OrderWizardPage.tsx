@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Topbar from "@/views/components/Topbar";
 import Footer from "@/views/components/Footer";
+import FileDropzone from "@/views/components/FileDropzone";
 import { DELAY_OPTIONS } from "@/repositories/pricingRules";
 import { signUp, useSession } from "@/lib/auth-client";
 
@@ -20,6 +21,15 @@ const LANGUAGES = [
   { value: "en", label: "Anglais" },
 ];
 
+/** "Sarra Ben Ali" -> { firstName: "Sarra", lastName: "Ben Ali" } — un seul champ à
+ * remplir côté utilisateur, Better Auth exige les deux séparément côté schéma. */
+function splitFullName(fullName: string): { firstName: string; lastName: string } {
+  const trimmed = fullName.trim().replace(/\s+/g, " ");
+  const spaceIndex = trimmed.indexOf(" ");
+  if (spaceIndex === -1) return { firstName: trimmed, lastName: trimmed };
+  return { firstName: trimmed.slice(0, spaceIndex), lastName: trimmed.slice(spaceIndex + 1) };
+}
+
 export default function OrderWizardPage({ services }: { services: ServiceOption[] }) {
   const router = useRouter();
   const { data: session, isPending: sessionPending } = useSession();
@@ -30,7 +40,7 @@ export default function OrderWizardPage({ services }: { services: ServiceOption[
   const [pages, setPages] = useState(1);
   const [delayKey, setDelayKey] = useState<string>(DELAY_OPTIONS[0].key);
   const [file, setFile] = useState<File | null>(null);
-  const [account, setAccount] = useState({ firstName: "", lastName: "", email: "", phone: "", password: "" });
+  const [account, setAccount] = useState({ fullName: "", email: "", phone: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -58,12 +68,13 @@ export default function OrderWizardPage({ services }: { services: ServiceOption[
     // puis la commande est soumise avec la session qui vient de s'ouvrir — un seul geste pour
     // le client, pas un aller-retour "créez d'abord un compte, puis recommencez".
     if (needsAccount) {
+      const { firstName, lastName } = splitFullName(account.fullName);
       const { error: signUpError } = await signUp.email({
-        name: `${account.firstName} ${account.lastName}`.trim(),
+        name: account.fullName.trim(),
         email: account.email,
         password: account.password,
-        firstName: account.firstName,
-        lastName: account.lastName,
+        firstName,
+        lastName,
         phone: account.phone || undefined,
       });
 
@@ -148,46 +159,34 @@ export default function OrderWizardPage({ services }: { services: ServiceOption[
                 {needsAccount && (
                   <div className="grid gap-4 border-b border-line pb-6">
                     <h2 className="text-[15px] font-semibold text-navy">Vos coordonnées</h2>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Prénom</label>
-                        <input
-                          required
-                          value={account.firstName}
-                          onChange={updateAccount("firstName")}
-                          autoComplete="given-name"
-                          className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Nom</label>
-                        <input
-                          required
-                          value={account.lastName}
-                          onChange={updateAccount("lastName")}
-                          autoComplete="family-name"
-                          className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
-                        />
-                      </div>
-                    </div>
                     <div>
-                      <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Email</label>
+                      <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Nom complet</label>
                       <input
                         required
-                        type="email"
-                        value={account.email}
-                        onChange={updateAccount("email")}
-                        autoComplete="email"
-                        placeholder="vous@exemple.com"
+                        value={account.fullName}
+                        onChange={updateAccount("fullName")}
+                        autoComplete="name"
+                        placeholder="Sarra Ben Ali"
                         className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-                          Téléphone <span className="font-normal text-muted">(optionnel)</span>
-                        </label>
+                        <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Email</label>
                         <input
+                          required
+                          type="email"
+                          value={account.email}
+                          onChange={updateAccount("email")}
+                          autoComplete="email"
+                          placeholder="vous@exemple.com"
+                          className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Téléphone</label>
+                        <input
+                          required
                           type="tel"
                           value={account.phone}
                           onChange={updateAccount("phone")}
@@ -196,19 +195,23 @@ export default function OrderWizardPage({ services }: { services: ServiceOption[
                           className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
                         />
                       </div>
-                      <div>
-                        <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Mot de passe</label>
-                        <input
-                          required
-                          type="password"
-                          minLength={10}
-                          value={account.password}
-                          onChange={updateAccount("password")}
-                          autoComplete="new-password"
-                          placeholder="10 caractères minimum"
-                          className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
-                        />
-                      </div>
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Mot de passe</label>
+                      <input
+                        required
+                        type="password"
+                        minLength={10}
+                        value={account.password}
+                        onChange={updateAccount("password")}
+                        autoComplete="new-password"
+                        placeholder="10 caractères minimum"
+                        className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+                      />
+                      <p className="mt-1.5 text-[12.5px] text-muted">
+                        Utilisé pour retrouver vos commandes ensuite — modifiable à tout moment
+                        depuis votre espace client.
+                      </p>
                     </div>
                     <p className="text-[13px] text-muted">
                       Déjà client ?{" "}
@@ -301,14 +304,12 @@ export default function OrderWizardPage({ services }: { services: ServiceOption[
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-                    Document source (PDF, JPEG ou PNG — 20 Mo max)
-                  </label>
-                  <input
-                    type="file"
+                  <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Document source</label>
+                  <FileDropzone
+                    file={file}
+                    onChange={setFile}
                     accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                    className="w-full rounded-[10px] border border-dashed border-line bg-mist px-4 py-3 text-[14px] text-ink outline-none focus:border-blue"
+                    hint="PDF, JPEG ou PNG — 20 Mo max"
                   />
                 </div>
 

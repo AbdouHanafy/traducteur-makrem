@@ -31,6 +31,12 @@ export default function OrdersListPage({ orders }: { orders: OrderRow[] }) {
         <h1 className="text-[22px] text-navy sm:text-[26px]">Mes commandes</h1>
         <div className="flex items-center gap-5">
           <Link
+            href="/dashboard/compte"
+            className="text-[14px] font-semibold text-blue hover:text-blue-2"
+          >
+            Mon compte
+          </Link>
+          <Link
             href="/commander"
             className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
           >
