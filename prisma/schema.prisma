@@ -172,6 +172,28 @@ model FaqItem {
   @@index([order])
 }
 
+/**
+ * Articles — même logique d'ordre manuel (monter/descendre) que FaqItem plutôt qu'un tri
+ * chronologique implicite, pour rester cohérent avec ce que l'admin pilote ailleurs dans le
+ * backoffice. `body` est du texte brut (paragraphes via retours à la ligne, voir
+ * CustomSection) : pas d'éditeur riche dans cette itération.
+ */
+model Article {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  title         String
+  excerpt       String    @db.Text
+  body          String    @db.Text
+  coverImageUrl String?
+  order         Int       @default(0)
+  published     Boolean   @default(false)
+  publishedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([order])
+}
+
 enum HomeSectionType {
   HERO
   STATS

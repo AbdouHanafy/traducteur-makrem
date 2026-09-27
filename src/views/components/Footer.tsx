@@ -29,6 +29,7 @@ export default function Footer() {
               <li><Link href="/#workflow" className="hover:text-white">Comment ça marche</Link></li>
               <li><Link href="/commander" className="hover:text-white">Commander</Link></li>
               <li><Link href="/dashboard/orders" className="hover:text-white">Suivi de commande</Link></li>
+              <li><Link href="/articles" className="hover:text-white">Articles</Link></li>
               <li><Link href="/faq" className="hover:text-white">FAQ</Link></li>
               <li><Link href="/contact" className="hover:text-white">Contact</Link></li>
             </ul>
