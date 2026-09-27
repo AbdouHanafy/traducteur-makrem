@@ -7,20 +7,35 @@ import { useSession } from "@/lib/auth-client";
 
 /**
  * Topbar — header clair (fond blanc), typo sans-serif fine en petites capitales, lien actif
- * souligné en or, un seul CTA plein (navy) contrasté. Repris de plus près d'une référence
- * "booking direct" fournie par le client, palette et poids de police corrigés après un
- * premier essai trop sombre/trop gras.
+ * souligné en or, un seul CTA plein (navy) contrasté. "Services" a un sous-menu au survol
+ * (chevron, comme les rubriques à tiroir de la référence "booking direct" fournie par le
+ * client) ; les slugs listés ici reprennent ceux de /services (voir aussi Footer.tsx).
  */
+const SERVICES_DROPDOWN = [
+  { slug: "etat-civil", label: "État civil" },
+  { slug: "diplomes-releves", label: "Diplômes & relevés" },
+  { slug: "contrats-actes", label: "Contrats & actes" },
+  { slug: "documents-judiciaires", label: "Documents judiciaires" },
+  { slug: "interpretariat", label: "Interprétariat" },
+];
+
 const NAV_LINKS = [
-  { href: "/a-propos", label: "À propos" },
-  { href: "/services", label: "Services" },
   { href: "/articles", label: "Articles" },
   { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
 ];
 
+function ChevronDown() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" className="transition-transform group-hover:rotate-180">
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
 export default function Topbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const pathname = usePathname();
   const { data: session } = useSession();
   const spaceHref = session ? "/dashboard" : "/login";
@@ -33,6 +48,8 @@ export default function Topbar() {
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
+
+  const isServicesActive = pathname.startsWith("/services");
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-white/95 backdrop-blur-md">
@@ -72,6 +89,47 @@ export default function Topbar() {
         </Link>
 
         <nav className="ml-auto hidden items-center gap-6 lg:flex" aria-label="Navigation principale">
+          <Link
+            href="/a-propos"
+            className={`whitespace-nowrap border-b-[1.5px] pb-1 text-[12px] font-medium uppercase tracking-[.09em] transition-colors ${
+              pathname === "/a-propos" ? "border-seal text-seal" : "border-transparent text-muted hover:text-navy"
+            }`}
+          >
+            Le Cabinet
+          </Link>
+
+          <div className="group relative">
+            <Link
+              href="/services"
+              className={`flex items-center gap-1 whitespace-nowrap border-b-[1.5px] pb-1 text-[12px] font-medium uppercase tracking-[.09em] transition-colors ${
+                isServicesActive ? "border-seal text-seal" : "border-transparent text-muted group-hover:text-navy"
+              }`}
+            >
+              Services
+              <ChevronDown />
+            </Link>
+
+            <div className="invisible absolute left-1/2 top-full w-[260px] -translate-x-1/2 pt-3 opacity-0 transition-opacity group-hover:visible group-hover:opacity-100">
+              <div className="overflow-hidden rounded-[12px] border border-line bg-white shadow-[var(--shadow-lg)]">
+                {SERVICES_DROPDOWN.map((item) => (
+                  <Link
+                    key={item.slug}
+                    href={`/services#${item.slug}`}
+                    className="block px-4 py-2.5 text-[13px] text-ink transition-colors hover:bg-mist hover:text-navy"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <Link
+                  href="/services"
+                  className="block border-t border-line px-4 py-2.5 text-[12.5px] font-semibold text-blue hover:bg-mist"
+                >
+                  Voir tous les services →
+                </Link>
+              </div>
+            </div>
+          </div>
+
           {NAV_LINKS.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -127,6 +185,61 @@ export default function Topbar() {
           className="flex flex-col gap-0 border-t border-line bg-white px-[22px] pb-4 pt-2 lg:hidden"
           aria-label="Navigation mobile"
         >
+          <Link
+            href="/a-propos"
+            onClick={() => setMobileOpen(false)}
+            className={`border-b border-line py-3 text-[12.5px] font-medium uppercase tracking-[.09em] ${
+              pathname === "/a-propos" ? "text-seal" : "text-muted"
+            }`}
+          >
+            Le Cabinet
+          </Link>
+
+          <div className="border-b border-line">
+            <button
+              type="button"
+              onClick={() => setMobileServicesOpen((v) => !v)}
+              aria-expanded={mobileServicesOpen}
+              className={`flex w-full items-center justify-between py-3 text-[12.5px] font-medium uppercase tracking-[.09em] ${
+                isServicesActive ? "text-seal" : "text-muted"
+              }`}
+            >
+              Services
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.6"
+                className={`transition-transform ${mobileServicesOpen ? "rotate-180" : ""}`}
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            {mobileServicesOpen && (
+              <div className="grid gap-0 pb-3 pl-3">
+                {SERVICES_DROPDOWN.map((item) => (
+                  <Link
+                    key={item.slug}
+                    href={`/services#${item.slug}`}
+                    onClick={() => setMobileOpen(false)}
+                    className="py-2 text-[12.5px] text-muted"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <Link
+                  href="/services"
+                  onClick={() => setMobileOpen(false)}
+                  className="py-2 text-[12.5px] font-semibold text-blue"
+                >
+                  Voir tous les services →
+                </Link>
+              </div>
+            )}
+          </div>
+
           {NAV_LINKS.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -142,6 +255,7 @@ export default function Topbar() {
               </Link>
             );
           })}
+
           <div className="mt-3 grid gap-2.5">
             <Link
               href={spaceHref}
