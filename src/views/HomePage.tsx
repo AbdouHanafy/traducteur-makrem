@@ -4,6 +4,7 @@ import Stats from "@/views/components/Stats";
 import Services, { type ServiceTeaserItem } from "@/views/components/Services";
 import Workflow from "@/views/components/Workflow";
 import Statement from "@/views/components/Statement";
+import TestimonialsCarousel, { type TestimonialItem } from "@/views/components/TestimonialsCarousel";
 import FinalCta from "@/views/components/FinalCta";
 import CustomSection, { type CustomSectionData } from "@/views/components/CustomSection";
 import Footer from "@/views/components/Footer";
@@ -23,9 +24,11 @@ export interface HomeSectionData {
 export default function HomePage({
   sections,
   services,
+  testimonials,
 }: {
   sections: HomeSectionData[];
   services: ServiceTeaserItem[];
+  testimonials: TestimonialItem[];
 }) {
   return (
     <>
@@ -43,6 +46,8 @@ export default function HomePage({
               return <Workflow key={section.id} />;
             case "STATEMENT":
               return <Statement key={section.id} />;
+            case "TESTIMONIALS":
+              return <TestimonialsCarousel key={section.id} testimonials={testimonials} />;
             case "FINAL_CTA":
               return <FinalCta key={section.id} />;
             case "CUSTOM":

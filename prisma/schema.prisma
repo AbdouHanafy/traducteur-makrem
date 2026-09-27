@@ -200,8 +200,29 @@ enum HomeSectionType {
   SERVICES
   WORKFLOW
   STATEMENT
+  TESTIMONIALS
   FINAL_CTA
   CUSTOM
+}
+
+/**
+ * Avis clients — jamais seedés avec du faux contenu (voir la discussion produit : publier de
+ * faux avis attribués à des clients inventés serait trompeur sur un vrai site). La table est
+ * vide par défaut ; le carrousel (TESTIMONIALS) ne s'affiche que s'il y a au moins un avis
+ * actif, voir CustomSection/TestimonialsCarousel.
+ */
+model Testimonial {
+  id         String   @id @default(cuid())
+  authorName String
+  authorRole String?
+  quote      String   @db.Text
+  rating     Int?
+  order      Int      @default(0)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([order])
 }
 
 /**

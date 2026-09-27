@@ -10,6 +10,7 @@ const NAV = [
   { href: "/admin/home-sections", label: "Page d'accueil", staffAllowed: false },
   { href: "/admin/services", label: "Services", staffAllowed: false },
   { href: "/admin/articles", label: "Articles", staffAllowed: false },
+  { href: "/admin/testimonials", label: "Avis clients", staffAllowed: false },
   { href: "/admin/faq", label: "FAQ", staffAllowed: false },
   { href: "/admin/media", label: "Médiathèque", staffAllowed: false },
 ];

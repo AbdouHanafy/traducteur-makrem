@@ -71,6 +71,7 @@ export const SYSTEM_SECTION_LABELS: Record<HomeSectionType, string> = {
   SERVICES: "Nos prestations",
   WORKFLOW: "Comment ça marche",
   STATEMENT: "Citation",
+  TESTIMONIALS: "Avis clients (carrousel)",
   FINAL_CTA: "Appel à l'action final",
   CUSTOM: "Section personnalisée",
 };

@@ -29,6 +29,7 @@ npm install
 npm run db:up            # démarre MySQL (Docker), attend qu'il soit healthy
 npm run db:migrate        # applique les migrations Prisma
 npm run db:seed           # crée 3 comptes de démo + les services
+npm run media:service-covers  # génère les photos de couverture des services (voir plus bas)
 npm run dev
 ```
 
@@ -45,7 +46,18 @@ npm run db:migrate    # prisma migrate dev
 npm run db:generate   # prisma generate
 npm run db:seed       # prisma db seed (prisma/seed.ts)
 npm run db:studio     # prisma studio
+npm run media:service-covers  # scripts/generate-service-covers.ts — image de couverture par
+                               # service (navy/or, générée, pas une photo) ; les fichiers
+                               # vivent dans public/uploads/media/ (gitignored, comme tout
+                               # upload de la médiathèque) donc à relancer après un clone/déploy
 ```
+
+## Avis clients
+
+Le carrousel d'avis (page d'accueil) ne s'affiche que s'il y a au moins un avis **publié**
+dans `/admin/testimonials`. Volontairement vide par défaut : n'y saisir que de vrais avis
+de clients, jamais de contenu inventé — un faux avis attribué à un client fictif sur un vrai
+site professionnel serait trompeur.
 
 `postinstall` exécute `prisma generate` automatiquement. `npx tsx scripts/verify-db.ts` est
 un smoke-test CRUD ponctuel (Phase 2) — pas un script npm permanent, à lancer manuellement si

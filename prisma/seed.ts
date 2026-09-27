@@ -198,18 +198,33 @@ async function main() {
   // Sections système de la home, dans leur ordre actuel codé en dur (HomePage.tsx avant le
   // page-builder). Même idempotence que FaqItem ci-dessus : seulement si la table est vide.
   const homeSectionCount = await prisma.homeSection.count();
-  const systemSections: { type: "HERO" | "STATS" | "SERVICES" | "WORKFLOW" | "STATEMENT" | "FINAL_CTA" }[] = [
+  const systemSections: {
+    type: "HERO" | "STATS" | "SERVICES" | "WORKFLOW" | "STATEMENT" | "TESTIMONIALS" | "FINAL_CTA";
+  }[] = [
     { type: "HERO" },
     { type: "STATS" },
     { type: "SERVICES" },
     { type: "WORKFLOW" },
     { type: "STATEMENT" },
+    { type: "TESTIMONIALS" },
     { type: "FINAL_CTA" },
   ];
 
   if (homeSectionCount === 0) {
     for (let i = 0; i < systemSections.length; i++) {
       await prisma.homeSection.create({ data: { ...systemSections[i], order: i } });
+    }
+  } else {
+    // Migration douce : une base déjà seedée avant l'ajout du carrousel d'avis n'a pas cette
+    // section. On l'insère juste avant FINAL_CTA sans toucher à l'ordre des autres.
+    const hasTestimonialsSection = await prisma.homeSection.findFirst({ where: { type: "TESTIMONIALS" } });
+    if (!hasTestimonialsSection) {
+      const finalCta = await prisma.homeSection.findFirst({ where: { type: "FINAL_CTA" } });
+      const order = finalCta ? finalCta.order : (await prisma.homeSection.count());
+      if (finalCta) {
+        await prisma.homeSection.update({ where: { id: finalCta.id }, data: { order: order + 1 } });
+      }
+      await prisma.homeSection.create({ data: { type: "TESTIMONIALS", order } });
     }
   }
 

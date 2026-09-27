@@ -1,6 +1,7 @@
 import { buildMetadata, SITE } from "@/lib/seo";
 import { listActiveServices } from "@/repositories/services";
 import { listVisibleHomeSections } from "@/repositories/homeSections";
+import { listActiveTestimonials } from "@/repositories/testimonials";
 import HomePage from "@/views/HomePage";
 
 export const metadata = buildMetadata({
@@ -10,7 +11,11 @@ export const metadata = buildMetadata({
 });
 
 export default async function Page() {
-  const [services, sections] = await Promise.all([listActiveServices(), listVisibleHomeSections()]);
+  const [services, sections, testimonials] = await Promise.all([
+    listActiveServices(),
+    listVisibleHomeSections(),
+    listActiveTestimonials(),
+  ]);
 
   return (
     <HomePage
@@ -25,6 +30,13 @@ export default async function Page() {
         ctaHref: s.ctaHref,
       }))}
       services={services.map((s) => ({ slug: s.slug, name: s.name, description: s.description }))}
+      testimonials={testimonials.map((t) => ({
+        id: t.id,
+        authorName: t.authorName,
+        authorRole: t.authorRole,
+        quote: t.quote,
+        rating: t.rating,
+      }))}
     />
   );
 }
