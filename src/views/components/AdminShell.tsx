@@ -6,6 +6,7 @@ import LogoutButton from "@/views/components/LogoutButton";
 
 const NAV = [
   { href: "/admin/orders", label: "Commandes", staffAllowed: true },
+  { href: "/admin/home-sections", label: "Page d'accueil", staffAllowed: false },
   { href: "/admin/services", label: "Services", staffAllowed: false },
   { href: "/admin/faq", label: "FAQ", staffAllowed: false },
   { href: "/admin/media", label: "Médiathèque", staffAllowed: false },

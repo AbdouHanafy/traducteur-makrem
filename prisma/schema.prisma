@@ -172,6 +172,41 @@ model FaqItem {
   @@index([order])
 }
 
+enum HomeSectionType {
+  HERO
+  STATS
+  SERVICES
+  WORKFLOW
+  STATEMENT
+  FINAL_CTA
+  CUSTOM
+}
+
+/**
+ * Page-builder de la home — ordre et visibilité de toutes les sections (système + libres).
+ * Les sections système (HERO, STATS, ...) gardent leur mise en page codée en dur (design de
+ * marque, pas du contenu générique) : seuls order/visible sont pilotés d'ici. CUSTOM est le
+ * seul type dont le contenu (eyebrow/title/body/image/CTA) est éditable depuis le backoffice —
+ * c'est le mécanisme "ajouter une section" demandé.
+ */
+model HomeSection {
+  id       String          @id @default(cuid())
+  type     HomeSectionType
+  order    Int
+  visible  Boolean         @default(true)
+  eyebrow  String?
+  title    String?
+  body     String?         @db.Text
+  imageUrl String?
+  ctaLabel String?
+  ctaHref  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order])
+}
+
 model Order {
   id        String @id @default(cuid())
   reference String @unique

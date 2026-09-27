@@ -195,12 +195,31 @@ async function main() {
     }
   }
 
+  // Sections système de la home, dans leur ordre actuel codé en dur (HomePage.tsx avant le
+  // page-builder). Même idempotence que FaqItem ci-dessus : seulement si la table est vide.
+  const homeSectionCount = await prisma.homeSection.count();
+  const systemSections: { type: "HERO" | "STATS" | "SERVICES" | "WORKFLOW" | "STATEMENT" | "FINAL_CTA" }[] = [
+    { type: "HERO" },
+    { type: "STATS" },
+    { type: "SERVICES" },
+    { type: "WORKFLOW" },
+    { type: "STATEMENT" },
+    { type: "FINAL_CTA" },
+  ];
+
+  if (homeSectionCount === 0) {
+    for (let i = 0; i < systemSections.length; i++) {
+      await prisma.homeSection.create({ data: { ...systemSections[i], order: i } });
+    }
+  }
+
   console.log("Seed OK :", {
     users: users.map((u) => `${u.email} (${u.role})`),
     devPassword: DEV_PASSWORD,
     services: services.map((s) => s.slug),
     pricingRules: pricingRules.map((r) => r.key),
     faqs: faqCount === 0 ? faqs.length : `déjà présentes (${faqCount})`,
+    homeSections: homeSectionCount === 0 ? systemSections.length : `déjà présentes (${homeSectionCount})`,
   });
 }
 
