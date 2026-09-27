@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 
 /**
- * Topbar — nav simplifiée sur demande : À propos (qui est Maître Arfaoui), Services,
- * Articles, FAQ, Contact comme liens ; Commander et Se connecter/Mon espace comme boutons
- * d'action distincts plutôt que noyés dans la liste de liens.
+ * Topbar — structure inspirée d'un header "booking direct" (nav en petites capitales avec
+ * lien actif souligné, connexion en texte simple, un seul CTA plein contrasté) adaptée à
+ * l'identité navy/or du site plutôt qu'un copier-coller de palette.
  */
 const NAV_LINKS = [
   { href: "/a-propos", label: "À propos" },
@@ -19,6 +20,7 @@ const NAV_LINKS = [
 
 export default function Topbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
   const { data: session } = useSession();
   const spaceHref = session ? "/dashboard" : "/login";
   const spaceLabel = session ? "Mon espace" : "Se connecter";
@@ -33,7 +35,7 @@ export default function Topbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-navy-2/95 backdrop-blur-md">
-      <div className="mx-auto flex h-[72px] max-w-[1160px] items-center gap-5 px-[22px]">
+      <div className="mx-auto flex h-[76px] max-w-[1160px] items-center gap-6 px-[22px]">
         <Link href="/" aria-label="Accueil" className="flex items-center gap-3 text-white">
           <svg className="h-11 w-11 shrink-0" viewBox="0 0 64 64" fill="none" aria-hidden="true">
             <circle cx="32" cy="32" r="30" stroke="#4C79D4" strokeWidth="2" />
@@ -59,39 +61,50 @@ export default function Topbar() {
             </text>
           </svg>
           <span>
-            <span className="block font-serif text-[19px] font-semibold leading-tight">
+            <span className="block font-serif text-[18px] font-bold uppercase leading-tight tracking-wide">
               Maître Makram Arfaoui
             </span>
-            <span className="mt-0.5 block text-[11.5px] uppercase tracking-wider text-[#9fb2d6]">
+            <span className="mt-0.5 block text-[11px] uppercase tracking-[.14em] text-[#9fb2d6]">
               Traducteur &amp; Interprète Assermenté
             </span>
           </span>
         </Link>
 
-        <nav className="ml-auto hidden items-center gap-6 lg:flex" aria-label="Navigation principale">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="whitespace-nowrap text-[14px] font-medium text-[#c9d5ea] transition-colors hover:text-white"
-            >
-              {link.label}
-            </Link>
-          ))}
+        <nav className="ml-auto hidden items-center gap-7 lg:flex" aria-label="Navigation principale">
+          {NAV_LINKS.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`whitespace-nowrap border-b-2 pb-1 text-[12.5px] font-semibold uppercase tracking-[.08em] transition-colors ${
+                  isActive
+                    ? "border-seal text-seal"
+                    : "border-transparent text-[#c9d5ea] hover:text-white"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="ml-1.5 hidden items-center gap-3 lg:flex">
-          <Link
-            href="/commander"
-            className="whitespace-nowrap rounded-[11px] border-[1.5px] border-white/[.28] px-[20px] py-[12px] text-[14.5px] font-semibold text-white transition-colors hover:border-white"
-          >
-            Commander
-          </Link>
+        <div className="ml-2 hidden items-center gap-5 lg:flex">
           <Link
             href={spaceHref}
-            className="whitespace-nowrap rounded-[11px] bg-blue px-[20px] py-[13px] text-[14.5px] font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.28)] transition-colors hover:bg-blue-2"
+            className="whitespace-nowrap text-[12.5px] font-semibold uppercase tracking-[.08em] text-[#c9d5ea] transition-colors hover:text-white"
           >
             {spaceLabel}
+          </Link>
+          <span className="h-6 w-px bg-white/15" aria-hidden="true" />
+          <Link
+            href="/commander"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-[10px] bg-seal px-[20px] py-[12px] text-[13px] font-bold uppercase tracking-[.05em] text-navy-2 transition-colors hover:bg-[#c49a5e]"
+          >
+            Commander
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
+              <path d="M7 17L17 7M8 7h9v9" />
+            </svg>
           </Link>
         </div>
 
@@ -113,30 +126,38 @@ export default function Topbar() {
           className="flex flex-col gap-0 border-t border-white/10 bg-navy-2 px-[22px] pb-4 pt-2 lg:hidden"
           aria-label="Navigation mobile"
         >
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className="border-b border-white/[.07] py-3 text-[#c9d5ea]"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className={`border-b border-white/[.07] py-3 text-[13px] font-semibold uppercase tracking-[.08em] ${
+                  isActive ? "text-seal" : "text-[#c9d5ea]"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
           <div className="mt-3 grid gap-2.5">
-            <Link
-              href="/commander"
-              onClick={() => setMobileOpen(false)}
-              className="inline-flex items-center justify-center rounded-[11px] border-[1.5px] border-white/[.28] px-[22px] py-[13px] text-[15px] font-semibold text-white"
-            >
-              Commander
-            </Link>
             <Link
               href={spaceHref}
               onClick={() => setMobileOpen(false)}
-              className="inline-flex items-center justify-center rounded-[11px] bg-blue px-[22px] py-[13px] text-[15px] font-semibold text-white"
+              className="inline-flex items-center justify-center rounded-[11px] border-[1.5px] border-white/[.28] px-[22px] py-[13px] text-[13px] font-semibold uppercase tracking-[.08em] text-white"
             >
               {spaceLabel}
+            </Link>
+            <Link
+              href="/commander"
+              onClick={() => setMobileOpen(false)}
+              className="inline-flex items-center justify-center gap-1.5 rounded-[11px] bg-seal px-[22px] py-[13px] text-[13px] font-bold uppercase tracking-[.05em] text-navy-2"
+            >
+              Commander
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
+                <path d="M7 17L17 7M8 7h9v9" />
+              </svg>
             </Link>
           </div>
         </nav>
