@@ -115,7 +115,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
     {
       key: "deliver",
       title: "Déposer le fichier traduit",
-      description: "Le fichier final, une fois prêt — l'aperçu filigrané est généré automatiquement.",
+      description: "Le fichier final, une fois prêt — une copie de contrôle interne est générée automatiquement.",
       state: translatedDoc ? "done" : translationStarted ? "current" : "pending",
     },
     {

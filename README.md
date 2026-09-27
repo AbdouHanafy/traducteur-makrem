@@ -7,7 +7,7 @@ plan d'implémentation complet. La maquette d'origine est archivée dans
 **État actuel : le parcours complet fonctionne, de la commande au fichier débloqué.** Pages
 publiques, authentification (Better Auth), wizard de commande (`/commander`), devis auto,
 paiement 50/50 via un provider mock (vrai aller-retour serveur, pas de simulation frontend),
-aperçu filigrané du fichier traduit tant que le solde n'est pas payé, et un espace
+verrouillage total du fichier traduit tant que le solde n'est pas confirmé, et un espace
 traducteur minimal (`/admin/orders`) pour déposer le fichier final. Testé de bout en bout avec
 Playwright, y compris les cas IDOR (un tiers ne peut ni voir ni télécharger la commande d'un
 autre). Ce qui manque encore : CRUD admin pour les prix, KPI dashboard, notifications email,

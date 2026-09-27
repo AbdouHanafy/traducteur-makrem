@@ -28,7 +28,15 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         advanceAmount: order.advanceAmount.toString(),
         balanceAmount: order.balanceAmount.toString(),
         advancePaid: order.advancePaid,
-        balancePaid: order.balancePaid,
+        balancePaid:
+          order.balancePaid &&
+          order.payments.some(
+            (payment) =>
+              payment.phase === "BALANCE" &&
+              payment.status === "SUCCEEDED" &&
+              payment.currency === "TND" &&
+              payment.amount.equals(order.balanceAmount),
+          ),
         service: { name: order.service.name },
         documents: order.documents.map((d) => ({ id: d.id, kind: d.kind, originalName: d.originalName })),
         statusHistory: order.statusHistory.map((h) => ({

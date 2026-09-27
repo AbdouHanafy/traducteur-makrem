@@ -325,30 +325,29 @@ Upload → validation (MIME réel via magic bytes, taille, extension) →
 Téléchargement → GET /api/orders/:id/documents/:documentId/download
   1. session valide (auth())
   2. order.userId === session.user.id  (sinon 403 — bloque IDOR/BOLA du §23/§43)
-  3. si kind === TRANSLATED : order.balancePaid === true (sinon 403, message "solde requis")
-  4. document.status === READY
-  5. lecture du fichier par storageKey résolu de façon path-traversal-safe (jamais à partir
+  3. si kind === TRANSLATED : `balancePaid === true` et statut `TELECHARGEABLE|TERMINEE`
+  4. preuve `Payment(BALANCE, SUCCEEDED, montant exact, TND)` correspondante
+  5. document.status === READY
+  6. lecture du fichier par storageKey résolu de façon path-traversal-safe (jamais à partir
      d'un input utilisateur brut) et stream de la réponse avec Content-Disposition
-  6. AuditLog "DOCUMENT_DOWNLOADED"
+  7. AuditLog "DOCUMENT_DOWNLOADED"
 ```
 
 Pas de bucket S3 nécessaire au lancement (VPS avec disque persistant, comme calmatrip) : un dossier privé + un contrôle d'accès strict au niveau de la route API suffit et respecte l'esprit de la section 14 (le point non négociable est "jamais d'URL publique directe", pas "obligatoirement un cloud object storage"). Si le volume ou le besoin de CDN augmente plus tard, la même interface `privateStorage.ts` pourra pointer vers S3-compatible sans changer les routes.
 
-### 5.1 Aperçu filigrané avant paiement du solde
+### 5.1 Verrouillage total avant paiement du solde
 
-Avant paiement du solde, le client doit pouvoir **voir** la traduction pour la valider, mais
-pas l'emporter gratuitement. Aucune page web ne peut empêcher une capture d'écran (c'est une
-capacité du système d'exploitation, pas du navigateur) — la protection réelle est donc :
+Avant paiement du solde, le client voit que la traduction est prête, mais **aucun contenu du
+fichier final n'est transmis à son navigateur**. La protection réelle est donc :
 
 1. Le PDF final n'est **jamais** transmis au navigateur avant paiement du solde (ni en aperçu
    ni en téléchargement — voir `/api/orders/:id/documents/:documentId/download`, §5 ci-dessus).
-2. À la place, `lib/pdf-preview.ts` rend chaque page côté serveur (`pdfjs-dist` +
-   `@napi-rs/canvas`, jamais dans le bundle client — voir `next.config.ts#serverExternalPackages`)
-   en image JPEG basse résolution avec un filigrane ("APERÇU - NON PAYÉ") superposé, servie par
-   `/api/orders/:id/documents/:documentId/preview`.
-3. Une capture d'écran de cet aperçu ne vaut donc que l'image basse résolution filigranée, pas
-   le document certifié — la dissuasion vient de la dégradation du contenu, pas d'un blocage
-   technique de la capture elle-même.
+2. L'interface client affiche seulement un coffre verrouillé, le nom du fichier et l'action de
+   paiement. La route `/preview` est réservée au rôle `ADMIN`.
+3. Le téléchargement exige trois preuves concordantes : `balancePaid`, un statut
+   `TELECHARGEABLE|TERMINEE`, et une ligne `Payment(BALANCE, SUCCEEDED, montant exact, TND)`.
+4. La confirmation du paiement, la mise à jour de la commande, les historiques et l'audit sont
+   écrits dans une transaction Prisma unique.
 
 ---
 
@@ -423,9 +422,9 @@ Toute l'opération 3-9 dans une transaction Prisma.
 | **3. Services & pricing admin** ✅ (services) / ⏳ (PricingRule) | CRUD `Service` complet (`/admin/services`, ADMIN uniquement) avec photo via une médiathèque (`/admin/media`, `MediaAsset`, stockage public `public/uploads/media/`) ; `PricingRule` (multiplicateurs de délai) encore seedé, pas d'écran admin | Changer un service ou son prix dans le backoffice le change immédiatement sur `/`, `/services` et le wizard `/commander` — testé E2E |
 | **4. Wizard de commande** ✅ | `/commander` : service/langues/pages/délai + upload (MIME réel via magic bytes, UUID, stockage privé hors webroot) | Une commande `DEVIS_A_VALIDER` créée en DB avec `Document(kind=SOURCE)` |
 | **5. Devis** ✅ (auto uniquement) | Calcul auto (`lib/pricing.ts`, prix × pages × multiplicateur délai), snapshot figé sur `Order`, écran "Accepter le devis". Pas d'override manuel admin. | `DEVIS_A_VALIDER` → `EN_ATTENTE_ACOMPTE` |
-| **6. Paiement (mock provider)** ✅ | `PaymentProvider` abstrait, provider mock avec vrai aller-retour serveur (`/paiement/mock/[ref]` → `/api/payments/webhook`), idempotence, vérification du montant contre la DB | Testé : paiement acompte + solde via Playwright, idempotence du webhook |
+| **6. Paiement (mock provider)** ✅ | `PaymentProvider` abstrait, provider mock local (`/paiement/mock/[ref]` → `/api/payments/mock/confirm`), interdit en production ; webhook réel protégé par secret, transaction atomique, montant/devise revérifiés | Testé : paiement acompte + solde, idempotence de la confirmation |
 | **7. Espace client (dashboard)** ⏳ (minimal) | `/dashboard/orders` (liste) + `/dashboard/orders/[id]` (détail, timeline, paiement). Pas de KPI/graphique. | Liste + détail fonctionnels, testés E2E |
-| **8. Fichier verrouillé/déverrouillé + téléchargement sécurisé** ✅ | Aperçu filigrané rendu serveur (`pdfjs-dist` + `@napi-rs/canvas`, jamais le vrai fichier) tant que le solde n'est pas payé ; téléchargement réel avec les 5 vérifications du §5 | Testé : propriétaire ne peut pas télécharger avant solde payé (403), un tiers ne peut ni voir ni télécharger (404/403) |
+| **8. Fichier verrouillé/déverrouillé + téléchargement sécurisé** ✅ | Aucun contenu final transmis avant confirmation du solde ; téléchargement réel soumis à l'autorisation, au statut et à une preuve `Payment` réussie | Testé : propriétaire bloqué avant solde, un tiers ne peut ni voir ni télécharger |
 | **9. Espace admin/traducteur** ✅ (minimal) | `/admin/orders` (table) + `/admin/orders/[id]` (démarrer la traduction, déposer le fichier final → génère l'aperçu). Pas de filtres avancés. | Testé : le traducteur fait progresser une commande de bout en bout |
 | **10. Notifications** | `NotificationService` (email d'abord), tous les événements du §29 | Chaque transition envoie le bon email |
 | **11. Provider de paiement réel** | Intégration Konnect (ou Flouci/D17 selon le compte marchand disponible), signature webhook réelle | *Dépend d'un compte marchand actif — voir §9 "dépendances externes"* |

@@ -7,8 +7,8 @@ import { generateAndStorePreview } from "@/lib/pdf-preview";
 
 /**
  * Dépôt du fichier final par le traducteur — jamais déclenché par un bouton client (voir
- * l'anti-pattern §1.2 du prototype original). Génère aussi l'aperçu filigrané immédiatement
- * pour que le client puisse valider le fichier sans attendre.
+ * l'anti-pattern §1.2 du prototype original). Une copie filigranée est générée pour le
+ * contrôle interne admin, mais elle n'est jamais exposée au client avant paiement.
  */
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -54,7 +54,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (upload.mimeType === "application/pdf") {
     try {
       const buffer = await readPrivateFile(storageKey);
-      await generateAndStorePreview(storageKey, buffer, "APERÇU - NON PAYÉ");
+      await generateAndStorePreview(storageKey, buffer, `COPIE INTERNE - ${order.reference}`);
     } catch (e) {
       // La commande a déjà transitionné (fichier bien enregistré) : un échec de rendu
       // d'aperçu ne doit pas faire perdre le dépôt, juste être visible dans les logs.

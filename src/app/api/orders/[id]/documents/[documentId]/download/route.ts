@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { findOrderById } from "@/repositories/orders";
 import { findDocumentById } from "@/repositories/documents";
+import { findSucceededBalancePayment } from "@/repositories/payments";
 import { readPrivateFile } from "@/lib/storage/privateStorage";
 
 /**
@@ -33,8 +34,16 @@ export async function GET(
     return NextResponse.json({ error: "Introuvable." }, { status: 404 });
   }
 
-  if (document.kind === "TRANSLATED" && !order.balancePaid && !isStaff) {
-    return NextResponse.json({ error: "Solde requis pour télécharger ce fichier." }, { status: 403 });
+  if (document.kind === "TRANSLATED" && !isStaff) {
+    const isDownloadableStatus = order.status === "TELECHARGEABLE" || order.status === "TERMINEE";
+    if (!order.balancePaid || !isDownloadableStatus) {
+      return NextResponse.json({ error: "Solde requis pour télécharger ce fichier." }, { status: 402 });
+    }
+
+    const confirmedBalance = await findSucceededBalancePayment(order.id, order.balanceAmount);
+    if (!confirmedBalance) {
+      return NextResponse.json({ error: "Paiement du solde non confirmé." }, { status: 402 });
+    }
   }
 
   if (document.status !== "READY") {
@@ -57,6 +66,8 @@ export async function GET(
       "Content-Type": document.mimeType,
       "Content-Disposition": `attachment; filename="${encodeURIComponent(document.originalName)}"`,
       "Content-Length": String(buffer.byteLength),
+      "Cache-Control": "private, no-store",
+      "X-Content-Type-Options": "nosniff",
     },
   });
 }

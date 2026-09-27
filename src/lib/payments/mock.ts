@@ -19,7 +19,8 @@ export const mockPaymentProvider: PaymentProvider = {
 };
 
 export function getPaymentProvider(): PaymentProvider {
-  // Un seul provider pour l'instant (Phase 11 branchera Konnect/Flouci derrière la même
-  // interface — voir PAYMENT_PROVIDER dans .env.example).
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Le provider de paiement mock est interdit en production. Configurez un provider réel.");
+  }
   return mockPaymentProvider;
 }

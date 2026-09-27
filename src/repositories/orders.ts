@@ -103,7 +103,7 @@ export function listOrdersForUser(userId: string) {
 export function listOrdersWithDocumentsForUser(userId: string) {
   return prisma.order.findMany({
     where: { userId },
-    include: { service: true, documents: true },
+    include: { service: true, documents: true, payments: true },
     orderBy: { createdAt: "desc" },
   });
 }
@@ -134,30 +134,6 @@ export async function acceptQuote(orderId: string, actorId: string) {
       throw new Error("Ce devis ne peut plus être accepté.");
     }
     await transitionStatus(tx, orderId, "EN_ATTENTE_ACOMPTE", actorId);
-  });
-}
-
-/** Confirmation serveur du paiement de l'acompte (jamais déclenché par le seul navigateur). */
-export async function confirmAdvancePayment(orderId: string, actorId: string | null) {
-  return prisma.$transaction(async (tx) => {
-    const order = await tx.order.findUniqueOrThrow({ where: { id: orderId } });
-    if (order.advancePaid) return order; // idempotent
-    await tx.order.update({ where: { id: orderId }, data: { advancePaid: true } });
-    await transitionStatus(tx, orderId, "ACOMPTE_PAYE", actorId, "Acompte confirmé");
-    return order;
-  });
-}
-
-/** Confirmation serveur du paiement du solde -> déverrouille le fichier traduit. */
-export async function confirmBalancePayment(orderId: string, actorId: string | null) {
-  return prisma.$transaction(async (tx) => {
-    const order = await tx.order.findUniqueOrThrow({ where: { id: orderId } });
-    if (order.balancePaid) return order; // idempotent
-    await tx.order.update({ where: { id: orderId }, data: { balancePaid: true } });
-    await transitionStatus(tx, orderId, "SOLDE_PAYE", actorId, "Solde confirmé");
-    // Automatique (state machine ARCHITECTURE.md §6.3) : le fichier devient téléchargeable.
-    await transitionStatus(tx, orderId, "TELECHARGEABLE", null, "Fichier débloqué");
-    return order;
   });
 }
 

@@ -1,105 +1,29 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
 /**
- * Galerie d'aperçu filigrané — jamais le vrai fichier (voir /api/.../preview). Les
- * déterrents (menu contextuel désactivé, pas de drag, pas de bouton télécharger) découragent
- * la copie occasionnelle ; ils n'empêchent pas une capture d'écran, ce qu'aucune page web ne
- * peut techniquement garantir. La vraie protection est le filigrane + la basse résolution :
- * une capture ne vaut pas le fichier certifié.
+ * État volontairement sans aperçu : avant confirmation serveur du solde, aucun octet du
+ * document traduit (ni PDF, ni image de page) n'est envoyé au navigateur du client.
  */
-export default function LockedPreview({ orderId, documentId }: { orderId: string; documentId: string }) {
-  const [page, setPage] = useState(1);
-  const [pageCount, setPageCount] = useState<number | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let objectUrl: string | null = null;
-    let cancelled = false;
-
-    async function load() {
-      setError(null);
-      const res = await fetch(`/api/orders/${orderId}/documents/${documentId}/preview?page=${page}`);
-      if (cancelled) return;
-
-      if (!res.ok) {
-        setError("Aperçu indisponible pour le moment.");
-        return;
-      }
-
-      const count = Number(res.headers.get("X-Preview-Page-Count") ?? "1");
-      const blob = await res.blob();
-      objectUrl = URL.createObjectURL(blob);
-      setPageCount(count);
-      setImageUrl(objectUrl);
-    }
-
-    load();
-
-    return () => {
-      cancelled = true;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
-  }, [orderId, documentId, page]);
-
+export default function LockedPreview({ fileName }: { fileName: string }) {
   return (
-    <div>
-      <div className="relative overflow-hidden rounded-[12px] border border-line bg-mist">
-        <div className="absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-navy/90 px-3 py-1 text-[11.5px] font-semibold text-white">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <rect x="4" y="11" width="16" height="10" rx="2" />
-            <path d="M8 11V7a4 4 0 018 0v4" />
-          </svg>
-          Aperçu verrouillé
-        </div>
-        {error ? (
-          <div className="flex h-[360px] items-center justify-center text-[13.5px] text-muted">{error}</div>
-        ) : imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imageUrl}
-            alt={`Aperçu page ${page}`}
-            className="w-full select-none"
-            draggable={false}
-            onContextMenu={(e) => e.preventDefault()}
-          />
-        ) : (
-          <div className="flex h-[360px] items-center justify-center text-[13.5px] text-muted">
-            Chargement de l&apos;aperçu…
-          </div>
-        )}
-      </div>
-
-      {pageCount && pageCount > 1 && (
-        <div className="mt-3 flex items-center justify-center gap-3 text-[13.5px]">
-          <button
-            type="button"
-            disabled={page <= 1}
-            onClick={() => setPage((p) => p - 1)}
-            className="rounded-lg border border-line px-3 py-1.5 font-semibold text-navy disabled:opacity-40"
-          >
-            Précédent
-          </button>
-          <span className="text-muted">
-            Page {page} / {pageCount}
+    <div className="overflow-hidden rounded-2xl border border-[#dfe5ef] bg-[#f7f9fc]">
+      <div className="relative grid min-h-[260px] place-items-center overflow-hidden px-6 py-9 text-center">
+        <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(#dfe5ef_1px,transparent_1px),linear-gradient(90deg,#dfe5ef_1px,transparent_1px)] [background-size:28px_28px]" />
+        <div className="relative">
+          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-navy text-white shadow-[0_12px_30px_rgba(20,40,77,0.2)]">
+            <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <rect x="4" y="10" width="16" height="11" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" />
+            </svg>
           </span>
-          <button
-            type="button"
-            disabled={page >= pageCount}
-            onClick={() => setPage((p) => p + 1)}
-            className="rounded-lg border border-line px-3 py-1.5 font-semibold text-navy disabled:opacity-40"
-          >
-            Suivant
-          </button>
+          <span className="mt-5 inline-flex rounded-full bg-[#fff3df] px-3 py-1 text-[10.5px] font-bold uppercase tracking-[.1em] text-[#9a5b12]">Document protégé</span>
+          <h3 className="mt-3 text-[18px] text-navy">Traduction prête et verrouillée</h3>
+          <p className="mx-auto mt-2 max-w-[38ch] text-[12.5px] leading-5 text-muted">Le contenu du fichier final n’est jamais transmis avant la confirmation du paiement du solde.</p>
+          <p className="mx-auto mt-4 max-w-[260px] truncate rounded-lg border border-line bg-white px-3 py-2 text-[11.5px] font-medium text-ink">{fileName}</p>
         </div>
-      )}
-
-      <p className="mt-3 text-[12.5px] text-muted">
-        Aperçu basse résolution et filigrané pour validation uniquement. Le fichier définitif se
-        débloque au paiement du solde.
-      </p>
+      </div>
+      <div className="flex items-start gap-2.5 border-t border-[#dfe5ef] bg-white px-4 py-3 text-[11.5px] leading-5 text-muted">
+        <svg className="mt-0.5 shrink-0 text-ok" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m5 12 4 4L19 6" /></svg>
+        Le téléchargement sera activé automatiquement après confirmation serveur du paiement.
+      </div>
     </div>
   );
 }

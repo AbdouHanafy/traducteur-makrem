@@ -6,10 +6,8 @@ import { findDocumentById } from "@/repositories/documents";
 import { previewStorageKey, readPreviewMeta, readPrivateFile } from "@/lib/storage/privateStorage";
 
 /**
- * Aperçu filigrané — jamais le vrai fichier. Servi à l'acheteur (et au staff) même avant
- * paiement du solde, pour qu'il puisse valider que la traduction est la bonne : c'est
- * exactement le rôle du "cadenas" côté client (voir le fil produit) — voir ce qu'il achète,
- * sans pouvoir l'emporter.
+ * Aperçu réservé à l'admin. Avant paiement, aucun contenu de la traduction finale n'est
+ * transmis au navigateur du client : l'interface affiche uniquement un coffre verrouillé.
  */
 export async function GET(
   request: Request,
@@ -25,8 +23,8 @@ export async function GET(
   if (!order) return NextResponse.json({ error: "Introuvable." }, { status: 404 });
 
   const isStaff = session.user.role === "ADMIN";
-  if (order.userId !== session.user.id && !isStaff) {
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!isStaff) {
+    return NextResponse.json({ error: "Aperçu verrouillé jusqu'au paiement du solde." }, { status: 423 });
   }
 
   const document = await findDocumentById(documentId);

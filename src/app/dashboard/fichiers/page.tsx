@@ -19,7 +19,15 @@ export default async function Page() {
         id: o.id,
         reference: o.reference,
         service: { name: o.service.name },
-        balancePaid: o.balancePaid,
+        balancePaid:
+          o.balancePaid &&
+          o.payments.some(
+            (payment) =>
+              payment.phase === "BALANCE" &&
+              payment.status === "SUCCEEDED" &&
+              payment.currency === "TND" &&
+              payment.amount.equals(o.balanceAmount),
+          ),
         documents: o.documents.map((d) => ({ id: d.id, kind: d.kind, originalName: d.originalName })),
       }))}
     />

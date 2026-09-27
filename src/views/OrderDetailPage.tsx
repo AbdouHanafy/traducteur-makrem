@@ -120,7 +120,7 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
                 Télécharger le fichier certifié
               </a>
             ) : (
-              <LockedPreview orderId={order.id} documentId={translatedDoc.id} />
+              <LockedPreview fileName={translatedDoc.originalName} />
             )}
           </section>
         </div>

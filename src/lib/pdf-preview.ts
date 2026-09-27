@@ -3,12 +3,9 @@ import { createCanvas } from "@napi-rs/canvas";
 import { writePrivatePreview, writePreviewMeta } from "@/lib/storage/privateStorage";
 
 /**
- * Rendu d'aperçu filigrané — le coeur de la protection anti-copie (voir le fil de discussion
- * produit) : un client peut voir la traduction pour la valider, mais seule une image JPEG
- * basse résolution et filigranée est servie tant que le solde n'est pas payé. Le vrai PDF
- * (route /download) n'est jamais atteignable avant paiement. Aucune protection web ne peut
- * empêcher une capture d'écran — l'objectif ici est de rendre cette capture inutilisable
- * (résolution réduite, filigrane), pas d'empêcher techniquement la capture elle-même.
+ * Rendu d'une copie de contrôle interne filigranée, réservée à l'administrateur/traducteur.
+ * Cet aperçu n'est jamais transmis au client : avant confirmation du solde, l'espace client
+ * affiche uniquement l'état verrouillé et ne reçoit aucun octet du document traduit.
  *
  * pdfjs-dist + @napi-rs/canvas tournent uniquement côté serveur (voir
  * next.config.ts#serverExternalPackages) — jamais dans le bundle client.
@@ -59,7 +56,7 @@ export async function renderWatermarkedPdfPreview(
   return pages;
 }
 
-/** Rend et persiste l'aperçu filigrané d'un document déjà écrit en stockage privé. */
+/** Rend et persiste la copie de contrôle interne d'un document déjà écrit en stockage privé. */
 export async function generateAndStorePreview(
   storageKey: string,
   pdfBuffer: Buffer,

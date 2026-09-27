@@ -52,7 +52,7 @@ export default function MockPaymentPage({ payment }: { payment: MockPaymentData 
       return;
     }
 
-    const res = await fetch("/api/payments/webhook", {
+    const res = await fetch("/api/payments/mock/confirm", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ providerRef: payment.providerRef }),

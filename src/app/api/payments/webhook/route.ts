@@ -1,21 +1,27 @@
-import { headers } from "next/headers";
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { findPaymentByProviderRef, markPaymentSucceeded } from "@/repositories/payments";
-import { findOrderById, confirmAdvancePayment, confirmBalancePayment } from "@/repositories/orders";
+import { findPaymentByProviderRef, confirmPaymentTransaction } from "@/repositories/payments";
 
 /**
  * Point de confirmation serveur unique (ARCHITECTURE.md §6.4) : c'est ici, et nulle part
- * ailleurs, que `advancePaid`/`balancePaid` passent à `true`. Un vrai provider (Phase 11)
- * vérifierait ici une signature de webhook (secret serveur) ; le provider `mock` n'a pas de
- * secret à vérifier, donc on exige à la place que l'appelant soit authentifié ET propriétaire
- * de la commande — un webhook réel n'a pas de session utilisateur, cette contrainte est
- * spécifique au mode mock et disparaîtra avec un vrai provider.
+ * ailleurs, que `advancePaid`/`balancePaid` passent à `true`. Cette route refuse le provider
+ * mock et exige un secret serveur. L'intégration du provider réel remplacera ce contrôle
+ * générique par la vérification cryptographique de sa signature native.
  */
 export async function POST(request: Request) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) {
-    return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
+  if (process.env.PAYMENT_PROVIDER === "mock") {
+    return NextResponse.json({ error: "Introuvable." }, { status: 404 });
+  }
+
+  const configuredSecret = process.env.PAYMENT_PROVIDER_WEBHOOK_SECRET;
+  const receivedSecret = request.headers.get("x-payment-webhook-secret");
+  if (!configuredSecret || !receivedSecret) {
+    return NextResponse.json({ error: "Signature requise." }, { status: 401 });
+  }
+  const expected = Buffer.from(configuredSecret);
+  const received = Buffer.from(receivedSecret);
+  if (expected.length !== received.length || !timingSafeEqual(expected, received)) {
+    return NextResponse.json({ error: "Signature invalide." }, { status: 401 });
   }
 
   const body = await request.json().catch(() => null);
@@ -28,30 +34,14 @@ export async function POST(request: Request) {
   if (!payment) {
     return NextResponse.json({ error: "Paiement introuvable." }, { status: 404 });
   }
-
-  const order = await findOrderById(payment.orderId);
-  if (!order || order.userId !== session.user.id) {
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (payment.provider !== process.env.PAYMENT_PROVIDER) {
+    return NextResponse.json({ error: "Paiement introuvable." }, { status: 404 });
   }
 
-  // Idempotence (Cas 4 du §42) : un webhook déjà traité ne refait rien.
-  if (payment.status === "SUCCEEDED") {
-    return NextResponse.json({ ok: true, alreadyProcessed: true });
+  try {
+    const result = await confirmPaymentTransaction(payment.id, null);
+    return NextResponse.json({ ok: true, ...result });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Paiement non confirmé." }, { status: 409 });
   }
-
-  // Revérifier le montant contre la DB, jamais contre un payload seul (Cas 5 du §42).
-  const expectedAmount = payment.phase === "ADVANCE" ? order.advanceAmount : order.balanceAmount;
-  if (!payment.amount.equals(expectedAmount)) {
-    return NextResponse.json({ error: "Montant incohérent." }, { status: 400 });
-  }
-
-  await markPaymentSucceeded(payment.id);
-
-  if (payment.phase === "ADVANCE") {
-    await confirmAdvancePayment(order.id, session.user.id);
-  } else {
-    await confirmBalancePayment(order.id, session.user.id);
-  }
-
-  return NextResponse.json({ ok: true });
 }
