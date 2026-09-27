@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 import BrandLogo from "@/views/components/BrandLogo";
+import BrandName from "@/views/components/BrandName";
 
 const SERVICES = [
   { slug: "etat-civil", label: "État civil", detail: "Naissance, mariage, divorce" },
@@ -26,10 +27,7 @@ function Brand() {
   return (
     <Link href="/" aria-label="Accueil — Maître Makram Arfaoui" className="flex min-w-0 items-center gap-2.5 text-navy">
       <BrandLogo priority />
-      <span className="min-w-0">
-        <span className="block truncate font-serif text-[16px] font-semibold leading-tight text-navy">Makram Arfaoui</span>
-        <span className="mt-0.5 block truncate text-[9.5px] font-semibold uppercase tracking-[.14em] text-muted">Traducteur assermenté</span>
-      </span>
+      <BrandName size="compact" />
     </Link>
   );
 }

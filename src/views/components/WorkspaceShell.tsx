@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import LogoutButton from "@/views/components/LogoutButton";
 import BrandLogo from "@/views/components/BrandLogo";
+import BrandName from "@/views/components/BrandName";
 
 export type WorkspaceIcon = "home" | "orders" | "users" | "page" | "services" | "articles" | "reviews" | "faq" | "media" | "files" | "support" | "account";
 
@@ -91,10 +92,7 @@ export default function WorkspaceShell({ mode, user, groups, children, primaryAc
       <div className="flex items-center justify-between gap-3 px-1">
         <Link href={homeHref} className="flex min-w-0 items-center gap-3">
           <BrandLogo size="sm" onDark priority />
-          <span className="min-w-0">
-            <span className="block truncate font-serif text-[15px] font-semibold text-white">Makram Arfaoui</span>
-            <span className="block text-[10.5px] font-medium uppercase tracking-[0.13em] text-slate-400">{mode === "admin" ? "Administration" : "Espace client"}</span>
-          </span>
+          <BrandName size="compact" onDark />
         </Link>
         <button type="button" onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white lg:hidden" aria-label="Fermer le menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BrandLogo from "@/views/components/BrandLogo";
+import BrandName from "@/views/components/BrandName";
 
 /**
  * Habillage commun login/register — panneau navy éditorial (repris de l'identité Hero)
@@ -33,14 +34,7 @@ export default function AuthShell({
 
         <Link href="/" className="relative flex items-center gap-3">
           <BrandLogo size="lg" onDark priority />
-          <span>
-            <span className="block font-serif text-[19px] font-semibold leading-tight">
-              Maître Makram Arfaoui
-            </span>
-            <span className="mt-0.5 block text-[11.5px] uppercase tracking-wider text-[#9fb2d6]">
-              Traducteur &amp; Interprète Assermenté
-            </span>
-          </span>
+          <BrandName size="large" onDark />
         </Link>
 
         <div className="relative max-w-[42ch]">
@@ -64,7 +58,7 @@ export default function AuthShell({
         <div className="w-full max-w-[460px] rounded-[22px] border border-[#e2e7ef] bg-white p-6 shadow-[0_18px_55px_rgba(20,40,77,0.08)] sm:p-9">
           <Link href="/" className="mb-8 flex items-center gap-2.5 lg:hidden">
             <BrandLogo size="sm" priority />
-            <span className="font-serif text-[17px] font-semibold text-navy">Maître Makram Arfaoui</span>
+            <BrandName size="compact" />
           </Link>
           {children}
           <p className="mt-7 border-t border-line pt-5 text-center text-[11px] text-muted">En continuant, vous accédez à un espace sécurisé dédié au suivi de vos traductions.</p>

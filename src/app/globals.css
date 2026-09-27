@@ -63,6 +63,10 @@ body {
   line-height: 1.55;
 }
 
+.brand-name-ar {
+  font-family: Tahoma, "Segoe UI", Arial, sans-serif;
+}
+
 h1,
 h2,
 h3,

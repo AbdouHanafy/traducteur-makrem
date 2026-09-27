@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import BrandLogo from "@/views/components/BrandLogo";
+import BrandName from "@/views/components/BrandName";
 
 export interface MockPaymentData {
   providerRef: string;
@@ -75,7 +76,7 @@ export default function MockPaymentPage({ payment }: { payment: MockPaymentData 
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(145deg,#0b1830_0%,#14284d_70%,#1a376b_100%)] px-4 py-10 sm:px-6">
       <div className="absolute -right-28 -top-36 h-96 w-96 rounded-full border-[70px] border-white/[0.035]" />
       <div className="relative w-full max-w-[460px] rounded-[22px] border border-white/20 bg-white p-6 shadow-[0_25px_70px_rgba(0,0,0,0.28)] sm:p-8">
-        <Link href="/" className="mx-auto mb-6 flex w-fit items-center gap-2.5"><BrandLogo size="sm" priority /><span className="font-serif text-[15px] font-semibold text-navy">Makram Arfaoui</span></Link>
+        <Link href="/" className="mx-auto mb-6 flex w-fit items-center gap-2.5"><BrandLogo size="sm" priority /><BrandName size="compact" /></Link>
         <div className="text-center">
           <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-blue-soft px-3 py-1 text-[12.5px] font-semibold text-blue-2">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
