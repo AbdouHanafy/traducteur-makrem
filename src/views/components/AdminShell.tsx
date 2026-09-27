@@ -6,6 +6,7 @@ import { useState } from "react";
 import LogoutButton from "@/views/components/LogoutButton";
 
 const NAV = [
+  { href: "/admin", label: "Tableau de bord", staffAllowed: false },
   { href: "/admin/orders", label: "Commandes", staffAllowed: true },
   { href: "/admin/users", label: "Utilisateurs", staffAllowed: false },
   { href: "/admin/home-sections", label: "Page d'accueil", staffAllowed: false },
@@ -15,6 +16,13 @@ const NAV = [
   { href: "/admin/faq", label: "FAQ", staffAllowed: false },
   { href: "/admin/media", label: "Médiathèque", staffAllowed: false },
 ];
+
+/** "/admin" est le préfixe de toutes les routes backoffice — un simple startsWith le rendrait
+ * actif partout. Seul un match exact compte pour ce lien-là. */
+function isNavItemActive(pathname: string, href: string): boolean {
+  if (href === "/admin") return pathname === "/admin";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 function Logo() {
   return (
@@ -67,7 +75,7 @@ export default function AdminShell({ role, children }: { role: string; children:
         <nav className="border-b border-line bg-white px-4 pb-4 lg:hidden" aria-label="Navigation backoffice">
           <div className="grid gap-1 pt-2">
             {items.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const isActive = isNavItemActive(pathname, item.href);
               return (
                 <Link
                   key={item.href}
@@ -95,7 +103,7 @@ export default function AdminShell({ role, children }: { role: string; children:
 
         <nav className="grid gap-1">
           {items.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const isActive = isNavItemActive(pathname, item.href);
             return (
               <Link
                 key={item.href}

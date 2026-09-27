@@ -10,9 +10,8 @@ export default async function Page() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/login");
 
-  if (session.user.role === "ADMIN" || session.user.role === "TRANSLATOR") {
-    redirect("/admin/orders");
-  }
+  if (session.user.role === "ADMIN") redirect("/admin");
+  if (session.user.role === "TRANSLATOR") redirect("/admin/orders");
 
   redirect("/dashboard/orders");
 }
