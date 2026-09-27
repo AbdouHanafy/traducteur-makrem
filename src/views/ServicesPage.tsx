@@ -34,33 +34,50 @@ export default function ServicesPage({ services }: { services: ServiceDetailItem
 
         <section className="py-20">
           <div className="mx-auto max-w-[1160px] px-[22px]">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {services.map((s) => (
                 <div
                   key={s.slug}
                   id={s.slug}
-                  className="overflow-hidden rounded-[16px] border border-line bg-white shadow-[var(--shadow-md)]"
+                  className="group flex flex-col overflow-hidden rounded-[18px] border border-line bg-white transition-all duration-300 hover:-translate-y-1.5 hover:border-transparent hover:shadow-[var(--shadow-lg)]"
                 >
-                  {s.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={s.imageUrl} alt={s.name} className="h-40 w-full object-cover" />
-                  ) : (
-                    <div className="grid h-40 w-full place-items-center bg-[linear-gradient(135deg,#EDF0F5,#DCE3EE)]">
-                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2456B8" strokeWidth="1.6">
-                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                        <path d="M14 2v6h6M8 13h8M8 17h5" />
-                      </svg>
-                    </div>
-                  )}
-                  <div className="px-6 pb-7 pt-6">
-                    <h2 className="text-[19px] text-navy">{s.name}</h2>
-                    <p className="mt-2 text-[14.5px] text-muted">{s.description}</p>
-                    <div className="mt-5 flex items-center justify-between border-t border-line pt-4">
-                      <span className="text-[13.5px] font-semibold text-muted">
-                        {Number(s.pricePerPage) > 0 ? `À partir de ${s.pricePerPage} TND/page` : "Sur devis"}
+                  <div className="relative h-48 w-full shrink-0 overflow-hidden">
+                    {s.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={s.imageUrl}
+                        alt={s.name}
+                        className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+                      />
+                    ) : (
+                      <div className="grid h-full w-full place-items-center bg-[linear-gradient(135deg,#EDF0F5,#DCE3EE)]">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2456B8" strokeWidth="1.6">
+                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                          <path d="M14 2v6h6M8 13h8M8 17h5" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(12,26,52,0)_45%,rgba(12,26,52,.82)_100%)]" />
+                    <h2 className="absolute inset-x-0 bottom-0 px-5 pb-4 font-serif text-[20px] leading-tight text-white [text-shadow:0_1px_6px_rgba(0,0,0,.35)]">
+                      {s.name}
+                    </h2>
+                  </div>
+
+                  <div className="flex flex-1 flex-col px-6 pb-6 pt-5">
+                    <p className="flex-1 text-[14.5px] leading-relaxed text-muted">{s.description}</p>
+
+                    <div className="mt-5 flex items-center justify-between gap-3 border-t border-line pt-4">
+                      <span className="inline-flex items-center rounded-full bg-blue-soft px-3 py-1.5 text-[12.5px] font-semibold text-blue-2">
+                        {Number(s.pricePerPage) > 0 ? `Dès ${s.pricePerPage} TND/page` : "Sur devis"}
                       </span>
-                      <Link href="/commander" className="text-[13.5px] font-semibold text-blue hover:text-blue-2">
-                        Commander →
+                      <Link
+                        href="/commander"
+                        className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white transition-colors group-hover:bg-blue"
+                      >
+                        Commander
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                          <path d="M5 12h14M13 6l6 6-6 6" />
+                        </svg>
                       </Link>
                     </div>
                   </div>

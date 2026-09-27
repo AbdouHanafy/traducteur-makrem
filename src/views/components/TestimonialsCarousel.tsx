@@ -13,7 +13,7 @@ export interface TestimonialItem {
 function Stars({ value }: { value: number | null }) {
   if (!value) return null;
   return (
-    <div className="mb-4 flex justify-center gap-0.5 text-[15px] text-seal" aria-label={`${value} sur 5`}>
+    <div className="mb-3 flex justify-center gap-0.5 text-[14px] text-seal" aria-label={`${value} sur 5`}>
       {Array.from({ length: 5 }).map((_, i) => (
         <span key={i} className={i < value ? "" : "text-line"}>
           ★
@@ -23,10 +23,22 @@ function Stars({ value }: { value: number | null }) {
   );
 }
 
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase())
+    .join("");
+}
+
 /**
  * Carrousel d'avis — ne s'affiche que s'il y a au moins un avis publié (voir
  * repositories/testimonials.ts et la note dans /admin/testimonials) : jamais de faux avis
  * inventés comme contenu par défaut.
+ *
+ * Fond blanc + carte distincte (avatar-initiales, pas le gros guillemet doré) pour se
+ * différencier visuellement de la section Citation juste au-dessus, qui utilise déjà ce motif.
  */
 export default function TestimonialsCarousel({ testimonials }: { testimonials: TestimonialItem[] }) {
   const [index, setIndex] = useState(0);
@@ -43,27 +55,33 @@ export default function TestimonialsCarousel({ testimonials }: { testimonials: T
   const current = testimonials[index % testimonials.length];
 
   return (
-    <section className="bg-mist py-20">
+    <section className="bg-white py-20">
       <div
-        className="mx-auto max-w-[720px] px-[22px] text-center"
+        className="mx-auto max-w-[720px] px-[22px]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        <span className="mb-3 inline-flex items-center gap-2 text-[13.5px] font-semibold text-blue">
-          <span className="h-0.5 w-5.5 rounded bg-blue" />
-          Avis clients
-        </span>
-        <h2 className="mb-10 text-[clamp(24px,3vw,32px)] text-navy">Ce qu&apos;en disent nos clients</h2>
+        <div className="mb-10 text-center">
+          <span className="mb-3 inline-flex items-center gap-2 text-[13.5px] font-semibold text-blue">
+            <span className="h-0.5 w-5.5 rounded bg-blue" />
+            Avis clients
+          </span>
+          <h2 className="text-[clamp(24px,3vw,32px)] text-navy">Ce qu&apos;en disent nos clients</h2>
+        </div>
 
-        <div role="region" aria-live="polite">
-          <svg className="mx-auto mb-5 h-9 w-9 text-seal opacity-70" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
-            <path d="M10 8C5.6 8 2 11.6 2 16s3.6 8 8 8h1v-4h-1c-2.2 0-4-1.8-4-4s1.8-4 4-4h1V8h-1zm14 0c-4.4 0-8 3.6-8 8s3.6 8 8 8h1v-4h-1c-2.2 0-4-1.8-4-4s1.8-4 4-4h1V8h-1z" />
-          </svg>
+        <div
+          role="region"
+          aria-live="polite"
+          className="rounded-[20px] border border-line bg-mist px-6 py-10 text-center sm:px-12"
+        >
+          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-navy font-serif text-[17px] font-semibold text-white">
+            {initials(current.authorName)}
+          </div>
 
           <Stars value={current.rating} />
 
-          <p className="min-h-[80px] font-serif text-[19px] italic leading-snug text-navy sm:text-[21px]">
-            {current.quote}
+          <p className="min-h-[80px] font-serif text-[18px] italic leading-snug text-navy sm:text-[20px]">
+            &laquo; {current.quote} &raquo;
           </p>
 
           <p className="mt-5 text-[14.5px] font-semibold text-navy">{current.authorName}</p>
@@ -71,7 +89,7 @@ export default function TestimonialsCarousel({ testimonials }: { testimonials: T
         </div>
 
         {testimonials.length > 1 && (
-          <div className="mt-8 flex items-center justify-center gap-4">
+          <div className="mt-7 flex items-center justify-center gap-4">
             <button
               type="button"
               onClick={() => setIndex((i) => (i - 1 + testimonials.length) % testimonials.length)}
