@@ -161,8 +161,8 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
 
   return (
     <div className="mx-auto max-w-[820px] px-6 py-14">
-      <div className="mb-2 flex items-center justify-between">
-        <h1 className="text-[26px] text-navy">Sections de la page d&apos;accueil</h1>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-[22px] text-navy sm:text-[26px]">Sections de la page d&apos;accueil</h1>
         {!adding && (
           <button
             type="button"
@@ -208,9 +208,9 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
                 submitLabel="Enregistrer"
               />
             ) : (
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide ${
                         section.isCustom ? "bg-blue-soft text-blue-2" : "bg-mist text-muted"
@@ -231,7 +231,7 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
                     <p className="mt-1.5 max-w-[52ch] truncate text-[13.5px] text-muted">{section.body}</p>
                   )}
                 </div>
-                <div className="flex shrink-0 items-center gap-1">
+                <div className="flex shrink-0 flex-wrap items-center gap-1 border-t border-line pt-3 sm:border-t-0 sm:pt-0">
                   <button
                     type="button"
                     disabled={index === 0}

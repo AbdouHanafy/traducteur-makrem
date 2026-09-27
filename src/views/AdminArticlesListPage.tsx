@@ -31,7 +31,7 @@ export default function AdminArticlesListPage({ articles }: { articles: ArticleR
 
   return (
     <div className="mx-auto max-w-[1000px] px-6 py-14">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-[26px] text-navy">Articles</h1>
         <Link
           href="/admin/articles/new"
@@ -50,51 +50,53 @@ export default function AdminArticlesListPage({ articles }: { articles: ArticleR
           {articles.map((article, index) => (
             <div
               key={article.id}
-              className="grid grid-cols-[auto_auto_1fr_auto] items-center gap-4 rounded-[14px] border border-line bg-white p-4"
+              className="flex flex-col gap-3 rounded-[14px] border border-line bg-white p-4 sm:grid sm:grid-cols-[auto_auto_1fr_auto] sm:items-center sm:gap-4"
             >
-              <div className="flex flex-col">
-                <button
-                  type="button"
-                  disabled={index === 0}
-                  onClick={() => move(article.id, "up")}
-                  className="rounded-[7px] p-1 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
-                  aria-label="Monter"
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  disabled={index === articles.length - 1}
-                  onClick={() => move(article.id, "down")}
-                  className="rounded-[7px] p-1 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
-                  aria-label="Descendre"
-                >
-                  ↓
-                </button>
-              </div>
-
-              {article.coverImageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={article.coverImageUrl} alt="" className="h-14 w-14 rounded-[8px] object-cover" />
-              ) : (
-                <div className="h-14 w-14 rounded-[8px] bg-mist" />
-              )}
-
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-ink">{article.title}</span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                      article.published ? "bg-ok-soft text-ok" : "bg-mist text-muted"
-                    }`}
+              <div className="flex items-center gap-3 sm:contents">
+                <div className="flex flex-row gap-1 sm:flex-col">
+                  <button
+                    type="button"
+                    disabled={index === 0}
+                    onClick={() => move(article.id, "up")}
+                    className="rounded-[7px] p-1 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
+                    aria-label="Monter"
                   >
-                    {article.published ? "Publié" : "Brouillon"}
-                  </span>
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    disabled={index === articles.length - 1}
+                    onClick={() => move(article.id, "down")}
+                    className="rounded-[7px] p-1 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
+                    aria-label="Descendre"
+                  >
+                    ↓
+                  </button>
                 </div>
-                <div className="text-[12px] text-muted">{article.slug}</div>
+
+                {article.coverImageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={article.coverImageUrl} alt="" className="h-14 w-14 shrink-0 rounded-[8px] object-cover" />
+                ) : (
+                  <div className="h-14 w-14 shrink-0 rounded-[8px] bg-mist" />
+                )}
+
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold text-ink">{article.title}</span>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                        article.published ? "bg-ok-soft text-ok" : "bg-mist text-muted"
+                      }`}
+                    >
+                      {article.published ? "Publié" : "Brouillon"}
+                    </span>
+                  </div>
+                  <div className="truncate text-[12px] text-muted">{article.slug}</div>
+                </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4 border-t border-line pt-3 sm:border-t-0 sm:pt-0">
                 <Link href={`/admin/articles/${article.id}`} className="text-[13.5px] font-semibold text-blue hover:text-blue-2">
                   Modifier
                 </Link>

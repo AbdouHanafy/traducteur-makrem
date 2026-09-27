@@ -47,8 +47,8 @@ export default function AdminMediaPage({ items }: { items: MediaRow[] }) {
 
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-14">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-[26px] text-navy">Médiathèque</h1>
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-[22px] text-navy sm:text-[26px]">Médiathèque</h1>
         <label className="inline-flex cursor-pointer items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2">
           {uploading ? "Envoi…" : "Téléverser une image"}
           <input

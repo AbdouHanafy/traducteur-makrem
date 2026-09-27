@@ -27,8 +27,8 @@ interface OrderRow {
 export default function OrdersListPage({ orders }: { orders: OrderRow[] }) {
   return (
     <div className="mx-auto max-w-[960px] px-6 py-14">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-[26px] text-navy">Mes commandes</h1>
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-[22px] text-navy sm:text-[26px]">Mes commandes</h1>
         <div className="flex items-center gap-5">
           <Link
             href="/commander"
@@ -50,17 +50,17 @@ export default function OrdersListPage({ orders }: { orders: OrderRow[] }) {
             <Link
               key={order.id}
               href={`/dashboard/orders/${order.id}`}
-              className="grid grid-cols-[1fr_auto] items-center gap-4 rounded-[14px] border border-line bg-white px-6 py-5 transition hover:border-blue"
+              className="grid grid-cols-1 gap-3 rounded-[14px] border border-line bg-white px-6 py-5 transition hover:border-blue sm:grid-cols-[1fr_auto] sm:items-center sm:gap-4"
             >
-              <div>
+              <div className="min-w-0">
                 <div className="font-serif text-[17px] text-navy">{order.reference}</div>
-                <div className="mt-1 text-[13.5px] text-muted">{order.service.name}</div>
+                <div className="mt-1 truncate text-[13.5px] text-muted">{order.service.name}</div>
               </div>
-              <div className="text-right">
+              <div className="flex items-center justify-between gap-3 sm:block sm:text-right">
                 <span className="inline-flex items-center rounded-full bg-blue-soft px-3 py-1 text-[12.5px] font-semibold text-blue-2">
                   {STATUS_LABELS[order.status] ?? order.status}
                 </span>
-                <div className="mt-1.5 text-[13px] text-muted">{order.totalAmount} TND</div>
+                <div className="text-[13px] text-muted sm:mt-1.5">{order.totalAmount} TND</div>
               </div>
             </Link>
           ))}

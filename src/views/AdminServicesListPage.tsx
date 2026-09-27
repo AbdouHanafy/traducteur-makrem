@@ -42,7 +42,7 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
 
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-14">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-[26px] text-navy">Services</h1>
         <Link
           href="/admin/services/new"
@@ -52,7 +52,8 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
         </Link>
       </div>
 
-      <div className="overflow-hidden rounded-[14px] border border-line bg-white">
+      {/* Desktop */}
+      <div className="hidden overflow-hidden rounded-[14px] border border-line bg-white md:block">
         <table className="w-full text-left text-[13.5px]">
           <thead className="bg-mist text-[12px] uppercase tracking-wide text-muted">
             <tr>
@@ -108,6 +109,49 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile : cartes */}
+      <div className="grid gap-3 md:hidden">
+        {services.map((service) => (
+          <div key={service.id} className="rounded-[14px] border border-line bg-white p-4">
+            <div className="flex items-center gap-3">
+              {service.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={service.imageUrl} alt="" className="h-11 w-11 shrink-0 rounded-[8px] object-cover" />
+              ) : (
+                <div className="h-11 w-11 shrink-0 rounded-[8px] bg-mist" />
+              )}
+              <div className="min-w-0">
+                <div className="truncate font-semibold text-ink">{service.name}</div>
+                <div className="truncate text-[12px] text-muted">{service.slug}</div>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center justify-between">
+              <span className="text-[13.5px] font-semibold text-ink">{service.pricePerPage} TND</span>
+              <span
+                className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${
+                  service.active ? "bg-ok-soft text-ok" : "bg-mist text-muted"
+                }`}
+              >
+                {service.active ? "Actif" : "Désactivé"}
+              </span>
+            </div>
+            <div className="mt-3 flex items-center gap-4 border-t border-line pt-3">
+              <Link href={`/admin/services/${service.id}`} className="text-[13.5px] font-semibold text-blue hover:text-blue-2">
+                Modifier
+              </Link>
+              <button
+                type="button"
+                disabled={busyId === service.id}
+                onClick={() => toggleActive(service)}
+                className="text-[13.5px] font-semibold text-muted hover:text-navy disabled:opacity-50"
+              >
+                {service.active ? "Désactiver" : "Réactiver"}
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
