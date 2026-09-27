@@ -1,17 +1,12 @@
 import Link from "next/link";
-
-export interface ServiceTeaserItem {
-  slug: string;
-  name: string;
-  description: string;
-}
+import ServiceCard, { type ServiceCardData } from "@/views/components/ServiceCard";
 
 /**
- * Section Services — présentation éditoriale (liste numérotée façon sommaire d'acte) plutôt
- * qu'une grille d'icônes générique. Contenu géré depuis le backoffice (/admin/services), plus
- * aucune donnée en dur ici.
+ * Section Services (home) — mêmes cartes que /services (voir ServiceCard.tsx), pour une
+ * identité cohérente entre la page d'accueil et la page détail. Contenu géré depuis le
+ * backoffice (/admin/services).
  */
-export default function Services({ services }: { services: ServiceTeaserItem[] }) {
+export default function Services({ services }: { services: ServiceCardData[] }) {
   return (
     <section id="services" className="py-22">
       <div className="mx-auto max-w-[1160px] px-[22px]">
@@ -31,45 +26,13 @@ export default function Services({ services }: { services: ServiceTeaserItem[] }
           </p>
         </div>
 
-        <div className="border-t border-line">
-          {services.map((s, i) => (
-            <Link
-              key={s.slug}
-              href={`/services#${s.slug}`}
-              className="group grid grid-cols-[auto_1fr_auto] items-center gap-5 border-b border-line py-6 transition-colors hover:bg-blue-soft/40 sm:gap-8 sm:py-7"
-            >
-              <span className="font-serif text-[15px] text-muted transition-colors group-hover:text-seal sm:text-[17px]">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <span>
-                <span className="block font-serif text-[19px] text-navy transition-transform group-hover:translate-x-1 sm:text-[22px]">
-                  {s.name}
-                </span>
-                <span className="mt-1 block max-w-[52ch] text-[13.5px] text-muted sm:text-[14.5px]">
-                  {s.description}
-                </span>
-              </span>
-              <span className="flex items-center gap-3 whitespace-nowrap">
-                <span className="hidden text-[13px] font-semibold uppercase tracking-wide text-muted sm:inline">
-                  Sur devis
-                </span>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  className="text-blue transition-transform group-hover:translate-x-1"
-                >
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </span>
-            </Link>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {services.map((s) => (
+            <ServiceCard key={s.slug} service={s} anchor={false} />
           ))}
         </div>
 
-        <div className="mt-6 flex flex-col items-center justify-between gap-3 sm:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-between gap-3 sm:flex-row">
           <p className="text-[13px] text-muted">
             Le prix dépend de la langue, du nombre de pages, du délai et de la complexité.
           </p>

@@ -29,7 +29,13 @@ export default async function Page() {
         ctaLabel: s.ctaLabel,
         ctaHref: s.ctaHref,
       }))}
-      services={services.map((s) => ({ slug: s.slug, name: s.name, description: s.description }))}
+      services={services.map((s) => ({
+        slug: s.slug,
+        name: s.name,
+        description: s.description,
+        imageUrl: s.imageUrl,
+        pricePerPage: s.pricePerPage.toString(),
+      }))}
       testimonials={testimonials.map((t) => ({
         id: t.id,
         authorName: t.authorName,

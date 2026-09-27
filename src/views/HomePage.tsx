@@ -1,7 +1,8 @@
 import Topbar from "@/views/components/Topbar";
 import Hero from "@/views/components/Hero";
 import Stats from "@/views/components/Stats";
-import Services, { type ServiceTeaserItem } from "@/views/components/Services";
+import Services from "@/views/components/Services";
+import type { ServiceCardData } from "@/views/components/ServiceCard";
 import Workflow from "@/views/components/Workflow";
 import Statement from "@/views/components/Statement";
 import TestimonialsCarousel, { type TestimonialItem } from "@/views/components/TestimonialsCarousel";
@@ -27,7 +28,7 @@ export default function HomePage({
   testimonials,
 }: {
   sections: HomeSectionData[];
-  services: ServiceTeaserItem[];
+  services: ServiceCardData[];
   testimonials: TestimonialItem[];
 }) {
   return (
