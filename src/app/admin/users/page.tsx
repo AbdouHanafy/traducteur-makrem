@@ -14,7 +14,6 @@ export default async function Page() {
 
   return (
     <AdminUsersListPage
-      currentUserId={result.session.user.id}
       users={users.map((u) => ({
         id: u.id,
         name: u.name,
