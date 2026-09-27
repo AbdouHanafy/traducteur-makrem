@@ -100,6 +100,14 @@ export function listOrdersForUser(userId: string) {
   });
 }
 
+export function listOrdersWithDocumentsForUser(userId: string) {
+  return prisma.order.findMany({
+    where: { userId },
+    include: { service: true, documents: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export function listAllOrders() {
   return prisma.order.findMany({
     include: { service: true, user: { select: { firstName: true, lastName: true, email: true } } },

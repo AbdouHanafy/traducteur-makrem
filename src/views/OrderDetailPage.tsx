@@ -69,7 +69,7 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
   }
 
   return (
-    <div className="mx-auto max-w-[820px] px-6 py-14">
+    <div className="mx-auto max-w-[820px] px-6 py-10 md:py-14">
       <div className="mb-8">
         <span className="mb-2 inline-flex items-center rounded-full bg-blue-soft px-3 py-1 text-[12.5px] font-semibold text-blue-2">
           {STATUS_LABELS[order.status] ?? order.status}

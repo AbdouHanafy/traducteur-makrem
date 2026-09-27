@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 
 export default function AccountPage({ email, name }: { email: string; name: string }) {
@@ -46,12 +45,9 @@ export default function AccountPage({ email, name }: { email: string; name: stri
   }
 
   return (
-    <div className="mx-auto max-w-[640px] px-6 py-14">
+    <div className="mx-auto max-w-[640px] px-6 py-10 md:py-14">
       <div className="mb-8">
-        <Link href="/dashboard/orders" className="text-[13.5px] font-semibold text-blue hover:text-blue-2">
-          ← Mes commandes
-        </Link>
-        <h1 className="mt-3 text-[22px] text-navy sm:text-[26px]">Mon compte</h1>
+        <h1 className="text-[22px] text-navy sm:text-[26px]">Paramètres</h1>
       </div>
 
       <div className="mb-6 rounded-[14px] border border-line bg-white p-6">

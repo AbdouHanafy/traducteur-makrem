@@ -1,5 +1,4 @@
 import Link from "next/link";
-import LogoutButton from "@/views/components/LogoutButton";
 
 const STATUS_LABELS: Record<string, string> = {
   DEMANDE: "Demande",
@@ -26,24 +25,15 @@ interface OrderRow {
 
 export default function OrdersListPage({ orders }: { orders: OrderRow[] }) {
   return (
-    <div className="mx-auto max-w-[960px] px-6 py-14">
+    <div className="mx-auto max-w-[960px] px-6 py-10 md:py-14">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-[22px] text-navy sm:text-[26px]">Mes commandes</h1>
-        <div className="flex items-center gap-5">
-          <Link
-            href="/dashboard/compte"
-            className="text-[14px] font-semibold text-blue hover:text-blue-2"
-          >
-            Mon compte
-          </Link>
-          <Link
-            href="/commander"
-            className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
-          >
-            Nouvelle commande
-          </Link>
-          <LogoutButton />
-        </div>
+        <Link
+          href="/commander"
+          className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
+        >
+          Nouvelle commande
+        </Link>
       </div>
 
       {orders.length === 0 ? (
