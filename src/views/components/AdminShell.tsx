@@ -16,6 +16,7 @@ const GROUPS: WorkspaceNavGroup[] = [
     items: [
       { href: "/admin/site-content", label: "Contenu & textes", icon: "page" },
       { href: "/admin/home-sections", label: "Page d'accueil", icon: "page" },
+      { href: "/admin/partners", label: "Partenaires", icon: "reviews" },
       { href: "/admin/services", label: "Services & tarifs", icon: "services" },
       { href: "/admin/articles", label: "Articles", icon: "articles" },
       { href: "/admin/testimonials", label: "Avis clients", icon: "reviews" },

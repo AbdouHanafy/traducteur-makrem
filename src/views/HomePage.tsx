@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Topbar from "@/views/components/Topbar";
 import Hero from "@/views/components/Hero";
 import Stats from "@/views/components/Stats";
@@ -9,6 +10,7 @@ import TestimonialsCarousel, { type TestimonialItem } from "@/views/components/T
 import FinalCta from "@/views/components/FinalCta";
 import CustomSection, { type CustomSectionData } from "@/views/components/CustomSection";
 import Footer from "@/views/components/Footer";
+import PartnersBand, { type PartnerItem } from "@/views/components/PartnersBand";
 import type { HomeSectionType } from "@prisma/client";
 
 export interface HomeSectionData {
@@ -26,10 +28,12 @@ export default function HomePage({
   sections,
   services,
   testimonials,
+  partners,
 }: {
   sections: HomeSectionData[];
   services: ServiceCardData[];
   testimonials: TestimonialItem[];
+  partners: PartnerItem[];
 }) {
   return (
     <>
@@ -38,7 +42,7 @@ export default function HomePage({
         {sections.map((section) => {
           switch (section.type) {
             case "HERO":
-              return <Hero key={section.id} />;
+              return <Fragment key={section.id}><Hero /><PartnersBand partners={partners} /></Fragment>;
             case "STATS":
               return <Stats key={section.id} />;
             case "SERVICES":

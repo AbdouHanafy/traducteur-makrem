@@ -2,6 +2,7 @@ import { buildMetadata, SITE } from "@/lib/seo";
 import { listActiveServices } from "@/repositories/services";
 import { listVisibleHomeSections } from "@/repositories/homeSections";
 import { listActiveTestimonials } from "@/repositories/testimonials";
+import { listActivePartners } from "@/repositories/partners";
 import HomePage from "@/views/HomePage";
 
 export const metadata = buildMetadata({
@@ -11,10 +12,11 @@ export const metadata = buildMetadata({
 });
 
 export default async function Page() {
-  const [services, sections, testimonials] = await Promise.all([
+  const [services, sections, testimonials, partners] = await Promise.all([
     listActiveServices(),
     listVisibleHomeSections(),
     listActiveTestimonials(),
+    listActivePartners(),
   ]);
 
   return (
@@ -43,6 +45,7 @@ export default async function Page() {
         quote: t.quote,
         rating: t.rating,
       }))}
+      partners={partners.map((partner) => ({ id: partner.id, name: partner.name, logoUrl: partner.logoUrl, websiteUrl: partner.websiteUrl }))}
     />
   );
 }

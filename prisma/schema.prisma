@@ -265,6 +265,20 @@ model SiteContent {
   @@index([locale])
 }
 
+/** Références réelles affichées sous le hero. Aucun partenaire fictif n'est seedé. */
+model Partner {
+  id         String   @id @default(cuid())
+  name       String
+  logoUrl    String?
+  websiteUrl String?
+  order      Int      @default(0)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([order])
+}
+
 model Order {
   id        String @id @default(cuid())
   reference String @unique
