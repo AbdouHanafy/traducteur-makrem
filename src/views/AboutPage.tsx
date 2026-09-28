@@ -68,7 +68,7 @@ export default function AboutPage() {
                 <div className="flex items-start justify-between gap-4">
                   <dt className="text-muted">{t("page.about.office")}</dt>
                   <dd className="text-right font-medium text-ink">
-                    17 Rue de Marseille, Tunis 1001
+                    {t("contact.addressLine1")}, {t("contact.addressLine2")}
                   </dd>
                 </div>
               </dl>

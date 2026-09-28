@@ -30,8 +30,9 @@ const NAV_LINKS = [
 const subscribeToHydration = () => () => {};
 
 function Brand() {
+  const { t } = useI18n();
   return (
-    <Link href="/" aria-label="Accueil — Maître Makram Arfaoui" className="flex min-w-0 items-center gap-2.5 text-navy">
+    <Link href="/" aria-label={`${t("nav.home")} — ${t("brand.latin")}`} className="flex min-w-0 items-center gap-2.5 text-navy">
       <BrandLogo priority />
       <BrandName size="compact" />
     </Link>

@@ -249,6 +249,22 @@ model HomeSection {
   @@index([order])
 }
 
+/**
+ * Surcharges multilingues des textes structurels du front-office. Les valeurs d'origine
+ * restent dans le dictionnaire applicatif et servent de repli : la base ne stocke donc que
+ * ce que l'administrateur a effectivement personnalisé.
+ */
+model SiteContent {
+  id        String   @id @default(cuid())
+  key       String   @db.VarChar(191)
+  locale    String   @db.VarChar(5)
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@unique([key, locale])
+  @@index([locale])
+}
+
 model Order {
   id        String @id @default(cuid())
   reference String @unique

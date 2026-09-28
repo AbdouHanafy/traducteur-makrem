@@ -7,6 +7,9 @@ import { useI18n } from "@/views/components/I18nProvider";
 
 export default function Footer() {
   const { t } = useI18n();
+  const phonePrimary = t("contact.phonePrimary");
+  const phoneSecondary = t("contact.phoneSecondary");
+  const email = t("contact.email");
   return (
     <footer className="bg-[#0b172c] text-slate-300">
       <div className="border-b border-white/10 bg-white/[0.025]">
@@ -28,9 +31,9 @@ export default function Footer() {
           </div>
           <div><h2 className="mb-4 text-[11px] font-bold uppercase tracking-[.15em] text-white">{t("footer.navigation")}</h2><ul className="grid gap-2.5 text-[12.5px] text-slate-400"><li><Link href="/a-propos" className="hover:text-white">{t("nav.about")}</Link></li><li><Link href="/services" className="hover:text-white">{t("nav.services")}</Link></li><li><Link href="/articles" className="hover:text-white">{t("nav.articles")}</Link></li><li><Link href="/faq" className="hover:text-white">{t("nav.faq")}</Link></li></ul></div>
           <div><h2 className="mb-4 text-[11px] font-bold uppercase tracking-[.15em] text-white">{t("footer.clientArea")}</h2><ul className="grid gap-2.5 text-[12.5px] text-slate-400"><li><Link href="/commander" className="hover:text-white">{t("footer.newOrder")}</Link></li><li><Link href="/dashboard" className="hover:text-white">{t("footer.dashboard")}</Link></li><li><Link href="/dashboard/orders" className="hover:text-white">{t("footer.track")}</Link></li><li><Link href="/dashboard/fichiers" className="hover:text-white">{t("footer.documents")}</Link></li></ul></div>
-          <div><h2 className="mb-4 text-[11px] font-bold uppercase tracking-[.15em] text-white">{t("nav.contact")}</h2><address className="grid gap-3 text-[12.5px] not-italic text-slate-400"><a href="tel:+21622200170" className="flex items-start gap-2.5 hover:text-white"><span className="mt-0.5 text-[#8fb4ff]">T</span><span>(+216) 22 200 170<br />(+216) 51 100 036</span></a><a href="mailto:contact@makramarfaoui.com" className="flex items-center gap-2.5 hover:text-white"><span className="text-[#8fb4ff]">E</span><span className="break-all">contact@makramarfaoui.com</span></a><div className="flex items-start gap-2.5"><span className="text-[#8fb4ff]">A</span><span>17 Rue de Marseille<br />Tunis 1001, Tunisie</span></div></address></div>
+          <div><h2 className="mb-4 text-[11px] font-bold uppercase tracking-[.15em] text-white">{t("nav.contact")}</h2><address className="grid gap-3 text-[12.5px] not-italic text-slate-400"><a href={`tel:${phonePrimary.replace(/[^+\d]/g, "")}`} className="flex items-start gap-2.5 hover:text-white"><span className="mt-0.5 text-[#8fb4ff]">T</span><span>{phonePrimary}<br />{phoneSecondary}</span></a><a href={`mailto:${email}`} className="flex items-center gap-2.5 hover:text-white"><span className="text-[#8fb4ff]">E</span><span className="break-all">{email}</span></a><div className="flex items-start gap-2.5"><span className="text-[#8fb4ff]">A</span><span>{t("contact.addressLine1")}<br />{t("contact.addressLine2")}</span></div></address></div>
         </div>
-        <div className="flex flex-col gap-2 pt-6 text-[11px] text-slate-500 sm:flex-row sm:items-center sm:justify-between"><span>© 2026 Maître Makram Arfaoui. {t("footer.rights")}</span><span>{t("footer.security")}</span></div>
+        <div className="flex flex-col gap-2 pt-6 text-[11px] text-slate-500 sm:flex-row sm:items-center sm:justify-between"><span>{t("footer.copyright", { year: new Date().getFullYear() })}</span><span>{t("footer.security")}</span></div>
       </div>
     </footer>
   );

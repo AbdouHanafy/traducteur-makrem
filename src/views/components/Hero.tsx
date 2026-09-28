@@ -92,7 +92,7 @@ export default function Hero() {
               <div className="text-[10px] font-bold uppercase tracking-widest text-blue">
                 {t("hero.source")}
               </div>
-              <div className="mt-1 font-serif text-[15px] font-semibold">الشهادة الأصلية</div>
+              <div className="mt-1 font-serif text-[15px] font-semibold">{t("hero.sourceSample")}</div>
             </div>
             <div className="grid gap-2.5 px-[22px] py-4.5">
               {[100, 88, 72, 100, 88].map((w, i) => (
@@ -119,14 +119,14 @@ export default function Hero() {
               <path id="ct" d="M60,60 m-36,0 a36,36 0 1,1 72,0 a36,36 0 1,1 -72,0" fill="none" />
               <text fontFamily="Inter" fontSize="9" fontWeight="700" fill="#B4894E" letterSpacing="1.4">
                 <textPath href="#ct" startOffset="4%">
-                  • TRADUCTEUR ASSERMENTÉ • TUNIS •
+                  {t("hero.stampRing")}
                 </textPath>
               </text>
               <text x="60" y="58" textAnchor="middle" fontFamily="Spectral" fontWeight="700" fontSize="21" fill="#14284D">
                 MA
               </text>
               <text x="60" y="73" textAnchor="middle" fontFamily="Inter" fontSize="7" fill="#B4894E" letterSpacing="1">
-                CERTIFIÉ CONFORME
+                {t("hero.stampCenter")}
               </text>
             </svg>
           </div>

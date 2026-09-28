@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "@/views/components/I18nProvider";
 
 export interface TestimonialItem {
   id: string;
@@ -41,6 +42,7 @@ function initials(name: string): string {
  * différencier visuellement de la section Citation juste au-dessus, qui utilise déjà ce motif.
  */
 export default function TestimonialsCarousel({ testimonials }: { testimonials: TestimonialItem[] }) {
+  const { t } = useI18n();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -64,9 +66,9 @@ export default function TestimonialsCarousel({ testimonials }: { testimonials: T
         <div className="mb-10 text-center">
           <span className="mb-3 inline-flex items-center gap-2 text-[13.5px] font-semibold text-blue">
             <span className="h-0.5 w-5.5 rounded bg-blue" />
-            Avis clients
+            {t("testimonials.eyebrow")}
           </span>
-          <h2 className="text-[clamp(24px,3vw,32px)] text-navy">Ce qu&apos;en disent nos clients</h2>
+          <h2 className="text-[clamp(24px,3vw,32px)] text-navy">{t("testimonials.title")}</h2>
         </div>
 
         <div

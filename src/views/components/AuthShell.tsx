@@ -53,7 +53,7 @@ export default function AuthShell({
           </div>
         </div>
 
-        <p className="relative text-[13px] text-[#8093b5]">© 2026 Maître Makram Arfaoui</p>
+        <p className="relative text-[13px] text-[#8093b5]">{t("footer.copyright", { year: new Date().getFullYear() })}</p>
       </div>
 
       <div className="flex items-center justify-center px-4 py-10 sm:px-8 lg:py-14">

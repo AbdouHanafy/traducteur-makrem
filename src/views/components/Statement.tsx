@@ -24,7 +24,7 @@ export default function Statement() {
           {t("statement.quote")}
         </p>
         <div className="mx-auto mt-6 h-px w-14 bg-seal" />
-        <p className="mt-5 text-[14.5px] font-semibold text-navy">Makram Arfaoui</p>
+        <p className="mt-5 text-[14.5px] font-semibold text-navy">{t("statement.name")}</p>
         <p className="text-[13px] text-muted">{t("statement.role")}</p>
       </div>
     </section>

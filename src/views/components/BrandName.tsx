@@ -1,3 +1,7 @@
+"use client";
+
+import { useI18n } from "@/views/components/I18nProvider";
+
 const SIZE_CLASSES = {
   compact: {
     latin: "text-[10.5px] tracking-[0.1em]",
@@ -21,6 +25,7 @@ export default function BrandName({
   onDark?: boolean;
 }) {
   const styles = SIZE_CLASSES[size];
+  const { t } = useI18n();
 
   return (
     <span className="min-w-0 leading-none">
@@ -29,7 +34,7 @@ export default function BrandName({
           onDark ? "text-white" : "text-navy"
         }`}
       >
-        Maître Makram Arfaoui
+        {t("brand.latin")}
       </span>
       <span
         lang="ar"
@@ -38,7 +43,7 @@ export default function BrandName({
           onDark ? "text-[#c7d6f1]" : "text-navy"
         }`}
       >
-        الأستاذ مكرم العرفاوي
+        {t("brand.arabic")}
       </span>
     </span>
   );

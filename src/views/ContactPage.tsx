@@ -8,17 +8,17 @@ import { useI18n } from "@/views/components/I18nProvider";
 
 const CHANNELS = [
   {
-    label: "Téléphone",
-    lines: ["(+216) 22 200 170", "(+216) 51 100 036"],
-    href: "tel:+21622200170",
+    id: "phone",
+    labelKey: "common.phone",
+    lineKeys: ["contact.phonePrimary", "contact.phoneSecondary"],
     icon: (
       <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.68 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.32 1.85.55 2.81.68A2 2 0 0122 16.92z" />
     ),
   },
   {
-    label: "Email",
-    lines: ["contact@makramarfaoui.com"],
-    href: "mailto:contact@makramarfaoui.com",
+    id: "email",
+    labelKey: "common.email",
+    lineKeys: ["contact.email"],
     icon: (
       <>
         <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -27,9 +27,9 @@ const CHANNELS = [
     ),
   },
   {
-    label: "Cabinet",
-    lines: ["17 Rue de Marseille", "Tunis 1001, Tunisie"],
-    href: undefined,
+    id: "office",
+    labelKey: "page.contact.office",
+    lineKeys: ["contact.addressLine1", "contact.addressLine2"],
     icon: (
       <>
         <path d="M12 21s-7-6.5-7-11a7 7 0 0114 0c0 4.5-7 11-7 11z" />
@@ -51,6 +51,10 @@ export default function ContactPage() {
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {CHANNELS.map((c) => {
+                const lines = c.lineKeys.map((key) => t(key));
+                const href = c.id === "phone"
+                  ? `tel:${lines[0].replace(/[^+\d]/g, "")}`
+                  : c.id === "email" ? `mailto:${lines[0]}` : undefined;
                 const cardClass =
                   "block rounded-[18px] border border-line bg-white px-6 py-7 shadow-[0_8px_28px_rgba(20,40,77,0.04)] transition hover:-translate-y-0.5 hover:border-blue/25 hover:shadow-[0_14px_35px_rgba(20,40,77,0.08)]";
                 const content = (
@@ -60,20 +64,20 @@ export default function ContactPage() {
                         {c.icon}
                       </svg>
                     </div>
-                    <h2 className="text-[16.5px] text-navy">{c.label === "Téléphone" ? t("common.phone") : c.label === "Cabinet" ? t("page.contact.office") : c.label}</h2>
+                    <h2 className="text-[16.5px] text-navy">{t(c.labelKey)}</h2>
                     <div className="mt-2 text-[14.5px] text-muted">
-                      {c.lines.map((l) => (
+                      {lines.map((l) => (
                         <div key={l}>{l}</div>
                       ))}
                     </div>
                   </>
                 );
-                return c.href ? (
-                  <Link key={c.label} href={c.href} className={cardClass}>
+                return href ? (
+                  <Link key={c.id} href={href} className={cardClass}>
                     {content}
                   </Link>
                 ) : (
-                  <div key={c.label} className={cardClass}>
+                  <div key={c.id} className={cardClass}>
                     {content}
                   </div>
                 );

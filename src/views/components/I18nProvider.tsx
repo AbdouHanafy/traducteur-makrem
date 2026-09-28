@@ -11,10 +11,10 @@ interface I18nContextValue {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-export default function I18nProvider({ locale, children }: { locale: Locale; children: React.ReactNode }) {
+export default function I18nProvider({ locale, overrides = {}, children }: { locale: Locale; overrides?: Record<string, string>; children: React.ReactNode }) {
   const value = useMemo<I18nContextValue>(
-    () => ({ locale, isRtl: locale === "ar", t: (key, values) => translate(locale, key, values) }),
-    [locale],
+    () => ({ locale, isRtl: locale === "ar", t: (key, values) => translate(locale, key, values, overrides) }),
+    [locale, overrides],
   );
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

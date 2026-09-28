@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import "./globals.css";
 import { buildMetadata, SITE } from "@/lib/seo";
 import { DEFAULT_LOCALE, getTextDirection, isLocale } from "@/lib/i18n";
+import { getSiteContentOverrides } from "@/repositories/siteContent";
 import I18nProvider from "@/views/components/I18nProvider";
 
 const inter = Inter({
@@ -22,6 +23,7 @@ export const metadata = buildMetadata({ title: SITE.name });
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const requestedLocale = (await headers()).get("x-site-locale");
   const locale = isLocale(requestedLocale) ? requestedLocale : DEFAULT_LOCALE;
+  const contentOverrides = await getSiteContentOverrides(locale);
   return (
     <html
       lang={locale}
@@ -29,7 +31,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       data-scroll-behavior="smooth"
       className={`${inter.variable} ${spectral.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col"><I18nProvider locale={locale}>{children}</I18nProvider></body>
+      <body className="min-h-full flex flex-col"><I18nProvider locale={locale} overrides={contentOverrides}>{children}</I18nProvider></body>
     </html>
   );
 }

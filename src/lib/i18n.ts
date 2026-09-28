@@ -248,10 +248,31 @@ Object.assign(en, { "delay.standard": "Standard (5-7 days)", "delay.express": "E
 Object.assign(it, { "delay.standard": "Standard (5-7 giorni)", "delay.express": "Express (48 ore)", "delay.urgent": "Urgente (24 ore)" });
 Object.assign(ar, { "delay.standard": "عادي (5-7 أيام)", "delay.express": "سريع (48 ساعة)", "delay.urgent": "عاجل (24 ساعة)" });
 
+Object.assign(fr, {
+  "brand.latin": "Maître Makram Arfaoui", "brand.arabic": "الأستاذ مكرم العرفاوي", "brand.shortName": "Makram Arfaoui",
+  "contact.phonePrimary": "(+216) 22 200 170", "contact.phoneSecondary": "(+216) 51 100 036", "contact.email": "contact@makramarfaoui.com", "contact.addressLine1": "17 Rue de Marseille", "contact.addressLine2": "Tunis 1001, Tunisie",
+  "hero.sourceSample": "الشهادة الأصلية", "hero.stampRing": "• TRADUCTEUR ASSERMENTÉ • TUNIS •", "hero.stampCenter": "CERTIFIÉ CONFORME", "statement.name": "Makram Arfaoui", "testimonials.eyebrow": "Avis clients", "testimonials.title": "Ce qu’en disent nos clients", "footer.copyright": "© {year} Maître Makram Arfaoui. Tous droits réservés.",
+});
+Object.assign(en, {
+  "brand.latin": "Maître Makram Arfaoui", "brand.arabic": "الأستاذ مكرم العرفاوي", "brand.shortName": "Makram Arfaoui",
+  "contact.phonePrimary": "(+216) 22 200 170", "contact.phoneSecondary": "(+216) 51 100 036", "contact.email": "contact@makramarfaoui.com", "contact.addressLine1": "17 Rue de Marseille", "contact.addressLine2": "Tunis 1001, Tunisia",
+  "hero.sourceSample": "Original certificate", "hero.stampRing": "• SWORN TRANSLATOR • TUNIS •", "hero.stampCenter": "CERTIFIED TRUE COPY", "statement.name": "Makram Arfaoui", "testimonials.eyebrow": "Client reviews", "testimonials.title": "What our clients say", "footer.copyright": "© {year} Maître Makram Arfaoui. All rights reserved.",
+});
+Object.assign(it, {
+  "brand.latin": "Maître Makram Arfaoui", "brand.arabic": "الأستاذ مكرم العرفاوي", "brand.shortName": "Makram Arfaoui",
+  "contact.phonePrimary": "(+216) 22 200 170", "contact.phoneSecondary": "(+216) 51 100 036", "contact.email": "contact@makramarfaoui.com", "contact.addressLine1": "17 Rue de Marseille", "contact.addressLine2": "Tunisi 1001, Tunisia",
+  "hero.sourceSample": "Certificato originale", "hero.stampRing": "• TRADUTTORE GIURATO • TUNISI •", "hero.stampCenter": "COPIA CERTIFICATA", "statement.name": "Makram Arfaoui", "testimonials.eyebrow": "Recensioni", "testimonials.title": "Cosa dicono i nostri clienti", "footer.copyright": "© {year} Maître Makram Arfaoui. Tutti i diritti riservati.",
+});
+Object.assign(ar, {
+  "brand.latin": "Maître Makram Arfaoui", "brand.arabic": "الأستاذ مكرم العرفاوي", "brand.shortName": "مكرم العرفاوي",
+  "contact.phonePrimary": "(+216) 22 200 170", "contact.phoneSecondary": "(+216) 51 100 036", "contact.email": "contact@makramarfaoui.com", "contact.addressLine1": "17 نهج مرسيليا", "contact.addressLine2": "تونس 1001، تونس",
+  "hero.sourceSample": "الشهادة الأصلية", "hero.stampRing": "• مترجم محلف • تونس •", "hero.stampCenter": "مطابق للأصل", "statement.name": "مكرم العرفاوي", "testimonials.eyebrow": "آراء الحرفاء", "testimonials.title": "آراء حرفائنا", "footer.copyright": "© {year} الأستاذ مكرم العرفاوي. جميع الحقوق محفوظة.",
+});
+
 export const DICTIONARIES: Record<Locale, Dictionary> = { fr, ar, en, it };
 
-export function translate(locale: Locale, key: TranslationKey, values?: Record<string, string | number>): string {
-  let value = DICTIONARIES[locale][key] ?? fr[key] ?? key;
+export function translate(locale: Locale, key: TranslationKey, values?: Record<string, string | number>, overrides?: Dictionary): string {
+  let value = overrides?.[key] ?? DICTIONARIES[locale][key] ?? fr[key] ?? key;
   if (values) {
     for (const [name, replacement] of Object.entries(values)) {
       value = value.replaceAll(`{${name}}`, String(replacement));
