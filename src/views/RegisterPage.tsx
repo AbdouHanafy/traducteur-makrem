@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signUp } from "@/lib/auth-client";
 import AuthShell from "@/views/components/AuthShell";
+import { useI18n } from "@/views/components/I18nProvider";
 
 export default function RegisterPage() {
+  const { t } = useI18n();
   const router = useRouter();
 
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", password: "" });
@@ -49,16 +51,16 @@ export default function RegisterPage() {
 
   return (
     <AuthShell
-      eyebrow="Créer un compte"
-      title="Un compte, toutes vos commandes de traduction au même endroit."
-      subtitle="Déposez vos documents, réglez l'acompte, suivez la traduction et téléchargez vos actes certifiés une fois le solde payé."
+      eyebrow={t("register.eyebrow")}
+      title={t("register.sideTitle")}
+      subtitle={t("register.sideSubtitle")}
     >
-      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[.17em] text-blue">Espace personnel</p>
-      <h1 className="text-[27px] text-navy">Créer un compte</h1>
+      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[.17em] text-blue">{t("register.personal")}</p>
+      <h1 className="text-[27px] text-navy">{t("register.eyebrow")}</h1>
       <p className="mt-1.5 text-[14.5px] text-muted">
-        Déjà client ?{" "}
+        {t("register.existing")} {" "}
         <Link href="/login" className="font-semibold text-blue hover:text-blue-2">
-          Se connecter
+          {t("register.login")}
         </Link>
       </p>
 
@@ -72,7 +74,7 @@ export default function RegisterPage() {
         <div className="grid grid-cols-2 gap-3.5">
           <div>
             <label htmlFor="firstName" className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-              Prénom
+              {t("register.firstName")}
             </label>
             <input
               id="firstName"
@@ -85,7 +87,7 @@ export default function RegisterPage() {
           </div>
           <div>
             <label htmlFor="lastName" className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-              Nom
+              {t("register.lastName")}
             </label>
             <input
               id="lastName"
@@ -100,7 +102,7 @@ export default function RegisterPage() {
 
         <div>
           <label htmlFor="email" className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-            Email
+            {t("common.email")}
           </label>
           <input
             id="email"
@@ -116,7 +118,7 @@ export default function RegisterPage() {
 
         <div>
           <label htmlFor="phone" className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-            Téléphone <span className="font-normal text-muted">(optionnel)</span>
+            {t("common.phone")} <span className="font-normal text-muted">({t("common.optional")})</span>
           </label>
           <input
             id="phone"
@@ -131,7 +133,7 @@ export default function RegisterPage() {
 
         <div>
           <label htmlFor="password" className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-            Mot de passe
+            {t("common.password")}
           </label>
           <input
             id="password"
@@ -142,7 +144,7 @@ export default function RegisterPage() {
             value={form.password}
             onChange={update("password")}
             className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition-colors focus:border-blue"
-            placeholder="10 caractères minimum"
+            placeholder={t("register.passwordHint")}
           />
         </div>
 
@@ -151,7 +153,7 @@ export default function RegisterPage() {
           disabled={loading}
           className="mt-1.5 inline-flex items-center justify-center rounded-[11px] bg-blue px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.28)] transition-colors hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? "Création du compte…" : "Créer mon compte"}
+          {loading ? t("register.loading") : t("register.submit")}
         </button>
       </form>
     </AuthShell>

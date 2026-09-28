@@ -1,3 +1,8 @@
+"use client";
+
+import { useI18n } from "@/views/components/I18nProvider";
+import type { TranslationKey } from "@/lib/i18n";
+
 /**
  * Bande de repères — volontairement des faits de fonctionnement (déjà établis
  * ailleurs sur le site : langues, étapes de suivi, paiement en deux temps),
@@ -6,13 +11,14 @@
  * par le cabinet.
  */
 const STATS = [
-  { value: "3", label: "Langues de travail", detail: "Français · Arabe · Anglais" },
-  { value: "50/50", label: "Paiement en deux temps", detail: "Acompte, puis solde à la livraison" },
-  { value: "5", label: "Étapes suivies en ligne", detail: "Du dépôt au téléchargement" },
-  { value: "100%", label: "Conformité certifiée", detail: "Cachet et signature sur chaque acte" },
+  { value: "3", label: "stats.languages", detail: "hero.languagesValue" },
+  { value: "50/50", label: "stats.payment", detail: "stats.paymentDetail" },
+  { value: "5", label: "stats.steps", detail: "stats.stepsDetail" },
+  { value: "100%", label: "stats.compliance", detail: "stats.complianceDetail" },
 ];
 
 export default function Stats() {
+  const { t } = useI18n();
   return (
     <section className="border-y border-line bg-white">
       <div className="mx-auto max-w-[1160px] px-[22px] py-10">
@@ -24,8 +30,8 @@ export default function Stats() {
             >
               <span className="absolute left-0 top-1 h-full w-[3px] bg-seal lg:hidden" />
               <div className="font-serif text-[32px] leading-none text-navy">{s.value}</div>
-              <div className="mt-2 text-[13.5px] font-semibold text-ink">{s.label}</div>
-              <div className="mt-0.5 text-[12.5px] text-muted">{s.detail}</div>
+              <div className="mt-2 text-[13.5px] font-semibold text-ink">{t(s.label as TranslationKey)}</div>
+              <div className="mt-0.5 text-[12.5px] text-muted">{t(s.detail as TranslationKey)}</div>
             </div>
           ))}
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useI18n } from "@/views/components/I18nProvider";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} Ko`;
@@ -23,6 +24,7 @@ export default function FileDropzone({
   accept: string;
   hint: string;
 }) {
+  const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
 
@@ -64,12 +66,12 @@ export default function FileDropzone({
             onClick={openPicker}
             className="shrink-0 text-[13px] font-semibold text-blue hover:text-blue-2"
           >
-            Changer
+            {t("file.change")}
           </button>
           <button
             type="button"
             onClick={() => onChange(null)}
-            aria-label="Retirer le fichier"
+            aria-label={t("file.remove")}
             className="shrink-0 rounded-lg p-1.5 text-muted hover:bg-white hover:text-[#9c2c2c]"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -100,7 +102,7 @@ export default function FileDropzone({
             </svg>
           </div>
           <p className="text-[14px] font-medium text-ink">
-            <span className="text-blue">Cliquez pour choisir un fichier</span> ou glissez-le ici
+            <span className="text-blue">{t("file.choose")}</span> {t("file.drop")}
           </p>
           <p className="text-[12.5px] text-muted">{hint}</p>
         </div>

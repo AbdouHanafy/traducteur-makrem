@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import Topbar from "@/views/components/Topbar";
 import Footer from "@/views/components/Footer";
 import PublicPageHero from "@/views/components/PublicPageHero";
+import { useI18n } from "@/views/components/I18nProvider";
 
 export interface ArticleListItem {
   slug: string;
@@ -11,17 +14,18 @@ export interface ArticleListItem {
 }
 
 export default function ArticlesListPage({ articles }: { articles: ArticleListItem[] }) {
+  const { t } = useI18n();
   return (
     <>
       <Topbar />
       <main className="flex-1">
-        <PublicPageHero eyebrow="Conseils & actualités" title="Comprendre vos démarches de traduction" description="Guides pratiques, actualités et réponses du cabinet pour préparer vos documents officiels." />
+        <PublicPageHero eyebrow={t("page.articles.eyebrow")} title={t("page.articles.title")} description={t("page.articles.description")} />
 
         <section className="py-16 sm:py-20">
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
             {articles.length === 0 ? (
               <div className="rounded-[16px] border border-line bg-white p-10 text-center text-muted">
-                Aucun article publié pour l&apos;instant.
+                {t("page.articles.empty")}
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -48,7 +52,7 @@ export default function ArticlesListPage({ articles }: { articles: ArticleListIt
                       </h2>
                       <p className="mt-2 text-[14px] text-muted">{article.excerpt}</p>
                       <span className="mt-4 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-blue">
-                        Lire l&apos;article
+                        {t("page.articles.read")}
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                           <path d="M5 12h14M13 6l6 6-6 6" />
                         </svg>

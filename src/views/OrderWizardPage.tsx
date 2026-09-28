@@ -8,6 +8,7 @@ import Footer from "@/views/components/Footer";
 import FileDropzone from "@/views/components/FileDropzone";
 import { DELAY_OPTIONS } from "@/repositories/pricingRules";
 import { signUp, useSession } from "@/lib/auth-client";
+import { useI18n } from "@/views/components/I18nProvider";
 
 interface ServiceOption {
   id: string;
@@ -17,9 +18,9 @@ interface ServiceOption {
 }
 
 const LANGUAGES = [
-  { value: "fr", label: "Français" },
-  { value: "ar", label: "Arabe" },
-  { value: "en", label: "Anglais" },
+  { value: "fr", label: "order.langFrench" },
+  { value: "ar", label: "order.langArabic" },
+  { value: "en", label: "order.langEnglish" },
 ];
 
 const fieldClass = "w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-3 focus:ring-blue/10";
@@ -32,6 +33,7 @@ function splitFullName(fullName: string): { firstName: string; lastName: string 
 }
 
 export default function OrderWizardPage({ services, initialServiceId }: { services: ServiceOption[]; initialServiceId?: string }) {
+  const { t } = useI18n();
   const router = useRouter();
   const { data: session, isPending: sessionPending } = useSession();
   const [serviceId, setServiceId] = useState(initialServiceId ?? services[0]?.id ?? "");
@@ -57,11 +59,11 @@ export default function OrderWizardPage({ services, initialServiceId }: { servic
     event.preventDefault();
     setError(null);
     if (sourceLang === targetLang) {
-      setError("La langue source et la langue cible doivent être différentes.");
+      setError(t("order.sameLanguage"));
       return;
     }
     if (!file) {
-      setError("Merci de déposer votre document.");
+      setError(t("order.fileRequired"));
       return;
     }
 
@@ -106,11 +108,11 @@ export default function OrderWizardPage({ services, initialServiceId }: { servic
         <section className="relative overflow-hidden bg-[linear-gradient(145deg,#0b1830_0%,#14284d_70%,#1a376b_100%)] py-12 text-white sm:py-14">
           <div className="absolute -right-24 -top-32 h-80 w-80 rounded-full border-[55px] border-white/[0.035]" />
           <div className="relative mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8">
-            <p className="mb-2 text-[10.5px] font-bold uppercase tracking-[.18em] text-[#8fb4ff]">Demande de traduction</p>
-            <h1 className="max-w-[24ch] text-[clamp(28px,4vw,42px)] text-white">Obtenez votre devis en quelques minutes</h1>
-            <p className="mt-3 max-w-[62ch] text-[14px] leading-6 text-slate-300">Déposez votre document et précisez votre besoin. Aucun paiement n’est demandé avant la validation du devis.</p>
+            <p className="mb-2 text-[10.5px] font-bold uppercase tracking-[.18em] text-[#8fb4ff]">{t("order.eyebrow")}</p>
+            <h1 className="max-w-[24ch] text-[clamp(28px,4vw,42px)] text-white">{t("order.title")}</h1>
+            <p className="mt-3 max-w-[62ch] text-[14px] leading-6 text-slate-300">{t("order.subtitle")}</p>
             <div className="mt-7 flex max-w-[620px] items-center">
-              {["Votre besoin", "Vos coordonnées", "Devis & suivi"].map((label, index) => <div key={label} className="flex min-w-0 flex-1 items-center last:flex-none"><span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-bold ${index === 0 ? "bg-white text-navy" : "border border-white/25 bg-white/5 text-slate-300"}`}>{index + 1}</span><span className={`ml-2 hidden text-[11px] font-medium sm:block ${index === 0 ? "text-white" : "text-slate-400"}`}>{label}</span>{index < 2 && <span className="mx-3 h-px flex-1 bg-white/20" />}</div>)}
+              {[t("order.stepNeed"), t("order.stepContact"), t("order.stepQuote")].map((label, index) => <div key={label} className="flex min-w-0 flex-1 items-center last:flex-none"><span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-bold ${index === 0 ? "bg-white text-navy" : "border border-white/25 bg-white/5 text-slate-300"}`}>{index + 1}</span><span className={`ms-2 hidden text-[11px] font-medium sm:block ${index === 0 ? "text-white" : "text-slate-400"}`}>{label}</span>{index < 2 && <span className="mx-3 h-px flex-1 bg-white/20" />}</div>)}
             </div>
           </div>
         </section>
@@ -118,44 +120,44 @@ export default function OrderWizardPage({ services, initialServiceId }: { servic
         <section className="py-8 sm:py-12">
           <div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8">
             {services.length === 0 ? (
-              <div className="rounded-2xl border border-line bg-white p-10 text-center text-muted">Aucun service disponible pour le moment. <Link href="/contact" className="font-semibold text-blue">Contactez-nous</Link>.</div>
+              <div className="rounded-2xl border border-line bg-white p-10 text-center text-muted">{t("order.noServices")} <Link href="/contact" className="font-semibold text-blue">{t("order.contactUs")}</Link>.</div>
             ) : (
               <form onSubmit={onSubmit} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_330px]">
                 <div className="grid gap-5">
                   {error && <div role="alert" className="rounded-xl border border-[#f3c6c6] bg-[#fff3f3] px-4 py-3 text-[13px] text-[#9c2c2c]">{error}</div>}
 
                   <section className="rounded-2xl border border-[#e3e8f0] bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
-                    <div className="mb-6 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">01</span><div><h2 className="text-[17px] text-navy">Votre besoin</h2><p className="text-[11.5px] text-muted">Type de document, langues et délai</p></div></div>
+                    <div className="mb-6 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">01</span><div><h2 className="text-[17px] text-navy">{t("order.stepNeed")}</h2><p className="text-[11.5px] text-muted">{t("order.needHint")}</p></div></div>
                     <div className="grid gap-5">
-                      <div><label htmlFor="service" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Service demandé</label><select id="service" value={serviceId} onChange={(event) => setServiceId(event.target.value)} className={fieldClass}>{services.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}</select></div>
+                      <div><label htmlFor="service" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.service")}</label><select id="service" value={serviceId} onChange={(event) => setServiceId(event.target.value)} className={fieldClass}>{services.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}</select></div>
                       <div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr] sm:items-end">
-                        <div><label htmlFor="sourceLang" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Langue du document</label><select id="sourceLang" value={sourceLang} onChange={(event) => setSourceLang(event.target.value)} className={fieldClass}>{LANGUAGES.map((language) => <option key={language.value} value={language.value}>{language.label}</option>)}</select></div>
+                        <div><label htmlFor="sourceLang" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.sourceLanguage")}</label><select id="sourceLang" value={sourceLang} onChange={(event) => setSourceLang(event.target.value)} className={fieldClass}>{LANGUAGES.map((language) => <option key={language.value} value={language.value}>{t(language.label)}</option>)}</select></div>
                         <span className="mb-3 hidden text-slate-400 sm:block" aria-hidden="true">→</span>
-                        <div><label htmlFor="targetLang" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Langue souhaitée</label><select id="targetLang" value={targetLang} onChange={(event) => setTargetLang(event.target.value)} className={fieldClass}>{LANGUAGES.map((language) => <option key={language.value} value={language.value}>{language.label}</option>)}</select></div>
+                        <div><label htmlFor="targetLang" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.targetLanguage")}</label><select id="targetLang" value={targetLang} onChange={(event) => setTargetLang(event.target.value)} className={fieldClass}>{LANGUAGES.map((language) => <option key={language.value} value={language.value}>{t(language.label)}</option>)}</select></div>
                       </div>
-                      <div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="pages" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Nombre de pages</label><input id="pages" type="number" min={1} max={500} value={pages} onChange={(event) => setPages(Math.max(1, Number(event.target.value)))} className={fieldClass} /></div><div><label htmlFor="delay" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Délai souhaité</label><select id="delay" value={delayKey} onChange={(event) => setDelayKey(event.target.value)} className={fieldClass}>{DELAY_OPTIONS.map((delay) => <option key={delay.key} value={delay.key}>{delay.label}</option>)}</select></div></div>
+                      <div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="pages" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.pages")}</label><input id="pages" type="number" min={1} max={500} value={pages} onChange={(event) => setPages(Math.max(1, Number(event.target.value)))} className={fieldClass} /></div><div><label htmlFor="delay" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.deadline")}</label><select id="delay" value={delayKey} onChange={(event) => setDelayKey(event.target.value)} className={fieldClass}>{DELAY_OPTIONS.map((delay) => <option key={delay.key} value={delay.key}>{t(delay.key)}</option>)}</select></div></div>
                     </div>
                   </section>
 
                   <section className="rounded-2xl border border-[#e3e8f0] bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
-                    <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">02</span><div><h2 className="text-[17px] text-navy">Document source</h2><p className="text-[11.5px] text-muted">Votre fichier reste privé et sécurisé</p></div></div>
-                    <FileDropzone file={file} onChange={setFile} accept=".pdf,.jpg,.jpeg,.png" hint="PDF, JPEG ou PNG — 20 Mo maximum" />
+                    <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">02</span><div><h2 className="text-[17px] text-navy">{t("order.sourceDocument")}</h2><p className="text-[11.5px] text-muted">{t("order.privateFile")}</p></div></div>
+                    <FileDropzone file={file} onChange={setFile} accept=".pdf,.jpg,.jpeg,.png" hint={t("order.fileHint")} />
                   </section>
 
                   {needsAccount && <section className="rounded-2xl border border-[#e3e8f0] bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
-                    <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">03</span><div><h2 className="text-[17px] text-navy">Vos coordonnées</h2><p className="text-[11.5px] text-muted">Votre espace de suivi sera créé automatiquement</p></div></div>
-                    <div className="grid gap-4"><div><label htmlFor="fullName" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Nom complet</label><input id="fullName" required value={account.fullName} onChange={updateAccount("fullName")} autoComplete="name" placeholder="Sarra Ben Ali" className={fieldClass} /></div><div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="orderEmail" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Email</label><input id="orderEmail" required type="email" value={account.email} onChange={updateAccount("email")} autoComplete="email" placeholder="vous@exemple.com" className={fieldClass} /></div><div><label htmlFor="orderPhone" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Téléphone</label><input id="orderPhone" required type="tel" value={account.phone} onChange={updateAccount("phone")} autoComplete="tel" placeholder="(+216) 22 200 170" className={fieldClass} /></div></div><div><label htmlFor="orderPassword" className="mb-1.5 block text-[12.5px] font-semibold text-ink">Mot de passe de votre espace</label><input id="orderPassword" required type="password" minLength={10} value={account.password} onChange={updateAccount("password")} autoComplete="new-password" placeholder="10 caractères minimum" className={fieldClass} /></div><p className="text-[11.5px] text-muted">Déjà client ? <Link href="/login?callbackUrl=/commander" className="font-semibold text-blue">Connectez-vous</Link> pour conserver le même espace.</p></div>
+                    <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">03</span><div><h2 className="text-[17px] text-navy">{t("order.stepContact")}</h2><p className="text-[11.5px] text-muted">{t("order.contactHint")}</p></div></div>
+                    <div className="grid gap-4"><div><label htmlFor="fullName" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.fullName")}</label><input id="fullName" required value={account.fullName} onChange={updateAccount("fullName")} autoComplete="name" placeholder="Sarra Ben Ali" className={fieldClass} /></div><div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="orderEmail" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("common.email")}</label><input id="orderEmail" required type="email" value={account.email} onChange={updateAccount("email")} autoComplete="email" placeholder="you@example.com" className={fieldClass} /></div><div><label htmlFor="orderPhone" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("common.phone")}</label><input id="orderPhone" required type="tel" value={account.phone} onChange={updateAccount("phone")} autoComplete="tel" placeholder="(+216) 22 200 170" className={fieldClass} /></div></div><div><label htmlFor="orderPassword" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.accountPassword")}</label><input id="orderPassword" required type="password" minLength={10} value={account.password} onChange={updateAccount("password")} autoComplete="new-password" placeholder={t("register.passwordHint")} className={fieldClass} /></div><p className="text-[11.5px] text-muted">{t("order.existing")} <Link href="/login?callbackUrl=/commander" className="font-semibold text-blue">{t("register.login")}</Link> {t("order.loginHint")}</p></div>
                   </section>}
                 </div>
 
                 <aside className="rounded-2xl border border-[#dfe5ef] bg-white p-5 shadow-[0_12px_38px_rgba(20,40,77,0.08)] lg:sticky lg:top-[96px] sm:p-6">
-                  <h2 className="text-[17px] text-navy">Récapitulatif</h2>
-                  <dl className="mt-5 grid gap-3 text-[12.5px]"><div className="flex justify-between gap-4"><dt className="text-muted">Service</dt><dd className="text-right font-semibold text-ink">{selectedService?.name}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">Traduction</dt><dd className="font-semibold text-ink">{LANGUAGES.find((item) => item.value === sourceLang)?.label} → {LANGUAGES.find((item) => item.value === targetLang)?.label}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">Volume</dt><dd className="font-semibold text-ink">{pages} page{pages > 1 ? "s" : ""}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">Délai</dt><dd className="text-right font-semibold text-ink">{selectedDelay?.label}</dd></div></dl>
+                  <h2 className="text-[17px] text-navy">{t("order.summary")}</h2>
+                  <dl className="mt-5 grid gap-3 text-[12.5px]"><div className="flex justify-between gap-4"><dt className="text-muted">{t("nav.services")}</dt><dd className="text-right font-semibold text-ink">{selectedService?.name}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">{t("order.translation")}</dt><dd className="font-semibold text-ink">{t(LANGUAGES.find((item) => item.value === sourceLang)?.label ?? "order.langArabic")} → {t(LANGUAGES.find((item) => item.value === targetLang)?.label ?? "order.langFrench")}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">{t("order.volume")}</dt><dd className="font-semibold text-ink">{pages}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">{t("order.deadline")}</dt><dd className="text-right font-semibold text-ink">{selectedDelay ? t(selectedDelay.key) : ""}</dd></div></dl>
                   <div className="my-5 border-t border-line" />
-                  <div className="flex items-end justify-between gap-3"><span className="text-[12.5px] text-muted">Estimation initiale</span><span className="text-[23px] font-semibold text-navy">{estimatedTotal.toFixed(3)} <small className="text-[11px] font-semibold">TND</small></span></div>
-                  <p className="mt-2 rounded-lg bg-[#f6f8fb] px-3 py-2.5 text-[10.5px] leading-4 text-muted">Le devis final tient compte du délai et de la complexité. Vous le validerez avant tout paiement.</p>
-                  <button type="submit" disabled={loading || sessionPending} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue px-5 py-3.5 text-[14px] font-semibold text-white shadow-[0_10px_24px_rgba(36,86,184,0.22)] transition hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60">{loading ? needsAccount ? "Création et envoi…" : "Envoi en cours…" : "Recevoir mon devis"}<span aria-hidden="true">→</span></button>
-                  <div className="mt-5 grid gap-2.5 border-t border-line pt-5 text-[10.5px] text-muted"><div className="flex items-center gap-2"><span className="text-ok">✓</span>Aucun paiement immédiat</div><div className="flex items-center gap-2"><span className="text-ok">✓</span>Documents confidentiels</div><div className="flex items-center gap-2"><span className="text-ok">✓</span>Suivi complet dans votre espace</div></div>
+                  <div className="flex items-end justify-between gap-3"><span className="text-[12.5px] text-muted">{t("order.initialEstimate")}</span><span className="text-[23px] font-semibold text-navy">{estimatedTotal.toFixed(3)} <small className="text-[11px] font-semibold">TND</small></span></div>
+                  <p className="mt-2 rounded-lg bg-[#f6f8fb] px-3 py-2.5 text-[10.5px] leading-4 text-muted">{t("order.estimateNote")}</p>
+                  <button type="submit" disabled={loading || sessionPending} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue px-5 py-3.5 text-[14px] font-semibold text-white shadow-[0_10px_24px_rgba(36,86,184,0.22)] transition hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60">{loading ? needsAccount ? t("order.creating") : t("order.sending") : t("order.receiveQuote")}<span aria-hidden="true">→</span></button>
+                  <div className="mt-5 grid gap-2.5 border-t border-line pt-5 text-[10.5px] text-muted"><div className="flex items-center gap-2"><span className="text-ok">✓</span>{t("order.noPayment")}</div><div className="flex items-center gap-2"><span className="text-ok">✓</span>{t("order.confidential")}</div><div className="flex items-center gap-2"><span className="text-ok">✓</span>{t("order.fullTracking")}</div></div>
                 </aside>
               </form>
             )}

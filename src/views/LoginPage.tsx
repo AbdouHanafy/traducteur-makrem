@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "@/lib/auth-client";
 import AuthShell from "@/views/components/AuthShell";
+import { useI18n } from "@/views/components/I18nProvider";
 
 export default function LoginPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedCallback = searchParams.get("callbackUrl");
@@ -27,7 +29,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (signInError) {
-      setError("Email ou mot de passe incorrect.");
+      setError(t("login.error"));
       return;
     }
 
@@ -37,16 +39,16 @@ export default function LoginPage() {
 
   return (
     <AuthShell
-      eyebrow="Espace client"
-      title="Suivez votre commande de traduction, du devis au téléchargement."
-      subtitle="Chaque étape — acompte, traduction, solde, fichier débloqué — est visible en temps réel depuis votre espace."
+      eyebrow={t("login.eyebrow")}
+      title={t("login.sideTitle")}
+      subtitle={t("login.sideSubtitle")}
     >
-      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[.17em] text-blue">Accès sécurisé</p>
-      <h1 className="text-[27px] text-navy">Bienvenue</h1>
+      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[.17em] text-blue">{t("login.secure")}</p>
+      <h1 className="text-[27px] text-navy">{t("login.welcome")}</h1>
       <p className="mt-1.5 text-[14.5px] text-muted">
-        Pas encore de compte ?{" "}
+        {t("login.noAccount")} {" "}
         <Link href="/register" className="font-semibold text-blue hover:text-blue-2">
-          Créer un compte
+          {t("login.create")}
         </Link>
       </p>
 
@@ -59,7 +61,7 @@ export default function LoginPage() {
 
         <div>
           <label htmlFor="email" className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-            Email
+            {t("common.email")}
           </label>
           <input
             id="email"
@@ -75,7 +77,7 @@ export default function LoginPage() {
 
         <div>
           <label htmlFor="password" className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-            Mot de passe
+            {t("common.password")}
           </label>
           <input
             id="password"
@@ -94,7 +96,7 @@ export default function LoginPage() {
           disabled={loading}
           className="mt-1.5 inline-flex items-center justify-center rounded-xl bg-blue px-6 py-3.5 text-[14px] font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.22)] transition hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? "Connexion…" : "Se connecter"}
+          {loading ? t("login.loading") : t("login.submit")}
         </button>
       </form>
     </AuthShell>

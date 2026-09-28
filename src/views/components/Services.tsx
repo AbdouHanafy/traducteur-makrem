@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import ServiceCard, { type ServiceCardData } from "@/views/components/ServiceCard";
+import { useI18n } from "@/views/components/I18nProvider";
 
 /**
  * Section Services (home) — mêmes cartes que /services (voir ServiceCard.tsx), pour une
@@ -7,6 +10,7 @@ import ServiceCard, { type ServiceCardData } from "@/views/components/ServiceCar
  * backoffice (/admin/services).
  */
 export default function Services({ services }: { services: ServiceCardData[] }) {
+  const { t } = useI18n();
   return (
     <section id="services" className="py-22">
       <div className="mx-auto max-w-[1160px] px-[22px]">
@@ -14,15 +18,14 @@ export default function Services({ services }: { services: ServiceCardData[] }) 
           <div className="max-w-[660px]">
             <span className="mb-3 inline-flex items-center gap-2 text-[13.5px] font-semibold text-blue">
               <span className="h-0.5 w-5.5 rounded bg-blue" />
-              Nos prestations
+              {t("home.servicesEyebrow")}
             </span>
             <h2 className="text-[clamp(28px,3.4vw,40px)] text-navy">
-              Des traductions officielles pour chaque démarche
+              {t("home.servicesTitle")}
             </h2>
           </div>
           <p className="max-w-[34ch] text-[14.5px] text-muted md:text-right">
-            Traductions assermentées, cachetées, destinées aux administrations, universités,
-            ambassades et tribunaux.
+            {t("home.servicesDescription")}
           </p>
         </div>
 
@@ -34,13 +37,13 @@ export default function Services({ services }: { services: ServiceCardData[] }) 
 
         <div className="mt-8 flex flex-col items-center justify-between gap-3 sm:flex-row">
           <p className="text-[13px] text-muted">
-            Le prix dépend de la langue, du nombre de pages, du délai et de la complexité.
+            {t("home.priceNote")}
           </p>
           <Link
             href="/services"
             className="inline-flex items-center gap-2 text-[14.5px] font-semibold text-blue hover:text-blue-2"
           >
-            Voir le détail de tous nos services
+            {t("home.allServices")}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <path d="M5 12h14M13 6l6 6-6 6" />
             </svg>

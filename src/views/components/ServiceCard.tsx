@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useI18n } from "@/views/components/I18nProvider";
 
 export interface ServiceCardData {
   slug: string;
@@ -8,11 +11,23 @@ export interface ServiceCardData {
   pricePerPage: string;
 }
 
+const SERVICE_COPY: Record<string, { name: string; description: string }> = {
+  "etat-civil": { name: "services.civil", description: "services.civilDetail" },
+  "diplomes-releves": { name: "services.diplomas", description: "services.diplomasDetail" },
+  "contrats-actes": { name: "services.contracts", description: "services.contractsDetail" },
+  "documents-judiciaires": { name: "services.court", description: "services.courtDetail" },
+  interpretariat: { name: "services.interpreting", description: "services.interpretingDetail" },
+};
+
 /**
  * Carte service partagée — utilisée sur la home (teaser) et sur /services (détail), pour que
  * les deux restent visuellement identiques sans dupliquer le balisage à chaque évolution.
  */
 export default function ServiceCard({ service, anchor = true }: { service: ServiceCardData; anchor?: boolean }) {
+  const { locale, t } = useI18n();
+  const localizedCopy = SERVICE_COPY[service.slug];
+  const name = locale === "fr" || !localizedCopy ? service.name : t(localizedCopy.name);
+  const description = locale === "fr" || !localizedCopy ? service.description : t(localizedCopy.description);
   return (
     <div
       id={anchor ? service.slug : undefined}
@@ -23,7 +38,7 @@ export default function ServiceCard({ service, anchor = true }: { service: Servi
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={service.imageUrl}
-            alt={service.name}
+            alt={name}
             className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
           />
         ) : (
@@ -36,22 +51,22 @@ export default function ServiceCard({ service, anchor = true }: { service: Servi
         )}
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(12,26,52,0)_45%,rgba(12,26,52,.82)_100%)]" />
         <h3 className="absolute inset-x-0 bottom-0 px-5 pb-4 font-serif text-[19px] leading-tight text-white [text-shadow:0_1px_6px_rgba(0,0,0,.35)]">
-          {service.name}
+          {name}
         </h3>
       </div>
 
       <div className="flex flex-1 flex-col px-6 pb-6 pt-5">
-        <p className="flex-1 text-[14px] leading-relaxed text-muted">{service.description}</p>
+        <p className="flex-1 text-[14px] leading-relaxed text-muted">{description}</p>
 
         <div className="mt-5 flex items-center justify-between gap-3 border-t border-line pt-4">
           <span className="inline-flex items-center rounded-full bg-blue-soft px-3 py-1.5 text-[12px] font-semibold text-blue-2">
-            {Number(service.pricePerPage) > 0 ? `Dès ${service.pricePerPage} TND/page` : "Sur devis"}
+            {Number(service.pricePerPage) > 0 ? t("service.from", { price: service.pricePerPage }) : t("service.quote")}
           </span>
           <Link
             href={`/commander?service=${encodeURIComponent(service.slug)}`}
             className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white transition-colors group-hover:bg-blue"
           >
-            Commander
+            {t("service.order")}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
               <path d="M5 12h14M13 6l6 6-6 6" />
             </svg>

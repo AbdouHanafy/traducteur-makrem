@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import Topbar from "@/views/components/Topbar";
 import Footer from "@/views/components/Footer";
 import PublicPageHero from "@/views/components/PublicPageHero";
+import { useI18n } from "@/views/components/I18nProvider";
 
 const CHANNELS = [
   {
@@ -37,11 +40,12 @@ const CHANNELS = [
 ];
 
 export default function ContactPage() {
+  const { t } = useI18n();
   return (
     <>
       <Topbar />
       <main className="flex-1">
-        <PublicPageHero eyebrow="Contact" title="Une question avant de commander ?" description="Appelez-nous, écrivez-nous ou passez au cabinet. Pour une traduction, le plus rapide reste de déposer votre document et de recevoir un devis en ligne." />
+        <PublicPageHero eyebrow={t("nav.contact")} title={t("page.contact.title")} description={t("page.contact.description")} />
 
         <section className="py-16 sm:py-20">
           <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
@@ -56,7 +60,7 @@ export default function ContactPage() {
                         {c.icon}
                       </svg>
                     </div>
-                    <h2 className="text-[16.5px] text-navy">{c.label}</h2>
+                    <h2 className="text-[16.5px] text-navy">{c.label === "Téléphone" ? t("common.phone") : c.label === "Cabinet" ? t("page.contact.office") : c.label}</h2>
                     <div className="mt-2 text-[14.5px] text-muted">
                       {c.lines.map((l) => (
                         <div key={l}>{l}</div>
@@ -78,10 +82,9 @@ export default function ContactPage() {
 
             <div className="mt-14 grid gap-8 rounded-[16px] border border-line bg-white px-8 py-9 md:grid-cols-[1.2fr_.8fr] md:items-center">
               <div>
-                <h2 className="text-[22px] text-navy">Prêt à faire traduire votre document ?</h2>
+                <h2 className="text-[22px] text-navy">{t("page.contact.ready")}</h2>
                 <p className="mt-2.5 max-w-[56ch] text-[15px] text-muted">
-                  Déposez votre fichier en ligne, indiquez la langue et le délai souhaités : un
-                  devis vous est communiqué avant tout engagement.
+                  {t("page.contact.readyDesc")}
                 </p>
               </div>
               <div className="flex flex-wrap gap-3.5 md:justify-end">
@@ -89,7 +92,7 @@ export default function ContactPage() {
                   href="/commander"
                   className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-[24px] py-[13px] text-[15px] font-semibold text-white transition-colors hover:bg-blue-2"
                 >
-                  Commander une traduction
+                  {t("nav.orderLong")}
                 </Link>
               </div>
             </div>

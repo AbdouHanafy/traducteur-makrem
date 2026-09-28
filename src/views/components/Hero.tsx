@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useI18n } from "@/views/components/I18nProvider";
 
 /**
  * Hero — identité "cabinet juridique premium" appuyée : watermark sceau/compas en
@@ -7,6 +10,7 @@ import Link from "next/link";
  * vérifiée (cf. ARCHITECTURE.md §1.1) : le texte reste factuel.
  */
 export default function Hero() {
+  const { t } = useI18n();
   return (
     <section
       id="top"
@@ -28,23 +32,22 @@ export default function Hero() {
         <div className="relative">
           <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/[.16] bg-white/[.08] px-3.5 py-1.5 text-[13px] font-medium text-[#dbe6f8]">
             <span className="h-1.5 w-1.5 rounded-full bg-ok shadow-[0_0_0_4px_rgba(30,158,106,.25)]" />
-            Traducteur assermenté près la Cour d&apos;appel de Tunis
+            {t("hero.credential")}
           </span>
           <h1 className="text-[clamp(34px,4.6vw,58px)] font-semibold tracking-tight text-white">
-            Vos actes traduits, <br className="hidden md:block" />
-            <span className="font-medium italic text-[#9fc0ff]">certifiés</span> et remis
-            sous cachet.
+            {t("hero.titleBefore")} <br className="hidden md:block" />
+            <span className="font-medium italic text-[#9fc0ff]">{t("hero.titleAccent")}</span>{" "}
+            {t("hero.titleAfter")}
           </h1>
           <p className="mt-5 max-w-[47ch] text-lg text-[#c4d2ea]">
-            Diplômes, actes d&apos;état civil, contrats, jugements… Déposez votre document,
-            recevez un devis, et récupérez votre traduction officielle sans vous déplacer.
+            {t("hero.description")}
           </p>
           <div className="mt-8 flex flex-wrap gap-3.5">
             <Link
               href="/commander"
               className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-[26px] py-[15px] text-base font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.28)] transition-colors hover:bg-blue-2"
             >
-              Commander une traduction
+              {t("nav.orderLong")}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
@@ -53,7 +56,7 @@ export default function Hero() {
               href="/services"
               className="inline-flex items-center rounded-[11px] border-[1.5px] border-white/[.28] px-[26px] py-[15px] text-base font-semibold text-white transition-colors hover:border-white"
             >
-              Découvrir nos services
+              {t("hero.discover")}
             </Link>
           </div>
 
@@ -61,23 +64,23 @@ export default function Hero() {
             <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-3">
               <div>
                 <div className="font-serif text-[13px] uppercase tracking-[.12em] text-[#8fb4ff]">
-                  Statut
+                  {t("hero.status")}
                 </div>
                 <div className="mt-1 text-[14px] font-medium text-white">
-                  Traducteur &amp; interprète assermenté
+                  {t("hero.statusValue")}
                 </div>
               </div>
               <div className="sm:border-l sm:border-white/[.14] sm:pl-8">
                 <div className="font-serif text-[13px] uppercase tracking-[.12em] text-[#8fb4ff]">
-                  Langues
+                  {t("hero.languages")}
                 </div>
-                <div className="mt-1 text-[14px] font-medium text-white">Français · Arabe · Anglais</div>
+                <div className="mt-1 text-[14px] font-medium text-white">{t("hero.languagesValue")}</div>
               </div>
               <div className="sm:border-l sm:border-white/[.14] sm:pl-8">
                 <div className="font-serif text-[13px] uppercase tracking-[.12em] text-[#8fb4ff]">
-                  Paiement
+                  {t("hero.payment")}
                 </div>
-                <div className="mt-1 text-[14px] font-medium text-white">50 % à la commande, 50 % à la livraison</div>
+                <div className="mt-1 text-[14px] font-medium text-white">{t("hero.paymentValue")}</div>
               </div>
             </div>
           </div>
@@ -87,7 +90,7 @@ export default function Hero() {
           <div className="absolute right-24 top-[62px] h-[330px] w-[250px] rotate-[-7deg] overflow-hidden rounded-xl bg-white text-ink opacity-55 shadow-[var(--shadow-lg)] saturate-[.8]">
             <div className="border-b border-line px-[22px] pb-3 pt-5">
               <div className="text-[10px] font-bold uppercase tracking-widest text-blue">
-                Document source
+                {t("hero.source")}
               </div>
               <div className="mt-1 font-serif text-[15px] font-semibold">الشهادة الأصلية</div>
             </div>
@@ -101,9 +104,9 @@ export default function Hero() {
           <div className="absolute right-3.5 top-7 h-[372px] w-[288px] rotate-[4deg] overflow-hidden rounded-xl bg-white text-ink shadow-[var(--shadow-lg)]">
             <div className="border-b border-line px-[22px] pb-3 pt-5">
               <div className="text-[10px] font-bold uppercase tracking-widest text-blue">
-                Traduction certifiée
+                {t("hero.certified")}
               </div>
-              <div className="mt-1 font-serif text-[15px] font-semibold">Extrait de naissance</div>
+              <div className="mt-1 font-serif text-[15px] font-semibold">{t("hero.birth")}</div>
             </div>
             <div className="grid gap-2.5 px-[22px] py-4.5">
               {[100, 88, 72, 100, 88, 72].map((w, i) => (
@@ -135,8 +138,8 @@ export default function Hero() {
               </svg>
             </div>
             <div>
-              <b className="block text-[13px]">Conforme &amp; signée</b>
-              <span className="text-[11px] text-muted">Cachet officiel apposé</span>
+              <b className="block text-[13px]">{t("hero.compliant")}</b>
+              <span className="text-[11px] text-muted">{t("hero.seal")}</span>
             </div>
           </div>
 
@@ -150,7 +153,7 @@ export default function Hero() {
                 <path d="M8 11V7a4 4 0 018 0v4" />
               </svg>
             </div>
-            Débloqué au paiement du solde
+            {t("hero.unlocked")}
           </div>
         </div>
       </div>

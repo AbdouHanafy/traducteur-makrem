@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import Topbar from "@/views/components/Topbar";
 import Footer from "@/views/components/Footer";
 import PublicPageHero from "@/views/components/PublicPageHero";
+import { useI18n } from "@/views/components/I18nProvider";
 
 export interface FaqEntry {
   id: string;
@@ -10,11 +13,12 @@ export interface FaqEntry {
 }
 
 export default function FaqPage({ faqs }: { faqs: FaqEntry[] }) {
+  const { t } = useI18n();
   return (
     <>
       <Topbar />
       <main className="flex-1">
-        <PublicPageHero eyebrow="FAQ" title="Questions fréquentes" description="Tout ce qu’il faut savoir avant de commander une traduction assermentée." narrow />
+        <PublicPageHero eyebrow={t("nav.faq")} title={t("page.faq.title")} description={t("page.faq.description")} narrow />
 
         <section className="py-16 sm:py-20">
           <div className="mx-auto max-w-[880px] px-4 sm:px-6 lg:px-8">
@@ -44,16 +48,16 @@ export default function FaqPage({ faqs }: { faqs: FaqEntry[] }) {
             </div>
 
             <div className="mt-14 rounded-[16px] border border-line bg-white px-8 py-9 text-center">
-              <h2 className="text-[22px] text-navy">Une autre question ?</h2>
+              <h2 className="text-[22px] text-navy">{t("page.faq.other")}</h2>
               <p className="mx-auto mt-2.5 max-w-[48ch] text-[15px] text-muted">
-                Contactez-nous directement, nous répondons rapidement.
+                {t("page.faq.otherDesc")}
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3.5">
                 <Link
                   href="/contact"
                   className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-[24px] py-[13px] text-[15px] font-semibold text-white transition-colors hover:bg-blue-2"
                 >
-                  Nous contacter
+                  {t("cta.contact")}
                 </Link>
               </div>
             </div>

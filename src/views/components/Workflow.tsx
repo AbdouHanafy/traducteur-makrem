@@ -1,3 +1,8 @@
+"use client";
+
+import { useI18n } from "@/views/components/I18nProvider";
+import type { TranslationKey } from "@/lib/i18n";
+
 /**
  * Workflow — le "paiement en deux temps" reste le bon modèle mental
  * (ARCHITECTURE.md §1.1), présenté ici comme une vraie ligne du temps reliée
@@ -5,14 +10,15 @@
  * parcours vit dans /commander et /dashboard.
  */
 const STEPS = [
-  { title: "Déposez le document", desc: "Téléversez votre fichier et indiquez la langue et le délai souhaités." },
-  { title: "Recevez le devis", desc: "Prix calculé automatiquement, validé par le traducteur." },
-  { title: "Réglez l'avance", desc: "50 % à la commande pour lancer le travail.", tag: "Acompte 50 %", pay: true },
-  { title: "Traduction & livraison", desc: "Le traducteur dépose le fichier certifié dans votre espace.", tag: "🔒 Verrouillé" },
-  { title: "Solde & téléchargement", desc: "Payez les 50 % restants : le fichier se débloque instantanément.", tag: "🔓 Débloqué", pay: true },
+  { title: "workflow.step1Title", desc: "workflow.step1Desc" },
+  { title: "workflow.step2Title", desc: "workflow.step2Desc" },
+  { title: "workflow.step3Title", desc: "workflow.step3Desc", tag: "workflow.deposit", pay: true },
+  { title: "workflow.step4Title", desc: "workflow.step4Desc", tag: "workflow.locked" },
+  { title: "workflow.step5Title", desc: "workflow.step5Desc", tag: "workflow.unlocked", pay: true },
 ];
 
 export default function Workflow() {
+  const { t } = useI18n();
   return (
     <section id="workflow" className="relative overflow-hidden bg-navy py-22 text-white">
       <svg
@@ -29,14 +35,13 @@ export default function Workflow() {
         <div className="mb-16 max-w-[660px]">
           <span className="mb-3 inline-flex items-center gap-2 text-[13.5px] font-semibold text-[#8fb4ff]">
             <span className="h-0.5 w-5.5 rounded bg-[#8fb4ff]" />
-            Comment ça marche
+            {t("workflow.eyebrow")}
           </span>
           <h2 className="text-[clamp(28px,3.4vw,40px)] text-white">
-            Un paiement en deux temps, simple et sécurisé
+            {t("workflow.title")}
           </h2>
           <p className="mt-3.5 text-[17px] text-[#b9c8e4]">
-            Vous réglez 50 % pour lancer la traduction. Le fichier final vous est livré —
-            verrouillé. Il se débloque et devient téléchargeable dès le paiement du solde.
+            {t("workflow.description")}
           </p>
         </div>
 
@@ -61,15 +66,15 @@ export default function Workflow() {
               >
                 {`0${i + 1}`}
               </div>
-              <h4 className="text-[16.5px] text-white">{step.title}</h4>
-              <p className="mt-2 max-w-[26ch] text-[13.5px] text-[#a9bbdb]">{step.desc}</p>
+              <h4 className="text-[16.5px] text-white">{t(step.title as TranslationKey)}</h4>
+              <p className="mt-2 max-w-[26ch] text-[13.5px] text-[#a9bbdb]">{t(step.desc as TranslationKey)}</p>
               {step.tag && (
                 <span
                   className={`mt-3.5 inline-flex items-center gap-1.5 rounded-[7px] px-2.5 py-1 text-[11.5px] font-semibold ${
                     step.pay ? "bg-[rgba(30,158,106,.16)] text-[#7ce0b1]" : "bg-white/10 text-[#cfd9ee]"
                   }`}
                 >
-                  {step.tag}
+                  {t(step.tag as TranslationKey)}
                 </span>
               )}
             </div>
