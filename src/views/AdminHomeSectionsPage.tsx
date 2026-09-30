@@ -61,14 +61,14 @@ function CustomSectionForm({
         value={values.eyebrow}
         onChange={(e) => setValues((v) => ({ ...v, eyebrow: e.target.value }))}
         placeholder={t("adm.home.eyebrow")}
-        className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
+        className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
       />
       <input
         required
         value={values.title}
         onChange={(e) => setValues((v) => ({ ...v, title: e.target.value }))}
         placeholder={t("adm.title")}
-        className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
+        className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
       />
       <textarea
         required
@@ -76,7 +76,7 @@ function CustomSectionForm({
         value={values.body}
         onChange={(e) => setValues((v) => ({ ...v, body: e.target.value }))}
         placeholder={t("adm.home.text")}
-        className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
+        className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
       />
       <div>
         <span className="mb-1.5 block text-[12.5px] font-semibold text-ink">
@@ -89,13 +89,13 @@ function CustomSectionForm({
           value={values.ctaLabel}
           onChange={(e) => setValues((v) => ({ ...v, ctaLabel: e.target.value }))}
           placeholder={t("adm.home.ctaLabel")}
-          className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
+          className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
         />
         <input
           value={values.ctaHref}
           onChange={(e) => setValues((v) => ({ ...v, ctaHref: e.target.value }))}
           placeholder={t("adm.home.ctaHref")}
-          className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
+          className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
         />
       </div>
       <TranslationEditor
@@ -110,13 +110,13 @@ function CustomSectionForm({
         onChange={(translations) => setValues((v) => ({ ...v, translations }))}
       />
       <div className="flex justify-end gap-2">
-        <button type="button" onClick={onCancel} className="rounded-[9px] px-4 py-2 text-[13.5px] text-muted">
+        <button type="button" onClick={onCancel} className="rounded-lg px-4 py-2 text-[13.5px] text-muted">
           {t("adm.cancel")}
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="rounded-[9px] bg-blue px-4 py-2 text-[13.5px] font-semibold text-white hover:bg-blue-2 disabled:opacity-60"
+          className="rounded-lg bg-blue px-4 py-2 text-[13.5px] font-semibold text-white hover:bg-blue-2 disabled:opacity-60"
         >
           {submitLabel}
         </button>
@@ -185,7 +185,7 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
+            className="inline-flex items-center gap-2 rounded-xl bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
           >
             {t("adm.home.add")}
           </button>
@@ -196,7 +196,7 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
       </p>
 
       {adding && (
-        <div className="mb-5 rounded-[14px] border border-line bg-white p-5">
+        <div className="mb-5 rounded-2xl border border-line bg-white p-5">
           <CustomSectionForm
             initial={EMPTY_FORM}
             onSubmit={createSection}
@@ -208,7 +208,7 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
 
       <div className="grid gap-3">
         {sections.map((section, index) => (
-          <div key={section.id} className="rounded-[14px] border border-line bg-white p-5">
+          <div key={section.id} className="rounded-2xl border border-line bg-white p-5">
             {editingId === section.id ? (
               <CustomSectionForm
                 initial={{
@@ -253,7 +253,7 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
                     type="button"
                     disabled={index === 0}
                     onClick={() => move(section.id, "up")}
-                    className="rounded-[7px] p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
+                    className="rounded-md p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
                     aria-label={t("adm.moveUp")}
                   >
                     ↑
@@ -262,7 +262,7 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
                     type="button"
                     disabled={index === sections.length - 1}
                     onClick={() => move(section.id, "down")}
-                    className="rounded-[7px] p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
+                    className="rounded-md p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
                     aria-label={t("adm.moveDown")}
                   >
                     ↓
@@ -286,7 +286,7 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
                       <button
                         type="button"
                         onClick={() => deleteSection(section.id)}
-                        className="ml-1 text-[13px] font-semibold text-muted hover:text-[#9c2c2c]"
+                        className="ml-1 text-[13px] font-semibold text-muted hover:text-danger"
                       >
                         {t("adm.delete")}
                       </button>

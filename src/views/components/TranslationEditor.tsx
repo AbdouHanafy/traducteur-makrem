@@ -12,7 +12,7 @@ export interface TranslationFieldDef {
   rows?: number;
 }
 
-const inputClass = "w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[14.5px] text-ink outline-none focus:border-blue";
+const inputClass = "w-full rounded-xl border border-line bg-white px-4 py-3 text-[14.5px] text-ink outline-none focus:border-blue";
 
 /**
  * Saisie des traductions (ar / en / it) d'un contenu. Le français est la langue de base
@@ -37,7 +37,7 @@ export default function TranslationEditor({ fields, base, value, onChange }: {
   }
 
   return (
-    <fieldset className="grid gap-4 rounded-[12px] border border-line bg-[#fafbfc] p-4">
+    <fieldset className="grid gap-4 rounded-xl border border-line bg-surface p-4">
       <legend className="px-2 text-[13px] font-semibold text-navy">{t("adm.tr.legend")}</legend>
       <p className="-mt-1 text-[12px] text-muted">{t("adm.tr.hint")}</p>
       <div className="flex flex-wrap gap-2" role="tablist" aria-label={t("adm.tr.tabs")}>

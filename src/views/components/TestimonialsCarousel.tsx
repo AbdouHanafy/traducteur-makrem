@@ -57,7 +57,7 @@ export default function TestimonialsCarousel({ testimonials }: { testimonials: T
   const current = testimonials[index % testimonials.length];
 
   return (
-    <section className="bg-white py-20">
+    <section className="bg-white py-[calc(5rem*var(--section-scale))]">
       <div
         className="mx-auto max-w-[720px] px-[22px]"
         onMouseEnter={() => setPaused(true)}
@@ -74,7 +74,7 @@ export default function TestimonialsCarousel({ testimonials }: { testimonials: T
         <div
           role="region"
           aria-live="polite"
-          className="rounded-[20px] border border-line bg-mist px-6 py-10 text-center sm:px-12"
+          className="rounded-3xl border border-line bg-mist px-6 py-10 text-center sm:px-12"
         >
           <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-navy font-serif text-[17px] font-semibold text-white">
             {initials(current.authorName)}

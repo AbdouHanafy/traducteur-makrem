@@ -21,7 +21,7 @@ export default function Stats() {
   const { t } = useI18n();
   return (
     <section className="border-y border-line bg-white">
-      <div className="mx-auto max-w-[1160px] px-[22px] py-10">
+      <div className="mx-auto max-w-(--site-width) px-[22px] py-10">
         <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4">
           {STATS.map((s, i) => (
             <div

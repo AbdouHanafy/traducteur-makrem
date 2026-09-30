@@ -63,9 +63,9 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
     <div className="mx-auto max-w-[720px] px-6 py-14">
       <h1 className="mb-8 text-[26px] text-navy">{isEdit ? t("adm.articleForm.titleEdit") : t("adm.articleForm.titleNew")}</h1>
 
-      <form onSubmit={onSubmit} className="grid gap-5 rounded-[14px] border border-line bg-white p-7">
+      <form onSubmit={onSubmit} className="grid gap-5 rounded-2xl border border-line bg-white p-7">
         {error && (
-          <div className="rounded-[10px] border border-[#f3c6c6] bg-[#fdecec] px-4 py-3 text-[13.5px] text-[#9c2c2c]">
+          <div className="rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
             {error}
           </div>
         )}
@@ -79,7 +79,7 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
               const title = e.target.value;
               setForm((f) => ({ ...f, title, slug: isEdit ? f.slug : slugify(title) }));
             }}
-            className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
           />
         </div>
 
@@ -89,7 +89,7 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
             required
             value={form.slug}
             onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
-            className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
           />
         </div>
 
@@ -102,7 +102,7 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
             rows={2}
             value={form.excerpt}
             onChange={(e) => setForm((f) => ({ ...f, excerpt: e.target.value }))}
-            className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
           />
         </div>
 
@@ -113,7 +113,7 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
             rows={12}
             value={form.body}
             onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
-            className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
           />
         </div>
 
@@ -146,7 +146,7 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
         <button
           type="submit"
           disabled={loading}
-          className="mt-1.5 inline-flex w-fit items-center justify-center rounded-[11px] bg-blue px-6 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
+          className="mt-1.5 inline-flex w-fit items-center justify-center rounded-xl bg-blue px-6 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
         >
           {loading ? t("adm.saving") : t("adm.save")}
         </button>

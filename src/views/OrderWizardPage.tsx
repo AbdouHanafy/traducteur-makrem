@@ -117,11 +117,11 @@ export default function OrderWizardPage({ services, delayMultipliers }: { servic
   return (
     <>
       <Topbar />
-      <main className="flex-1 bg-[#f5f7fb]">
-        <section className="relative overflow-hidden bg-[linear-gradient(145deg,var(--color-navy-2)_0%,var(--color-navy)_70%,color-mix(in_srgb,var(--color-navy)_63%,var(--color-blue))_100%)] py-12 text-white sm:py-14">
+      <main className="flex-1 bg-surface">
+        <section className="relative overflow-hidden bg-[linear-gradient(145deg,var(--color-navy-2)_0%,var(--color-navy)_70%,color-mix(in_srgb,var(--color-navy)_63%,var(--color-blue))_100%)] py-[calc(3rem*var(--section-scale))] text-white sm:py-[calc(3.5rem*var(--section-scale))]">
           <div className="absolute -right-24 -top-32 h-80 w-80 rounded-full border-[55px] border-white/[0.035]" />
-          <div className="relative mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8">
-            <p className="mb-2 text-[10.5px] font-bold uppercase tracking-[.18em] text-[#8fb4ff]">{t("order.eyebrow")}</p>
+          <div className="relative mx-auto max-w-(--site-width) px-4 sm:px-6 lg:px-8">
+            <p className="mb-2 text-[10.5px] font-bold uppercase tracking-[.18em] text-accent-light">{t("order.eyebrow")}</p>
             <h1 className="max-w-[24ch] text-[clamp(28px,4vw,42px)] text-white">{t("order.title")}</h1>
             <p className="mt-3 max-w-[62ch] text-[14px] leading-6 text-slate-300">{t("order.subtitle")}</p>
             <div className="mt-7 flex max-w-[620px] items-center">
@@ -130,16 +130,16 @@ export default function OrderWizardPage({ services, delayMultipliers }: { servic
           </div>
         </section>
 
-        <section className="py-8 sm:py-12">
-          <div className="mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8">
+        <section className="py-8 sm:py-[calc(3rem*var(--section-scale))]">
+          <div className="mx-auto max-w-(--site-width) px-4 sm:px-6 lg:px-8">
             {services.length === 0 ? (
               <div className="rounded-2xl border border-line bg-white p-10 text-center text-muted">{t("order.noServices")} <Link href="/contact" className="font-semibold text-blue">{t("order.contactUs")}</Link>.</div>
             ) : (
               <form onSubmit={onSubmit} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_330px]">
                 <div className="grid gap-5">
-                  {error && <div role="alert" className="rounded-xl border border-[#f3c6c6] bg-[#fff3f3] px-4 py-3 text-[13px] text-[#9c2c2c]">{error}</div>}
+                  {error && <div role="alert" className="rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</div>}
 
-                  <section className="rounded-2xl border border-[#e3e8f0] bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
+                  <section className="rounded-2xl border border-edge bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
                     <div className="mb-6 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">01</span><div><h2 className="text-[17px] text-navy">{t("order.stepNeed")}</h2><p className="text-[11.5px] text-muted">{t("order.needHint")}</p></div></div>
                     <div className="grid gap-5">
                       <div><label htmlFor="service" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.service")}</label><select id="service" value={serviceId} onChange={(event) => setServiceId(event.target.value)} className={fieldClass}>{services.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}</select></div>
@@ -152,23 +152,23 @@ export default function OrderWizardPage({ services, delayMultipliers }: { servic
                     </div>
                   </section>
 
-                  <section className="rounded-2xl border border-[#e3e8f0] bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
+                  <section className="rounded-2xl border border-edge bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
                     <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">02</span><div><h2 className="text-[17px] text-navy">{t("order.sourceDocument")}</h2><p className="text-[11.5px] text-muted">{t("order.privateFile")}</p></div></div>
                     <FileDropzone file={file} onChange={setFile} accept=".pdf,.jpg,.jpeg,.png" hint={t("order.fileHint")} />
                   </section>
 
-                  {needsAccount && <section className="rounded-2xl border border-[#e3e8f0] bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
+                  {needsAccount && <section className="rounded-2xl border border-edge bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
                     <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">03</span><div><h2 className="text-[17px] text-navy">{t("order.stepContact")}</h2><p className="text-[11.5px] text-muted">{t("order.contactHint")}</p></div></div>
                     <div className="grid gap-4"><div><label htmlFor="fullName" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.fullName")}</label><input id="fullName" required value={account.fullName} onChange={updateAccount("fullName")} autoComplete="name" placeholder="Sarra Ben Ali" className={fieldClass} /></div><div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="orderEmail" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("common.email")}</label><input id="orderEmail" required type="email" value={account.email} onChange={updateAccount("email")} autoComplete="email" placeholder="you@example.com" className={fieldClass} /></div><div><label htmlFor="orderPhone" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("common.phone")}</label><input id="orderPhone" required type="tel" value={account.phone} onChange={updateAccount("phone")} autoComplete="tel" placeholder="(+216) 22 200 170" className={fieldClass} /></div></div><div><label htmlFor="orderPassword" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.accountPassword")}</label><input id="orderPassword" required type="password" minLength={10} value={account.password} onChange={updateAccount("password")} autoComplete="new-password" placeholder={t("register.passwordHint")} className={fieldClass} /></div><p className="text-[11.5px] text-muted">{t("order.existing")} <Link href="/login?callbackUrl=/commander" className="font-semibold text-blue">{t("register.login")}</Link> {t("order.loginHint")}</p></div><ConsentFields accepted={accepted} onAcceptedChange={setAccepted} honeypot={honeypot} onHoneypotChange={setHoneypot} />
                   </section>}
                 </div>
 
-                <aside className="rounded-2xl border border-[#dfe5ef] bg-white p-5 shadow-[0_12px_38px_rgba(20,40,77,0.08)] lg:sticky lg:top-[96px] sm:p-6">
+                <aside className="rounded-2xl border border-edge bg-white p-5 shadow-[0_12px_38px_rgba(20,40,77,0.08)] lg:sticky lg:top-[96px] sm:p-6">
                   <h2 className="text-[17px] text-navy">{t("order.summary")}</h2>
                   <dl className="mt-5 grid gap-3 text-[12.5px]"><div className="flex justify-between gap-4"><dt className="text-muted">{t("nav.services")}</dt><dd className="text-right font-semibold text-ink">{selectedService?.name}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">{t("order.translation")}</dt><dd className="font-semibold text-ink">{t(LANGUAGES.find((item) => item.value === sourceLang)?.label ?? "order.langArabic")} → {t(LANGUAGES.find((item) => item.value === targetLang)?.label ?? "order.langFrench")}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">{t("order.volume")}</dt><dd className="font-semibold text-ink">{pages}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">{t("order.deadline")}</dt><dd className="text-right font-semibold text-ink">{selectedDelay ? t(selectedDelay.key) : ""}</dd></div></dl>
                   <div className="my-5 border-t border-line" />
                   <div className="flex items-end justify-between gap-3"><span className="text-[12.5px] text-muted">{t("order.initialEstimate")}</span><span className="text-[23px] font-semibold text-navy">{estimatedTotal.toFixed(3)} <small className="text-[11px] font-semibold">TND</small></span></div>
-                  <p className="mt-2 rounded-lg bg-[#f6f8fb] px-3 py-2.5 text-[10.5px] leading-4 text-muted">{t("order.estimateNote")}</p>
+                  <p className="mt-2 rounded-lg bg-surface px-3 py-2.5 text-[10.5px] leading-4 text-muted">{t("order.estimateNote")}</p>
                   <button type="submit" disabled={loading || sessionPending} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue px-5 py-3.5 text-[14px] font-semibold text-white shadow-[0_10px_24px_rgba(36,86,184,0.22)] transition hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60">{loading ? needsAccount ? t("order.creating") : t("order.sending") : t("order.receiveQuote")}<span aria-hidden="true">→</span></button>
                   <div className="mt-5 grid gap-2.5 border-t border-line pt-5 text-[10.5px] text-muted"><div className="flex items-center gap-2"><span className="text-ok">✓</span>{t("order.noPayment")}</div><div className="flex items-center gap-2"><span className="text-ok">✓</span>{t("order.confidential")}</div><div className="flex items-center gap-2"><span className="text-ok">✓</span>{t("order.fullTracking")}</div></div>
                 </aside>

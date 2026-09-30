@@ -42,9 +42,9 @@ export default function AdminUsersListPage({ users }: { users: UserRow[] }) {
       </div>
 
       {/* Desktop */}
-      <div className="hidden overflow-hidden rounded-2xl border border-[#e4e9f1] bg-white shadow-[0_8px_25px_rgba(20,40,77,0.04)] md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-edge bg-white shadow-[0_8px_25px_rgba(20,40,77,0.04)] md:block">
         <table className="w-full text-left text-[13.5px]">
-          <thead className="bg-[#f8f9fc] text-[10.5px] uppercase tracking-[0.1em] text-muted">
+          <thead className="bg-surface text-[10.5px] uppercase tracking-[0.1em] text-muted">
             <tr>
               <th className="px-5 py-3">{t("adm.users.colUser")}</th>
               <th className="px-5 py-3">{t("adm.phone")}</th>
@@ -56,7 +56,7 @@ export default function AdminUsersListPage({ users }: { users: UserRow[] }) {
           </thead>
           <tbody>
             {users.map((user) => (
-              <tr key={user.id} className="border-t border-mist transition hover:bg-[#f8faff]">
+              <tr key={user.id} className="border-t border-mist transition hover:bg-surface">
                 <td className="px-5 py-3.5">
                   <div className="font-semibold text-ink">{user.name}</div>
                   <div className="text-[12px] text-muted">{user.email}</div>
@@ -90,7 +90,7 @@ export default function AdminUsersListPage({ users }: { users: UserRow[] }) {
           <Link
             key={user.id}
             href={`/admin/users/${user.id}`}
-            className="block rounded-2xl border border-[#e4e9f1] bg-white p-4 shadow-[0_6px_20px_rgba(20,40,77,0.04)]"
+            className="block rounded-2xl border border-edge bg-white p-4 shadow-[0_6px_20px_rgba(20,40,77,0.04)]"
           >
             <div className="min-w-0">
               <div className="truncate font-semibold text-ink">{user.name}</div>

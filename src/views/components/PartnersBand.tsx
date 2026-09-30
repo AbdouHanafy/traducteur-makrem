@@ -29,8 +29,8 @@ export default function PartnersBand({ partners }: { partners: PartnerItem[] }) 
   const { t } = useI18n();
   const hasPartners = partners.length > 0;
   return (
-    <section className="relative border-b border-line bg-white py-8 sm:py-10" aria-labelledby="partners-title">
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+    <section className="relative border-b border-line bg-white py-8 sm:py-[calc(2.5rem*var(--section-scale))]" aria-labelledby="partners-title">
+      <div className="mx-auto max-w-(--site-width) px-4 sm:px-6 lg:px-8">
         <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[.18em] text-blue"><span className="h-px w-5 bg-blue" />{t(hasPartners ? "partners.eyebrow" : "partners.fallbackEyebrow")}</p>
@@ -49,7 +49,7 @@ export default function PartnersBand({ partners }: { partners: PartnerItem[] }) 
           </div>
         ) : (
           <div className="flex snap-x gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:grid lg:grid-cols-5 lg:overflow-visible lg:pb-0">
-            {INSTITUTIONS.map((key, index) => <div key={key} className="flex min-w-[180px] snap-start items-center gap-3 rounded-2xl border border-line bg-[#fafbfc] px-4 py-4 text-navy lg:min-w-0"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-blue-soft text-blue"><InstitutionIcon index={index} /></span><span className="text-[12px] font-semibold leading-4">{t(key)}</span></div>)}
+            {INSTITUTIONS.map((key, index) => <div key={key} className="flex min-w-[180px] snap-start items-center gap-3 rounded-2xl border border-line bg-surface px-4 py-4 text-navy lg:min-w-0"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-blue-soft text-blue"><InstitutionIcon index={index} /></span><span className="text-[12px] font-semibold leading-4">{t(key)}</span></div>)}
           </div>
         )}
       </div>

@@ -279,6 +279,78 @@ async function main() {
   check("order page metadata localized", (await r.text()).includes("Order a translation"));
   check("robots.txt still served", (await fetch(`${B}/robots.txt`)).status === 200);
 
+  // --- full theme control: fonts, extended colours, custom logo ---
+  r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: { danger: "#aa0000", edge: "#cccccc" }, fonts: { heading: "lora", body: "poppins" } } });
+  check("theme with fonts saved", r.status === 200, String(r.status));
+  page = await html("/", "site_locale=fr");
+  check("custom fonts applied on <html>", page.text.includes("--font-heading:var(--font-lora)") && page.text.includes("--font-body:var(--font-poppins)"));
+  check("extended colour tokens applied", page.text.includes("--color-danger:#aa0000") && page.text.includes("--color-edge:#cccccc"));
+  r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: {}, fonts: { heading: "comic-sans" } } });
+  check("unknown font rejected (400)", r.status === 400, String(r.status));
+  r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: {}, fonts: {} } });
+  page = await html("/", "site_locale=fr");
+  check("fonts and colours reset to defaults", r.status === 200 && !page.text.includes("--font-heading") && !page.text.includes("--color-danger"));
+  page = await asText(admin, "/admin/theme", "fr");
+  check("theme page shows presets, fonts and contrast checker", page.text.includes("Émeraude") && page.text.includes("Police des titres") && page.text.includes("Lisibilité"));
+  await prisma.siteContent.upsert({ where: { key_locale: { key: "brand.logoUrl", locale: "fr" } }, create: { key: "brand.logoUrl", locale: "fr", value: "/uploads/media/e2e-logo.png" }, update: { value: "/uploads/media/e2e-logo.png" } });
+  page = await html("/", "site_locale=fr");
+  check("custom logo from content settings is used", page.text.includes("/uploads/media/e2e-logo.png"));
+  await prisma.siteContent.delete({ where: { key_locale: { key: "brand.logoUrl", locale: "fr" } } });
+  page = await html("/", "site_locale=fr");
+  check("default logo restored", !page.text.includes("e2e-logo.png"));
+
+  // --- layout, Arabic fonts, contrast policy, custom fonts ---
+  r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: {}, fonts: { headingAr: "cairo", bodyAr: "tajawal" }, layout: { radius: 1.5, width: 1300, section: 0.8 } } });
+  check("layout + Arabic fonts saved", r.status === 200, String(r.status));
+  page = await html("/", "site_locale=fr");
+  check("layout variables on <html>", page.text.includes("--radius-scale:1.5") && page.text.includes("--site-width:1300px") && page.text.includes("--section-scale:0.8"));
+  check("Arabic font variables on <html>", page.text.includes("--font-heading-ar:var(--font-cairo)") && page.text.includes("--font-body-ar:var(--font-tajawal)"));
+  r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: {}, layout: { radius: 5 } } });
+  check("out-of-range layout rejected (400)", r.status === 400, String(r.status));
+  r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: {}, fonts: { headingAr: "comic-sans" } } });
+  check("unknown Arabic font rejected (400)", r.status === 400, String(r.status));
+  r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: {}, fonts: { body: "playfair" } } });
+  check("serif font refused for body slot (400)", r.status === 400, String(r.status));
+
+  r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: { blue: "#eeeeee" }, policy: "block" } });
+  const low = await r.json().catch(() => ({}));
+  check("unreadable colours blocked by policy (422)", r.status === 422 && low.code === "LOW_CONTRAST" && low.pairs?.includes("whiteOnBlue"), `${r.status} ${JSON.stringify(low)}`);
+  r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: {}, policy: "strict" } });
+  check("strict AA policy rejects the default palette (422)", r.status === 422, String(r.status));
+  r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: { blue: "#eeeeee" }, policy: "off" } });
+  check("policy 'off' lets any colours through (200)", r.status === 200, String(r.status));
+  r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: {}, policy: "block" } });
+  check("reset with default policy (200)", r.status === 200, String(r.status));
+  page = await html("/", "site_locale=fr");
+  check("everything back to defaults", !page.text.includes("--radius-scale") && !page.text.includes("--font-heading-ar") && !page.text.includes("--color-blue"));
+
+  const fakeFont = Buffer.concat([Buffer.from("wOF2"), Buffer.alloc(512, 7)]);
+  const fontForm = (slot: string, name: string, data: Buffer, fname = "brand.woff2") => { const f = new FormData(); f.set("slot", slot); f.set("name", name); f.set("file", new File([new Uint8Array(data)], fname)); return f; };
+  check("client cannot upload fonts (403)", (await client.req("/api/admin/fonts", { method: "POST", body: fontForm("1", "X", fakeFont) })).status === 403);
+  r = await admin.req("/api/admin/fonts", { method: "POST", body: fontForm("1", "Text <b>Brand</b>", Buffer.from("this is not a font at all")) });
+  check("non-woff2 file rejected by signature (400)", r.status === 400, String(r.status));
+  r = await admin.req("/api/admin/fonts", { method: "POST", body: fontForm("3", "Brand", fakeFont) });
+  check("invalid slot rejected (400)", r.status === 400, String(r.status));
+  r = await admin.req("/api/admin/fonts", { method: "POST", body: fontForm("1", "Text <b>Brand</b>", Buffer.concat([Buffer.from("wOF2"), Buffer.alloc(1_100_000)])) });
+  check("oversized font rejected (400 size error or 413)", r.status === 413 || (r.status === 400 && (await r.json()).code === "FILE_TOO_LARGE"), String(r.status));
+  r = await admin.req("/api/admin/fonts", { method: "POST", body: fontForm("1", "Cabinet <b>Brand</b>", fakeFont) });
+  const uploadedFont = (await r.json().catch(() => ({}))).font;
+  check("woff2 font uploaded (201), name sanitised", r.status === 201 && uploadedFont?.name === "Cabinet bBrandb" && /^\/uploads\/fonts\/[a-f0-9-]{36}\.woff2$/.test(uploadedFont?.url ?? ""), JSON.stringify(uploadedFont));
+  const served = await fetch(`${B}${uploadedFont.url}`);
+  check("uploaded font is served (font/woff2, immutable)", served.status === 200 && (served.headers.get("content-type") ?? "").includes("woff2"), `${served.status} ${served.headers.get("content-type")}`);
+  check("path traversal on /uploads refused", (await fetch(`${B}/uploads/fonts/..%2F..%2Fpackage.json`)).status === 404);
+  r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: {}, fonts: { heading: "custom1", headingAr: "custom1" } } });
+  check("custom font selectable in Latin and Arabic slots", r.status === 200, String(r.status));
+  page = await html("/", "site_locale=fr");
+  check("@font-face emitted for the custom font", page.text.includes('font-family:"SiteCustom1"') && page.text.includes(uploadedFont.url) && page.text.includes("--font-heading:var(--font-custom-1)"));
+  check("custom font 2 not selectable before upload", (await admin.req("/api/admin/theme", { method: "PUT", json: { values: {}, fonts: { body: "custom2" } } })).status === 400);
+  r = await admin.req("/api/admin/fonts?slot=1", { method: "DELETE" });
+  page = await html("/", "site_locale=fr");
+  check("deleting the font releases the slots and the CSS", r.status === 200 && !page.text.includes("SiteCustom1") && !page.text.includes("--font-heading:var(--font-custom-1)"));
+  check("font file removed from disk", (await fetch(`${B}${uploadedFont.url}`)).status === 404);
+  page = await asText(admin, "/admin/theme", "fr");
+  check("theme page offers layout, Arabic fonts and custom fonts", page.text.includes("Mise en page") && page.text.includes("Cairo") && page.text.includes("Vos propres polices"));
+
   // --- legal pages, consent, abuse protection ---
   for (const [path, needle] of [["/conditions-generales", "Conditions générales de vente"], ["/confidentialite", "Politique de confidentialité"], ["/mentions-legales", "Mentions légales"]] as const) {
     const fr = await html(path, "site_locale=fr");

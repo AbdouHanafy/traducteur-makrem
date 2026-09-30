@@ -10,7 +10,7 @@ import { useI18n } from "@/views/components/I18nProvider";
 export default function Statement() {
   const { t } = useI18n();
   return (
-    <section className="bg-mist py-20">
+    <section className="bg-mist py-[calc(5rem*var(--section-scale))]">
       <div className="mx-auto max-w-[820px] px-[22px] text-center">
         <svg
           className="mx-auto mb-6 h-10 w-10 text-seal opacity-70"

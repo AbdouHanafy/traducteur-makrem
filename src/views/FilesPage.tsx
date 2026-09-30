@@ -26,7 +26,7 @@ export default function FilesPage({ orders }: { orders: OrderWithDocuments[] }) 
       <div className="mb-8"><p className="mb-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-blue">{t("app.files.eyebrow")}</p><h1 className="text-[27px] text-navy sm:text-[30px]">{t("app.files.title")}</h1><p className="mt-2 text-[13.5px] text-muted">{t("app.files.subtitle")}</p></div>
 
       {ordersWithDocuments.length === 0 ? (
-        <div className="rounded-2xl border border-[#e4e9f1] bg-white p-12 text-center text-muted shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
+        <div className="rounded-2xl border border-edge bg-white p-12 text-center text-muted shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
           {t("app.files.empty")}
         </div>
       ) : (
@@ -35,7 +35,7 @@ export default function FilesPage({ orders }: { orders: OrderWithDocuments[] }) 
             const sourceDoc = order.documents.find((d) => d.kind === "SOURCE");
             const translatedDoc = order.documents.find((d) => d.kind === "TRANSLATED");
             return (
-              <div key={order.id} className="rounded-2xl border border-[#e4e9f1] bg-white p-6 shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
+              <div key={order.id} className="rounded-2xl border border-edge bg-white p-6 shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <div className="font-serif text-[16.5px] text-navy">{order.reference}</div>
@@ -53,7 +53,7 @@ export default function FilesPage({ orders }: { orders: OrderWithDocuments[] }) 
                   {sourceDoc && (
                     <a
                       href={`/api/orders/${order.id}/documents/${sourceDoc.id}/download`}
-                      className="flex items-center gap-3 rounded-[10px] border border-line bg-mist px-4 py-3 text-[13.5px] font-medium text-ink transition-colors hover:border-blue"
+                      className="flex items-center gap-3 rounded-xl border border-line bg-mist px-4 py-3 text-[13.5px] font-medium text-ink transition-colors hover:border-blue"
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="shrink-0 text-blue-2">
                         <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
@@ -67,7 +67,7 @@ export default function FilesPage({ orders }: { orders: OrderWithDocuments[] }) 
                     (order.balancePaid ? (
                       <a
                         href={`/api/orders/${order.id}/documents/${translatedDoc.id}/download`}
-                        className="flex items-center gap-3 rounded-[10px] border border-line bg-mist px-4 py-3 text-[13.5px] font-medium text-ink transition-colors hover:border-blue"
+                        className="flex items-center gap-3 rounded-xl border border-line bg-mist px-4 py-3 text-[13.5px] font-medium text-ink transition-colors hover:border-blue"
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0 text-ok">
                           <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
@@ -75,7 +75,7 @@ export default function FilesPage({ orders }: { orders: OrderWithDocuments[] }) 
                         <span className="min-w-0 truncate">{t("app.files.translated", { name: translatedDoc.originalName })}</span>
                       </a>
                     ) : (
-                      <div className="flex items-center gap-3 rounded-[10px] border border-dashed border-line bg-mist px-4 py-3 text-[13.5px] text-muted">
+                      <div className="flex items-center gap-3 rounded-xl border border-dashed border-line bg-mist px-4 py-3 text-[13.5px] text-muted">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="shrink-0">
                           <rect x="4" y="10" width="16" height="10" rx="2" />
                           <path d="M8 10V7a4 4 0 118 0v3" />

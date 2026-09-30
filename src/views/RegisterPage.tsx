@@ -75,7 +75,7 @@ export default function RegisterPage() {
 
       <form onSubmit={onSubmit} className="mt-7 grid gap-4.5" noValidate>
         {error && (
-          <div className="rounded-[10px] border border-[#f3c6c6] bg-[#fdecec] px-4 py-3 text-[13.5px] text-[#9c2c2c]">
+          <div className="rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
             {error}
           </div>
         )}
@@ -91,7 +91,7 @@ export default function RegisterPage() {
               autoComplete="given-name"
               value={form.firstName}
               onChange={update("firstName")}
-              className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition-colors focus:border-blue"
+              className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition-colors focus:border-blue"
             />
           </div>
           <div>
@@ -104,7 +104,7 @@ export default function RegisterPage() {
               autoComplete="family-name"
               value={form.lastName}
               onChange={update("lastName")}
-              className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition-colors focus:border-blue"
+              className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition-colors focus:border-blue"
             />
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function RegisterPage() {
             autoComplete="email"
             value={form.email}
             onChange={update("email")}
-            className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition-colors focus:border-blue"
+            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition-colors focus:border-blue"
             placeholder="vous@exemple.com"
           />
         </div>
@@ -135,7 +135,7 @@ export default function RegisterPage() {
             autoComplete="tel"
             value={form.phone}
             onChange={update("phone")}
-            className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition-colors focus:border-blue"
+            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition-colors focus:border-blue"
             placeholder="(+216) 22 200 170"
           />
         </div>
@@ -152,7 +152,7 @@ export default function RegisterPage() {
             autoComplete="new-password"
             value={form.password}
             onChange={update("password")}
-            className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition-colors focus:border-blue"
+            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none transition-colors focus:border-blue"
             placeholder={t("register.passwordHint")}
           />
         </div>
@@ -162,7 +162,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-1.5 inline-flex items-center justify-center rounded-[11px] bg-blue px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.28)] transition-colors hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-1.5 inline-flex items-center justify-center rounded-xl bg-blue px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.28)] transition-colors hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? t("register.loading") : t("register.submit")}
         </button>

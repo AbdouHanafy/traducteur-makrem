@@ -31,7 +31,7 @@ export default function ServiceCard({ service, anchor = true }: { service: Servi
   return (
     <div
       id={anchor ? service.slug : undefined}
-      className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-line bg-white transition-all duration-300 hover:-translate-y-1.5 hover:border-transparent hover:shadow-[var(--shadow-lg)]"
+      className="group flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-white transition-all duration-300 hover:-translate-y-1.5 hover:border-transparent hover:shadow-[var(--shadow-lg)]"
     >
       <div className="relative h-44 w-full shrink-0 overflow-hidden">
         {service.imageUrl ? (
@@ -64,7 +64,7 @@ export default function ServiceCard({ service, anchor = true }: { service: Servi
           </span>
           <Link
             href={`/commander?service=${encodeURIComponent(service.slug)}`}
-            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-[10px] bg-navy px-4 py-2.5 text-[13px] font-semibold text-white transition-colors group-hover:bg-blue"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl bg-navy px-4 py-2.5 text-[13px] font-semibold text-white transition-colors group-hover:bg-blue"
           >
             {t("service.order")}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">

@@ -12,12 +12,12 @@ const ACCESS_COPY: Record<TranslatedFileAccess, { label: string; title: string; 
   LOCKED: {
     label: "app.access.locked",
     title: "app.access.lockedTitle",
-    classes: "bg-[#fff3df] text-[#91540e]",
+    classes: "bg-caution-soft text-caution",
   },
   UNLOCKED: {
     label: "app.access.unlocked",
     title: "app.access.unlockedTitle",
-    classes: "bg-[#e7f6ef] text-[#267254]",
+    classes: "bg-ok-soft text-ok",
   },
 };
 

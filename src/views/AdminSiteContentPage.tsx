@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LOCALE_OPTIONS, LOCALES, type Locale } from "@/lib/i18n";
+import MediaPicker from "@/views/components/MediaPicker";
 import { useI18n } from "@/views/components/I18nProvider";
 
 interface ContentGroup {
@@ -126,7 +127,7 @@ export default function AdminSiteContentPage({ groups, defaults, overrides }: {
             </div>
             <div className="relative mt-4">
               <svg aria-hidden="true" className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("adm.content.search")} className="h-11 w-full rounded-xl border border-line bg-[#fafbfc] ps-10 pe-4 text-[13px] text-ink outline-none transition focus:border-blue focus:bg-white" />
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t("adm.content.search")} className="h-11 w-full rounded-xl border border-line bg-surface ps-10 pe-4 text-[13px] text-ink outline-none transition focus:border-blue focus:bg-white" />
             </div>
           </div>
 
@@ -143,7 +144,9 @@ export default function AdminSiteContentPage({ groups, defaults, overrides }: {
                     <span className="flex items-center gap-2"><code className="text-[10px] text-slate-400">{key}</code>{customized && <span className="rounded-full bg-blue-soft px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-blue">{t("adm.content.modified")}</span>}</span>
                   </div>
                   {locale !== "fr" && <p className="mt-1 text-[11px] text-slate-400">{t("adm.content.reference", { text: defaults.fr[key] })}</p>}
-                  {isLong ? (
+                  {key.endsWith("Url") ? (
+                    <div className="mt-2"><MediaPicker value={value} onChange={(url) => setValues((current) => ({ ...current, [locale]: { ...current[locale], [key]: url } }))} /></div>
+                  ) : isLong ? (
                     <textarea id={`content-${key}`} rows={4} value={value} onChange={(event) => setValues((current) => ({ ...current, [locale]: { ...current[locale], [key]: event.target.value } }))} className={`${inputClass} resize-y`} />
                   ) : (
                     <input id={`content-${key}`} value={value} onChange={(event) => setValues((current) => ({ ...current, [locale]: { ...current[locale], [key]: event.target.value } }))} className={inputClass} />

@@ -144,20 +144,20 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
             {t(order.pages > 1 ? "adm.order.pagesMany" : "adm.order.pagesOne", { count: order.pages })}
           </p>
         </div>
-        <div className="rounded-[12px] border border-line bg-white px-5 py-3 text-right">
+        <div className="rounded-xl border border-line bg-white px-5 py-3 text-right">
           <div className="text-[12px] uppercase tracking-wide text-muted">{t("adm.order.total")}</div>
           <div className="font-serif text-[22px] text-navy">{order.totalAmount} TND</div>
         </div>
       </div>
 
       {error && (
-        <div className="mb-6 rounded-[10px] border border-[#f3c6c6] bg-[#fdecec] px-4 py-3 text-[13.5px] text-[#9c2c2c]">
+        <div className="mb-6 rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
           {error}
         </div>
       )}
 
       <div className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
-        <section className="rounded-[14px] border border-line bg-white p-6">
+        <section className="rounded-2xl border border-line bg-white p-6">
           <h2 className="mb-5 text-[16.5px] text-navy">{t("adm.order.tracking")}</h2>
 
           <ol className="grid gap-0">
@@ -210,7 +210,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
                       type="button"
                       disabled={loading}
                       onClick={startTranslation}
-                      className="mt-3 inline-flex items-center justify-center rounded-[10px] bg-blue px-4 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
+                      className="mt-3 inline-flex items-center justify-center rounded-xl bg-blue px-4 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
                     >
                       {t("adm.order.startBtn")}
                     </button>
@@ -222,12 +222,12 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
                         type="file"
                         accept=".pdf,.jpg,.jpeg,.png"
                         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                        className="w-full rounded-[9px] border border-dashed border-line bg-mist px-3.5 py-2.5 text-[13.5px] text-ink outline-none"
+                        className="w-full rounded-lg border border-dashed border-line bg-mist px-3.5 py-2.5 text-[13.5px] text-ink outline-none"
                       />
                       <button
                         type="submit"
                         disabled={loading}
-                        className="inline-flex w-fit items-center justify-center rounded-[10px] bg-ok px-4 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-60"
+                        className="inline-flex w-fit items-center justify-center rounded-xl bg-ok px-4 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-60"
                       >
                         {t("adm.order.uploadBtn")}
                       </button>
@@ -240,7 +240,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
         </section>
 
         <div className="grid gap-6">
-          <section className="rounded-[14px] border border-line bg-white p-6">
+          <section className="rounded-2xl border border-line bg-white p-6">
             <h2 className="mb-3 text-[16.5px] text-navy">{t("adm.order.client")}</h2>
             <p className="text-[14px] font-medium text-ink">
               {order.user.firstName} {order.user.lastName}
@@ -251,7 +251,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
             {order.user.phone && <p className="text-[13.5px] text-muted">{order.user.phone}</p>}
           </section>
 
-          <section className="rounded-[14px] border border-line bg-white p-6">
+          <section className="rounded-2xl border border-line bg-white p-6">
             <h2 className="mb-3 text-[16.5px] text-navy">{t("adm.order.documents")}</h2>
             <div className="grid gap-2.5 text-[13.5px]">
               {sourceDoc ? (
@@ -268,7 +268,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
                 <p className="text-muted">{t("adm.order.noSource")}</p>
               )}
               {translatedDoc ? (
-                <div className="rounded-xl border border-line bg-[#fafbfd] p-3">
+                <div className="rounded-xl border border-line bg-surface p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <a
                       href={`/api/orders/${order.id}/documents/${translatedDoc.id}/download`}

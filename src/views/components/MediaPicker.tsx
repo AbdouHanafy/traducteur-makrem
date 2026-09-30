@@ -70,9 +70,9 @@ export default function MediaPicker({
       <div className="flex items-center gap-3">
         {value ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={value} alt="" className="h-16 w-16 rounded-[8px] border border-line object-cover" />
+          <img src={value} alt="" className="h-16 w-16 rounded-lg border border-line object-cover" />
         ) : (
-          <div className="grid h-16 w-16 place-items-center rounded-[8px] border border-dashed border-line text-[11px] text-muted">
+          <div className="grid h-16 w-16 place-items-center rounded-lg border border-dashed border-line text-[11px] text-muted">
             {t("adm.picker.none")}
           </div>
         )}
@@ -80,7 +80,7 @@ export default function MediaPicker({
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="rounded-[8px] border border-line px-3 py-1.5 text-[13px] font-semibold text-navy hover:border-blue"
+            className="rounded-lg border border-line px-3 py-1.5 text-[13px] font-semibold text-navy hover:border-blue"
           >
             {open ? t("adm.picker.close") : t("adm.picker.choose")}
           </button>
@@ -88,7 +88,7 @@ export default function MediaPicker({
             <button
               type="button"
               onClick={() => onChange("")}
-              className="text-[12.5px] text-muted hover:text-[#9c2c2c]"
+              className="text-[12.5px] text-muted hover:text-danger"
             >
               {t("adm.picker.remove")}
             </button>
@@ -97,9 +97,9 @@ export default function MediaPicker({
       </div>
 
       {open && (
-        <div className="mt-3 rounded-[10px] border border-line bg-white p-4">
+        <div className="mt-3 rounded-xl border border-line bg-white p-4">
           {error && (
-            <div className="mb-3 rounded-[8px] border border-[#f3c6c6] bg-[#fdecec] px-3 py-2 text-[12.5px] text-[#9c2c2c]">
+            <div className="mb-3 rounded-lg border border-danger-line bg-danger-soft px-3 py-2 text-[12.5px] text-danger">
               {error}
             </div>
           )}
@@ -113,7 +113,7 @@ export default function MediaPicker({
               accept="image/jpeg,image/png,image/webp"
               disabled={uploading}
               onChange={onUpload}
-              className="w-full rounded-[8px] border border-dashed border-line bg-mist px-3 py-2 text-[13px]"
+              className="w-full rounded-lg border border-dashed border-line bg-mist px-3 py-2 text-[13px]"
             />
           </label>
 
@@ -132,7 +132,7 @@ export default function MediaPicker({
                     setOpen(false);
                   }}
                   title={item.originalName}
-                  className="aspect-square overflow-hidden rounded-[8px] border border-line hover:border-blue"
+                  className="aspect-square overflow-hidden rounded-lg border border-line hover:border-blue"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={item.url} alt={item.altText ?? ""} className="h-full w-full object-cover" />

@@ -20,7 +20,7 @@ export default function FaqPage({ faqs }: { faqs: FaqEntry[] }) {
       <main className="flex-1">
         <PublicPageHero eyebrow={t("nav.faq")} title={t("page.faq.title")} description={t("page.faq.description")} narrow />
 
-        <section className="py-16 sm:py-20">
+        <section className="py-[calc(4rem*var(--section-scale))] sm:py-[calc(5rem*var(--section-scale))]">
           <div className="mx-auto max-w-[880px] px-4 sm:px-6 lg:px-8">
             <div className="grid gap-3">
               {faqs.map((item) => (
@@ -47,7 +47,7 @@ export default function FaqPage({ faqs }: { faqs: FaqEntry[] }) {
               ))}
             </div>
 
-            <div className="mt-14 rounded-[16px] border border-line bg-white px-8 py-9 text-center">
+            <div className="mt-14 rounded-2xl border border-line bg-white px-8 py-9 text-center">
               <h2 className="text-[22px] text-navy">{t("page.faq.other")}</h2>
               <p className="mx-auto mt-2.5 max-w-[48ch] text-[15px] text-muted">
                 {t("page.faq.otherDesc")}
@@ -55,7 +55,7 @@ export default function FaqPage({ faqs }: { faqs: FaqEntry[] }) {
               <div className="mt-6 flex flex-wrap justify-center gap-3.5">
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-[24px] py-[13px] text-[15px] font-semibold text-white transition-colors hover:bg-blue-2"
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue px-[24px] py-[13px] text-[15px] font-semibold text-white transition-colors hover:bg-blue-2"
                 >
                   {t("cta.contact")}
                 </Link>

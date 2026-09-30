@@ -54,13 +54,13 @@ export default function AccountPage({ email, name }: { email: string; name: stri
         <p className="mt-2 text-[13.5px] text-muted">{t("app.account.subtitle")}</p>
       </div>
 
-      <div className="mb-6 rounded-2xl border border-[#e4e9f1] bg-white p-6 shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
+      <div className="mb-6 rounded-2xl border border-edge bg-white p-6 shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
         <h2 className="mb-3 text-[15px] font-semibold text-navy">{t("app.account.info")}</h2>
         <p className="text-[14px] text-ink">{name}</p>
         <p className="text-[14px] text-muted">{email}</p>
       </div>
 
-      <div className="rounded-2xl border border-[#e4e9f1] bg-white p-6 shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
+      <div className="rounded-2xl border border-edge bg-white p-6 shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
         <h2 className="mb-1 text-[15px] font-semibold text-navy">{t("app.account.changePassword")}</h2>
         <p className="mb-5 text-[13.5px] text-muted">
           {t("app.account.changeHint")}
@@ -68,12 +68,12 @@ export default function AccountPage({ email, name }: { email: string; name: stri
 
         <form onSubmit={onSubmit} className="grid gap-4">
           {error && (
-            <div className="rounded-[10px] border border-[#f3c6c6] bg-[#fdecec] px-4 py-3 text-[13.5px] text-[#9c2c2c]">
+            <div className="rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
               {error}
             </div>
           )}
           {success && (
-            <div className="rounded-[10px] border border-[#bfe3c8] bg-[#eaf7ee] px-4 py-3 text-[13.5px] text-[#2c6e3f]">
+            <div className="rounded-xl border border-ok-soft bg-ok-soft px-4 py-3 text-[13.5px] text-ok">
               {t("app.account.success")}
             </div>
           )}
@@ -86,7 +86,7 @@ export default function AccountPage({ email, name }: { email: string; name: stri
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               autoComplete="current-password"
-              className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+              className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
             />
           </div>
           <div>
@@ -99,7 +99,7 @@ export default function AccountPage({ email, name }: { email: string; name: stri
               onChange={(e) => setNewPassword(e.target.value)}
               autoComplete="new-password"
               placeholder={t("app.account.newHint")}
-              className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+              className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
             />
           </div>
           <div>
@@ -113,14 +113,14 @@ export default function AccountPage({ email, name }: { email: string; name: stri
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               autoComplete="new-password"
-              className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+              className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center justify-center rounded-[11px] bg-blue px-6 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-xl bg-blue px-6 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? t("app.account.saving") : t("app.account.submit")}
           </button>

@@ -37,14 +37,14 @@ export default function AdminArticlesListPage({ articles }: { articles: ArticleR
         <h1 className="text-[26px] text-navy">{t("adm.articles.title")}</h1>
         <Link
           href="/admin/articles/new"
-          className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
+          className="inline-flex items-center gap-2 rounded-xl bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
         >
           {t("adm.articles.new")}
         </Link>
       </div>
 
       {articles.length === 0 ? (
-        <div className="rounded-[14px] border border-line bg-white p-10 text-center text-muted">
+        <div className="rounded-2xl border border-line bg-white p-10 text-center text-muted">
           {t("adm.articles.empty")}
         </div>
       ) : (
@@ -52,7 +52,7 @@ export default function AdminArticlesListPage({ articles }: { articles: ArticleR
           {articles.map((article, index) => (
             <div
               key={article.id}
-              className="flex flex-col gap-3 rounded-[14px] border border-line bg-white p-4 sm:grid sm:grid-cols-[auto_auto_1fr_auto] sm:items-center sm:gap-4"
+              className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-4 sm:grid sm:grid-cols-[auto_auto_1fr_auto] sm:items-center sm:gap-4"
             >
               <div className="flex items-center gap-3 sm:contents">
                 <div className="flex flex-row gap-1 sm:flex-col">
@@ -60,7 +60,7 @@ export default function AdminArticlesListPage({ articles }: { articles: ArticleR
                     type="button"
                     disabled={index === 0}
                     onClick={() => move(article.id, "up")}
-                    className="rounded-[7px] p-1 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
+                    className="rounded-md p-1 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
                     aria-label={t("adm.moveUp")}
                   >
                     ↑
@@ -69,7 +69,7 @@ export default function AdminArticlesListPage({ articles }: { articles: ArticleR
                     type="button"
                     disabled={index === articles.length - 1}
                     onClick={() => move(article.id, "down")}
-                    className="rounded-[7px] p-1 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
+                    className="rounded-md p-1 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
                     aria-label={t("adm.moveDown")}
                   >
                     ↓
@@ -78,9 +78,9 @@ export default function AdminArticlesListPage({ articles }: { articles: ArticleR
 
                 {article.coverImageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={article.coverImageUrl} alt="" className="h-14 w-14 shrink-0 rounded-[8px] object-cover" />
+                  <img src={article.coverImageUrl} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
                 ) : (
-                  <div className="h-14 w-14 shrink-0 rounded-[8px] bg-mist" />
+                  <div className="h-14 w-14 shrink-0 rounded-lg bg-mist" />
                 )}
 
                 <div className="min-w-0">
@@ -105,7 +105,7 @@ export default function AdminArticlesListPage({ articles }: { articles: ArticleR
                 <button
                   type="button"
                   onClick={() => deleteArticle(article.id)}
-                  className="text-[13.5px] font-semibold text-muted hover:text-[#9c2c2c]"
+                  className="text-[13.5px] font-semibold text-muted hover:text-danger"
                 >
                   {t("adm.delete")}
                 </button>

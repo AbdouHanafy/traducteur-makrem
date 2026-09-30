@@ -42,9 +42,9 @@ export default function SupportPage() {
           <Link
             key={c.label}
             href={c.href}
-            className="block rounded-2xl border border-[#e4e9f1] bg-white px-6 py-6 shadow-[0_8px_25px_rgba(20,40,77,0.04)] transition hover:-translate-y-0.5 hover:border-blue/30 hover:shadow-[0_14px_35px_rgba(20,40,77,0.08)]"
+            className="block rounded-2xl border border-edge bg-white px-6 py-6 shadow-[0_8px_25px_rgba(20,40,77,0.04)] transition hover:-translate-y-0.5 hover:border-blue/30 hover:shadow-[0_14px_35px_rgba(20,40,77,0.08)]"
           >
-            <div className="mb-3.5 grid h-10.5 w-10.5 place-items-center rounded-[11px] bg-blue-soft text-blue-2">
+            <div className="mb-3.5 grid h-10.5 w-10.5 place-items-center rounded-xl bg-blue-soft text-blue-2">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                 {c.icon}
               </svg>
@@ -59,7 +59,7 @@ export default function SupportPage() {
         ))}
       </div>
 
-      <div className="mt-8 grid gap-2 rounded-2xl border border-[#e4e9f1] bg-white p-6 text-[14px] shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
+      <div className="mt-8 grid gap-2 rounded-2xl border border-edge bg-white p-6 text-[14px] shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
         <p className="text-ink">
           {t("app.support.also")}{" "}
           <Link href="/faq" className="font-semibold text-blue hover:text-blue-2">

@@ -56,7 +56,7 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
             type="button"
             onClick={() => setFilterKey(f.key)}
             className={`rounded-2xl border px-5 py-4 text-left shadow-[0_6px_20px_rgba(20,40,77,0.035)] transition-all ${
-              filterKey === f.key ? "border-blue bg-blue-soft ring-2 ring-blue/5" : "border-[#e4e9f1] bg-white hover:-translate-y-0.5 hover:border-blue/30"
+              filterKey === f.key ? "border-blue bg-blue-soft ring-2 ring-blue/5" : "border-edge bg-white hover:-translate-y-0.5 hover:border-blue/30"
             }`}
           >
             <div className={`text-[25px] font-semibold ${filterKey === f.key ? "text-blue-2" : "text-navy"}`}>
@@ -68,7 +68,7 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
       </div>
 
       {filteredOrders.length === 0 ? (
-        <div className="rounded-2xl border border-[#e4e9f1] bg-white p-12 text-center text-muted shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
+        <div className="rounded-2xl border border-edge bg-white p-12 text-center text-muted shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
           {t("adm.orders.emptyFilter")}
         </div>
       ) : (
@@ -76,9 +76,9 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
           {/* Desktop : tableau. En dessous de md, une table réelle ne tient jamais dans un
               écran de téléphone (adresses email, libellés de statut...) — une liste de cartes
               est le vrai équivalent mobile, pas juste une table qu'on laisse déborder. */}
-          <div className="hidden overflow-hidden rounded-2xl border border-[#e4e9f1] bg-white shadow-[0_8px_25px_rgba(20,40,77,0.04)] md:block">
+          <div className="hidden overflow-hidden rounded-2xl border border-edge bg-white shadow-[0_8px_25px_rgba(20,40,77,0.04)] md:block">
             <table className="w-full text-left text-[13.5px]">
-              <thead className="bg-[#f8f9fc] text-[10.5px] uppercase tracking-[0.1em] text-muted">
+              <thead className="bg-surface text-[10.5px] uppercase tracking-[0.1em] text-muted">
                 <tr>
                   <th className="px-5 py-3">{t("adm.col.reference")}</th>
                   <th className="px-5 py-3">{t("adm.col.client")}</th>
@@ -92,7 +92,7 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
                 {filteredOrders.map((order) => {
                   const needsAction = ACTION_NEEDED_STATUSES.has(order.status);
                   return (
-                    <tr key={order.id} className="border-t border-mist transition hover:bg-[#f8faff]">
+                    <tr key={order.id} className="border-t border-mist transition hover:bg-surface">
                       <td className="px-5 py-3.5">
                         <Link href={`/admin/orders/${order.id}`} className="flex items-center gap-2 font-semibold text-blue hover:text-blue-2">
                           {needsAction && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-seal" aria-hidden="true" />}
@@ -107,7 +107,7 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
                       <td className="px-5 py-3.5">
                         <span
                           className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${
-                            needsAction ? "bg-[#fdf1e2] text-[#9a5b12]" : "bg-blue-soft text-blue-2"
+                            needsAction ? "bg-caution-soft text-caution" : "bg-blue-soft text-blue-2"
                           }`}
                         >
                           {t(`app.status.${order.status}`)}
@@ -130,7 +130,7 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
                 <Link
                   key={order.id}
                   href={`/admin/orders/${order.id}`}
-                  className="block rounded-2xl border border-[#e4e9f1] bg-white p-4 shadow-[0_6px_20px_rgba(20,40,77,0.04)]"
+                  className="block rounded-2xl border border-edge bg-white p-4 shadow-[0_6px_20px_rgba(20,40,77,0.04)]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2 font-semibold text-blue">
@@ -147,7 +147,7 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
                     <span className="text-[12.5px] text-muted">{order.service.name}</span>
                     <span
                       className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${
-                        needsAction ? "bg-[#fdf1e2] text-[#9a5b12]" : "bg-blue-soft text-blue-2"
+                        needsAction ? "bg-caution-soft text-caution" : "bg-blue-soft text-blue-2"
                       }`}
                     >
                       {t(`app.status.${order.status}`)}

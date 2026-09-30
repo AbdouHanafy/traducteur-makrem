@@ -28,7 +28,7 @@ export default function LegalPage({ page }: { page: LegalPageKey }) {
       <Topbar />
       <main className="flex-1">
         <PublicPageHero eyebrow={t("legal.updated", { date: updated })} title={t(`legal.${page}.title`)} description={t(`legal.${page}.intro`, params)} narrow />
-        <section className="py-14">
+        <section className="py-[calc(3.5rem*var(--section-scale))]">
           <div className="mx-auto max-w-[820px] px-4 sm:px-6 lg:px-8">
             <div className="grid gap-8 rounded-2xl border border-line bg-white p-6 shadow-[0_8px_25px_rgba(20,40,77,0.04)] sm:p-10">
               {sections.map((section) => (

@@ -83,9 +83,9 @@ export default function AdminUserFormPage({
     <div className="mx-auto max-w-[680px] px-6 py-14">
       <h1 className="mb-8 text-[26px] text-navy">{isEdit ? t("adm.userForm.titleEdit") : t("adm.userForm.titleNew")}</h1>
 
-      <form onSubmit={onSubmit} className="grid gap-5 rounded-[14px] border border-line bg-white p-7">
+      <form onSubmit={onSubmit} className="grid gap-5 rounded-2xl border border-line bg-white p-7">
         {error && (
-          <div className="rounded-[10px] border border-[#f3c6c6] bg-[#fdecec] px-4 py-3 text-[13.5px] text-[#9c2c2c]">
+          <div className="rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
             {error}
           </div>
         )}
@@ -97,7 +97,7 @@ export default function AdminUserFormPage({
               required
               value={form.firstName}
               onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
-              className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+              className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
             />
           </div>
           <div>
@@ -106,7 +106,7 @@ export default function AdminUserFormPage({
               required
               value={form.lastName}
               onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
-              className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+              className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
             />
           </div>
         </div>
@@ -118,7 +118,7 @@ export default function AdminUserFormPage({
               <input
                 disabled
                 value={form.email}
-                className="w-full rounded-[10px] border border-line bg-mist px-4 py-3 text-[15px] text-muted"
+                className="w-full rounded-xl border border-line bg-mist px-4 py-3 text-[15px] text-muted"
               />
               <p className="mt-1.5 text-[12.5px] text-muted">
                 {t("adm.userForm.emailLocked")}
@@ -130,7 +130,7 @@ export default function AdminUserFormPage({
               type="email"
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-              className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+              className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
             />
           )}
         </div>
@@ -140,7 +140,7 @@ export default function AdminUserFormPage({
           <input
             value={form.phone}
             onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-            className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
           />
         </div>
 
@@ -154,7 +154,7 @@ export default function AdminUserFormPage({
               value={form.password}
               onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
               placeholder={t("adm.userForm.passwordHint")}
-              className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
+              className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
             />
             <p className="mt-1.5 text-[12.5px] text-muted">
               {t("adm.userForm.passwordNote")}
@@ -168,7 +168,7 @@ export default function AdminUserFormPage({
             disabled={isSelf}
             value={form.role}
             onChange={(e) => setForm((f) => ({ ...f, role: e.target.value as Role }))}
-            className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue disabled:cursor-not-allowed disabled:opacity-60"
           >
             {(["CLIENT", "ADMIN"] as Role[]).map((r) => (
               <option key={r} value={r}>
@@ -185,7 +185,7 @@ export default function AdminUserFormPage({
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex w-fit items-center justify-center rounded-[11px] bg-blue px-6 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
+            className="inline-flex w-fit items-center justify-center rounded-xl bg-blue px-6 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
           >
             {loading ? t("adm.saving") : t("adm.save")}
           </button>
@@ -196,7 +196,7 @@ export default function AdminUserFormPage({
               disabled={deleting || (initial.orderCount ?? 0) > 0}
               onClick={onDelete}
               title={(initial.orderCount ?? 0) > 0 ? t("adm.userForm.hasOrders") : undefined}
-              className="text-[13.5px] font-semibold text-[#9c2c2c] hover:text-[#7a2222] disabled:cursor-not-allowed disabled:opacity-40"
+              className="text-[13.5px] font-semibold text-danger hover:text-danger disabled:cursor-not-allowed disabled:opacity-40"
             >
               {deleting ? t("adm.userForm.deleting") : t("adm.userForm.deleteBtn")}
             </button>

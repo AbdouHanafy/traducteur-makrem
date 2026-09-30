@@ -12,8 +12,8 @@ import { useI18n } from "@/views/components/I18nProvider";
 export default function Services({ services }: { services: ServiceCardData[] }) {
   const { t } = useI18n();
   return (
-    <section id="services" className="py-22">
-      <div className="mx-auto max-w-[1160px] px-[22px]">
+    <section id="services" className="py-[calc(5.5rem*var(--section-scale))]">
+      <div className="mx-auto max-w-(--site-width) px-[22px]">
         <div className="mb-14 grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
           <div className="max-w-[660px]">
             <span className="mb-3 inline-flex items-center gap-2 text-[13.5px] font-semibold text-blue">

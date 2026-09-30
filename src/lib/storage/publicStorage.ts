@@ -24,3 +24,19 @@ export async function deletePublicMedia(url: string): Promise<void> {
   if (filename.includes("..") || filename.includes("/")) return;
   await unlink(path.join(MEDIA_DIR, filename)).catch(() => {});
 }
+
+const FONT_DIR = path.join(process.cwd(), "public", "uploads", "fonts");
+const FONT_URL_PREFIX = "/uploads/fonts";
+
+/** Écrit une police .woff2 (nom = UUID : jamais dérivé du nom de fichier envoyé). */
+export async function writePublicFont(buffer: Buffer): Promise<string> {
+  const filename = `${randomUUID()}.woff2`;
+  await mkdir(FONT_DIR, { recursive: true });
+  await writeFile(path.join(FONT_DIR, filename), buffer);
+  return `${FONT_URL_PREFIX}/${filename}`;
+}
+
+export async function deletePublicFont(url: string): Promise<void> {
+  if (!/^\/uploads\/fonts\/[a-f0-9-]{36}\.woff2$/.test(url)) return;
+  await unlink(path.join(FONT_DIR, url.slice(FONT_URL_PREFIX.length + 1))).catch(() => {});
+}

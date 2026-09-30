@@ -56,7 +56,7 @@ export default function AdminMediaPage({ items }: { items: MediaRow[] }) {
     <div className="mx-auto max-w-[1100px] px-6 py-14">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-[22px] text-navy sm:text-[26px]">{t("adm.media.title")}</h1>
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2">
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2">
           {uploading ? t("adm.media.uploading") : t("adm.media.upload")}
           <input
             type="file"
@@ -69,19 +69,19 @@ export default function AdminMediaPage({ items }: { items: MediaRow[] }) {
       </div>
 
       {error && (
-        <div className="mb-5 rounded-[10px] border border-[#f3c6c6] bg-[#fdecec] px-4 py-3 text-[13.5px] text-[#9c2c2c]">
+        <div className="mb-5 rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
           {error}
         </div>
       )}
 
       {items.length === 0 ? (
-        <div className="rounded-[14px] border border-line bg-white p-10 text-center text-muted">
+        <div className="rounded-2xl border border-line bg-white p-10 text-center text-muted">
           {t("adm.media.empty")}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {items.map((item) => (
-            <div key={item.id} className="overflow-hidden rounded-[12px] border border-line bg-white">
+            <div key={item.id} className="overflow-hidden rounded-xl border border-line bg-white">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={item.url} alt={item.altText ?? ""} className="aspect-square w-full object-cover" />
               <div className="p-3">
@@ -92,7 +92,7 @@ export default function AdminMediaPage({ items }: { items: MediaRow[] }) {
                 <button
                   type="button"
                   onClick={() => onDelete(item.id)}
-                  className="mt-2 text-[12px] font-semibold text-muted hover:text-[#9c2c2c]"
+                  className="mt-2 text-[12px] font-semibold text-muted hover:text-danger"
                 >
                   {t("adm.delete")}
                 </button>

@@ -50,7 +50,7 @@ function FaqForm({
         value={question}
         onChange={(e) => setQuestion(e.target.value)}
         placeholder={t("adm.faq.question")}
-        className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
+        className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
       />
       <textarea
         required
@@ -58,7 +58,7 @@ function FaqForm({
         value={answer}
         onChange={(e) => setAnswer(e.target.value)}
         placeholder={t("adm.faq.answer")}
-        className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
+        className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
       />
       <TranslationEditor
         fields={[
@@ -76,14 +76,14 @@ function FaqForm({
         </label>
         <div className="flex gap-2">
           {onCancel && (
-            <button type="button" onClick={onCancel} className="rounded-[9px] px-4 py-2 text-[13.5px] text-muted">
+            <button type="button" onClick={onCancel} className="rounded-lg px-4 py-2 text-[13.5px] text-muted">
               {t("adm.cancel")}
             </button>
           )}
           <button
             type="submit"
             disabled={loading}
-            className="rounded-[9px] bg-blue px-4 py-2 text-[13.5px] font-semibold text-white hover:bg-blue-2 disabled:opacity-60"
+            className="rounded-lg bg-blue px-4 py-2 text-[13.5px] font-semibold text-white hover:bg-blue-2 disabled:opacity-60"
           >
             {submitLabel}
           </button>
@@ -142,7 +142,7 @@ export default function AdminFaqPage({ items }: { items: FaqRow[] }) {
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
+            className="inline-flex items-center gap-2 rounded-xl bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
           >
             {t("adm.faq.add")}
           </button>
@@ -150,7 +150,7 @@ export default function AdminFaqPage({ items }: { items: FaqRow[] }) {
       </div>
 
       {adding && (
-        <div className="mb-5 rounded-[14px] border border-line bg-white p-5">
+        <div className="mb-5 rounded-2xl border border-line bg-white p-5">
           <FaqForm
             initial={{ question: "", answer: "", active: true, translations: {} }}
             onSubmit={createFaq}
@@ -162,7 +162,7 @@ export default function AdminFaqPage({ items }: { items: FaqRow[] }) {
 
       <div className="grid gap-3">
         {items.map((item, index) => (
-          <div key={item.id} className="rounded-[14px] border border-line bg-white p-5">
+          <div key={item.id} className="rounded-2xl border border-line bg-white p-5">
             {editingId === item.id ? (
               <FaqForm
                 initial={item}
@@ -188,7 +188,7 @@ export default function AdminFaqPage({ items }: { items: FaqRow[] }) {
                     type="button"
                     disabled={index === 0}
                     onClick={() => move(item.id, "up")}
-                    className="rounded-[7px] p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
+                    className="rounded-md p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
                     aria-label={t("adm.moveUp")}
                   >
                     ↑
@@ -197,7 +197,7 @@ export default function AdminFaqPage({ items }: { items: FaqRow[] }) {
                     type="button"
                     disabled={index === items.length - 1}
                     onClick={() => move(item.id, "down")}
-                    className="rounded-[7px] p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
+                    className="rounded-md p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
                     aria-label={t("adm.moveDown")}
                   >
                     ↓
@@ -212,7 +212,7 @@ export default function AdminFaqPage({ items }: { items: FaqRow[] }) {
                   <button
                     type="button"
                     onClick={() => deleteFaq(item.id)}
-                    className="ml-1 text-[13px] font-semibold text-muted hover:text-[#9c2c2c]"
+                    className="ml-1 text-[13px] font-semibold text-muted hover:text-danger"
                   >
                     {t("adm.delete")}
                   </button>

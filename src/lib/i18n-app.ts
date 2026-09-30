@@ -173,6 +173,9 @@ const ROWS: Record<string, Row> = {
   "app.err.FILE_TOO_LARGE": ["Fichier trop volumineux (20 Mo maximum).", "الملف كبير جدًا (20 ميغابايت كحد أقصى).", "File too large (20 MB maximum).", "File troppo grande (massimo 20 MB)."],
   "app.err.FILE_BAD_TYPE": ["Format de fichier non supporté (PDF, JPEG ou PNG uniquement).", "صيغة الملف غير مدعومة (PDF أو JPEG أو PNG فقط).", "Unsupported file format (PDF, JPEG or PNG only).", "Formato di file non supportato (solo PDF, JPEG o PNG)."],
 
+  // Logo personnalisé (vide = logo d'origine) — choisi via la médiathèque dans Contenu & textes
+  "brand.logoUrl": ["", "", "", ""],
+
   // SEO : titres et descriptions des pages publiques
   "seo.services.title": ["Nos services", "خدماتنا", "Our services", "I nostri servizi"],
   "seo.services.description": ["Traductions juridiques assermentées : actes d'état civil, diplômes, contrats, documents judiciaires, immigration, interprétariat.", "ترجمات قانونية محلّفة: وثائق الحالة المدنية، الشهادات، العقود، الوثائق القضائية، الهجرة، الترجمة الفورية.", "Sworn legal translations: civil-status records, diplomas, contracts, court documents, immigration, interpreting.", "Traduzioni giuridiche giurate: atti di stato civile, diplomi, contratti, documenti giudiziari, immigrazione, interpretariato."],

@@ -77,7 +77,7 @@ export default function WorkspaceShell({ mode, user, groups, children, primaryAc
               const active = isActive(pathname, item.href);
               return (
                 <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} aria-current={active ? "page" : undefined} className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-all ${active ? "bg-white text-navy shadow-[0_8px_24px_rgba(0,0,0,0.16)]" : "text-slate-300 hover:bg-white/8 hover:text-white"}`}>
-                  {active && <span className="absolute -left-4 h-6 w-1 rounded-r-full bg-[#5f8df3]" />}
+                  {active && <span className="absolute -left-4 h-6 w-1 rounded-r-full bg-accent-light" />}
                   <Icon name={item.icon} className={`h-[18px] w-[18px] shrink-0 ${active ? "text-blue" : "text-slate-400 group-hover:text-white"}`} />
                   <span>{item.label}</span>
                 </Link>
@@ -101,13 +101,13 @@ export default function WorkspaceShell({ mode, user, groups, children, primaryAc
         </button>
       </div>
 
-      {primaryAction && <Link href={primaryAction.href} onClick={() => setMobileOpen(false)} className="mt-7 flex items-center justify-center gap-2 rounded-xl bg-[#4d7ee8] px-4 py-3 text-[13.5px] font-semibold text-white shadow-[0_10px_25px_rgba(36,86,184,0.3)] transition hover:bg-[#6592ef]"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>{primaryAction.label}</Link>}
+      {primaryAction && <Link href={primaryAction.href} onClick={() => setMobileOpen(false)} className="mt-7 flex items-center justify-center gap-2 rounded-xl bg-blue px-4 py-3 text-[13.5px] font-semibold text-white shadow-[0_10px_25px_rgba(36,86,184,0.3)] transition hover:bg-blue-2"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>{primaryAction.label}</Link>}
 
       <div className="mt-8 flex-1 overflow-y-auto pr-1">{navigation}</div>
 
       <div className="mt-6 border-t border-white/10 pt-4">
         <div className="mb-3 flex items-center gap-3 rounded-xl bg-white/[0.06] p-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#315fae] text-[11.5px] font-bold text-white">{initials}</span>
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-blue text-[11.5px] font-bold text-white">{initials}</span>
           <span className="min-w-0 flex-1"><span className="block truncate text-[12.5px] font-semibold text-white">{user.name}</span><span className="block truncate text-[10.5px] text-slate-400">{user.email}</span></span>
         </div>
         <div className="flex items-center justify-between px-1"><Link href="/" className="text-[12px] font-medium text-slate-400 hover:text-white">{t("app.shell.viewSite")}</Link><LogoutButton variant="sidebar" /></div>
@@ -116,13 +116,13 @@ export default function WorkspaceShell({ mode, user, groups, children, primaryAc
   );
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb]">
+    <div className="min-h-screen bg-surface">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[272px] flex-col overflow-hidden bg-navy-2 px-5 py-6 shadow-[12px_0_40px_rgba(15,29,54,0.08)] lg:flex">{sidebar}</aside>
-      {mobileOpen && <button type="button" className="fixed inset-0 z-50 bg-[#07101f]/60 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)} aria-label={t("app.shell.closeMenu")} />}
+      {mobileOpen && <button type="button" className="fixed inset-0 z-50 bg-navy-2/60 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)} aria-label={t("app.shell.closeMenu")} />}
       <aside role="dialog" aria-modal="true" aria-label={t("app.shell.navigation")} aria-hidden={!mobileOpen} inert={!mobileOpen ? true : undefined} className={`fixed inset-y-0 left-0 z-[60] flex w-[min(86vw,310px)] flex-col bg-navy-2 px-5 py-6 shadow-2xl transition-transform duration-300 lg:hidden ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>{sidebar}</aside>
 
       <div className="min-w-0 lg:pl-[272px]">
-        <header className="sticky top-0 z-30 flex h-[72px] items-center justify-between border-b border-[#e6eaf1] bg-white/90 px-4 backdrop-blur-xl sm:px-7 lg:px-10">
+        <header className="sticky top-0 z-30 flex h-[72px] items-center justify-between border-b border-edge bg-white/90 px-4 backdrop-blur-xl sm:px-7 lg:px-10">
           <div className="flex min-w-0 items-center gap-3">
             <button type="button" onClick={() => setMobileOpen(true)} className="rounded-xl border border-line bg-white p-2.5 text-navy shadow-sm lg:hidden" aria-label={t("app.shell.openMenu")} aria-expanded={mobileOpen}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
             <div className="min-w-0"><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">{mode === "admin" ? t("app.shell.backoffice") : t("app.shell.mySpace")}</div><div className="truncate text-[15px] font-semibold text-navy">{currentItem?.label ?? (mode === "admin" ? t("app.shell.admin") : t("app.shell.clientSpace"))}</div></div>

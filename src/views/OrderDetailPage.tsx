@@ -71,14 +71,14 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
       </div>
 
       {error && (
-        <div className="mb-6 rounded-[10px] border border-[#f3c6c6] bg-[#fdecec] px-4 py-3 text-[13.5px] text-[#9c2c2c]">
+        <div className="mb-6 rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
           {error}
         </div>
       )}
 
       <div className="grid gap-6 md:grid-cols-[1.3fr_1fr]">
         <div className="grid gap-6">
-          <section className="rounded-[14px] border border-line bg-white p-6">
+          <section className="rounded-2xl border border-line bg-white p-6">
             <h2 className="mb-4 text-[16.5px] text-navy">{t("app.order.source")}</h2>
             {sourceDoc ? (
               <a
@@ -92,7 +92,7 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
             )}
           </section>
 
-          <section className="rounded-[14px] border border-line bg-white p-6">
+          <section className="rounded-2xl border border-line bg-white p-6">
             <h2 className="mb-4 text-[16.5px] text-navy">{t("app.order.translation")}</h2>
             {!translatedDoc ? (
               <p className="text-[13.5px] text-muted">
@@ -101,7 +101,7 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
             ) : order.balancePaid ? (
               <a
                 href={`/api/orders/${order.id}/documents/${translatedDoc.id}/download`}
-                className="inline-flex items-center gap-2 rounded-[11px] bg-ok px-5 py-3 text-[14.5px] font-semibold text-white transition-colors hover:opacity-90"
+                className="inline-flex items-center gap-2 rounded-xl bg-ok px-5 py-3 text-[14.5px] font-semibold text-white transition-colors hover:opacity-90"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
@@ -115,7 +115,7 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
         </div>
 
         <div className="grid gap-6">
-          <section className="rounded-[14px] border border-line bg-white p-6">
+          <section className="rounded-2xl border border-line bg-white p-6">
             <h2 className="mb-4 text-[16.5px] text-navy">{t("app.order.payment")}</h2>
             <dl className="grid gap-2.5 text-[14px]">
               <div className="flex justify-between">
@@ -142,7 +142,7 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
                   type="button"
                   disabled={loading}
                   onClick={acceptQuote}
-                  className="inline-flex items-center justify-center rounded-[11px] bg-blue px-5 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
+                  className="inline-flex items-center justify-center rounded-xl bg-blue px-5 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
                 >
                   {t("app.order.acceptQuote")}
                 </button>
@@ -152,7 +152,7 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
                   type="button"
                   disabled={loading}
                   onClick={() => pay("advance")}
-                  className="inline-flex items-center justify-center rounded-[11px] bg-blue px-5 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
+                  className="inline-flex items-center justify-center rounded-xl bg-blue px-5 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
                 >
                   {t("app.order.payAdvance", { amount: order.advanceAmount })}
                 </button>
@@ -162,7 +162,7 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
                   type="button"
                   disabled={loading}
                   onClick={() => pay("balance")}
-                  className="inline-flex items-center justify-center rounded-[11px] bg-ok px-5 py-3 text-[14.5px] font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-60"
+                  className="inline-flex items-center justify-center rounded-xl bg-ok px-5 py-3 text-[14.5px] font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-60"
                 >
                   {t("app.order.payBalance", { amount: order.balanceAmount })}
                 </button>
@@ -170,7 +170,7 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
             </div>
           </section>
 
-          <section className="rounded-[14px] border border-line bg-white p-6">
+          <section className="rounded-2xl border border-line bg-white p-6">
             <h2 className="mb-4 text-[16.5px] text-navy">{t("app.order.tracking")}</h2>
             <ol className="grid gap-3">
               {order.statusHistory.map((h, i) => (

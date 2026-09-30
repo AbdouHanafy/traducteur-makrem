@@ -40,7 +40,7 @@ export default function BrandName({
         lang="ar"
         dir="rtl"
         className={`brand-name-ar mt-0.5 block whitespace-nowrap font-semibold leading-tight ${styles.arabic} ${
-          onDark ? "text-[#c7d6f1]" : "text-navy"
+          onDark ? "text-muted-light" : "text-navy"
         }`}
       >
         {t("brand.arabic")}

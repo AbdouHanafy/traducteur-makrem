@@ -31,7 +31,7 @@ export default function OrdersListPage({ orders }: { orders: OrderRow[] }) {
       </div>
 
       {orders.length === 0 ? (
-        <div className="rounded-2xl border border-[#e4e9f1] bg-white p-12 text-center text-muted shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
+        <div className="rounded-2xl border border-edge bg-white p-12 text-center text-muted shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
           {t("app.orders.empty")}
         </div>
       ) : (
@@ -40,7 +40,7 @@ export default function OrdersListPage({ orders }: { orders: OrderRow[] }) {
             <Link
               key={order.id}
               href={`/dashboard/orders/${order.id}`}
-              className="group grid grid-cols-1 gap-3 rounded-2xl border border-[#e4e9f1] bg-white px-6 py-5 shadow-[0_6px_20px_rgba(20,40,77,0.035)] transition hover:-translate-y-0.5 hover:border-blue/30 hover:shadow-[0_12px_30px_rgba(20,40,77,0.07)] sm:grid-cols-[1fr_auto] sm:items-center sm:gap-4"
+              className="group grid grid-cols-1 gap-3 rounded-2xl border border-edge bg-white px-6 py-5 shadow-[0_6px_20px_rgba(20,40,77,0.035)] transition hover:-translate-y-0.5 hover:border-blue/30 hover:shadow-[0_12px_30px_rgba(20,40,77,0.07)] sm:grid-cols-[1fr_auto] sm:items-center sm:gap-4"
             >
               <div className="min-w-0">
                 <div className="font-serif text-[17px] text-navy">{order.reference}</div>

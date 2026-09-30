@@ -59,6 +59,24 @@ async function main() {
   await settle();
   check("theme reset reaches cached pages", !(await get("/", "fr")).text.includes("--color-blue:#123456"));
 
+  // Files uploaded at runtime must be served in production (Next only serves public/ files present at startup)
+  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
+  const mediaForm = new FormData();
+  mediaForm.set("file", new File([new Uint8Array(png)], "runtime.png", { type: "image/png" }));
+  const uploaded = await req("/api/admin/media", { method: "POST", body: mediaForm });
+  const media = (await uploaded.json()).media;
+  const mediaRes = await fetch(`${B}${media.url}`);
+  check("image uploaded at runtime is served in production", uploaded.status === 201 && mediaRes.status === 200 && mediaRes.headers.get("content-type") === "image/png", `${mediaRes.status}`);
+  await req(`/api/admin/media/${media.id}`, { method: "DELETE" });
+  const fontForm = new FormData();
+  fontForm.set("slot", "2"); fontForm.set("name", "Runtime font");
+  fontForm.set("file", new File([new Uint8Array(Buffer.concat([Buffer.from("wOF2"), Buffer.alloc(256, 3)]))], "r.woff2"));
+  const fontUp = await req("/api/admin/fonts", { method: "POST", body: fontForm });
+  const fontUrl = (await fontUp.json()).font?.url as string;
+  const fontRes = await fetch(`${B}${fontUrl}`);
+  check("font uploaded at runtime is served in production", fontUp.status === 201 && fontRes.status === 200 && (fontRes.headers.get("content-type") ?? "").includes("woff2"), `${fontRes.status}`);
+  await req("/api/admin/fonts?slot=2", { method: "DELETE" });
+
   const dashboard = await fetch(`${B}/dashboard`, { redirect: "manual" });
   check("dashboard stays dynamic (redirects anonymous)", dashboard.status === 307);
 

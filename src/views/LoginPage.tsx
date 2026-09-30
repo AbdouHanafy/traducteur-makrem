@@ -54,7 +54,7 @@ export default function LoginPage() {
 
       <form onSubmit={onSubmit} className="mt-7 grid gap-4.5" noValidate>
         {error && (
-          <div className="rounded-[10px] border border-[#f3c6c6] bg-[#fdecec] px-4 py-3 text-[13.5px] text-[#9c2c2c]">
+          <div className="rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
             {error}
           </div>
         )}

@@ -67,13 +67,13 @@ function TestimonialForm({
           value={values.authorName}
           onChange={(e) => setValues((v) => ({ ...v, authorName: e.target.value }))}
           placeholder={t("adm.testimonials.authorName")}
-          className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
+          className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
         />
         <input
           value={values.authorRole}
           onChange={(e) => setValues((v) => ({ ...v, authorRole: e.target.value }))}
           placeholder={t("adm.testimonials.context")}
-          className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
+          className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
         />
       </div>
       <textarea
@@ -82,7 +82,7 @@ function TestimonialForm({
         value={values.quote}
         onChange={(e) => setValues((v) => ({ ...v, quote: e.target.value }))}
         placeholder={t("adm.testimonials.quote")}
-        className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
+        className="w-full rounded-xl border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
       />
       <TranslationEditor
         fields={[
@@ -99,7 +99,7 @@ function TestimonialForm({
           <select
             value={values.rating}
             onChange={(e) => setValues((v) => ({ ...v, rating: Number(e.target.value) }))}
-            className="rounded-[9px] border border-line bg-white px-3 py-1.5 text-[13.5px] text-ink outline-none focus:border-blue"
+            className="rounded-lg border border-line bg-white px-3 py-1.5 text-[13.5px] text-ink outline-none focus:border-blue"
           >
             {[5, 4, 3, 2, 1].map((n) => (
               <option key={n} value={n}>
@@ -113,13 +113,13 @@ function TestimonialForm({
           </label>
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={onCancel} className="rounded-[9px] px-4 py-2 text-[13.5px] text-muted">
+          <button type="button" onClick={onCancel} className="rounded-lg px-4 py-2 text-[13.5px] text-muted">
             {t("adm.cancel")}
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="rounded-[9px] bg-blue px-4 py-2 text-[13.5px] font-semibold text-white hover:bg-blue-2 disabled:opacity-60"
+            className="rounded-lg bg-blue px-4 py-2 text-[13.5px] font-semibold text-white hover:bg-blue-2 disabled:opacity-60"
           >
             {submitLabel}
           </button>
@@ -180,7 +180,7 @@ export default function AdminTestimonialsPage({ items }: { items: TestimonialRow
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
+            className="inline-flex items-center gap-2 rounded-xl bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
           >
             {t("adm.testimonials.add")}
           </button>
@@ -191,20 +191,20 @@ export default function AdminTestimonialsPage({ items }: { items: TestimonialRow
       </p>
 
       {adding && (
-        <div className="mb-5 rounded-[14px] border border-line bg-white p-5">
+        <div className="mb-5 rounded-2xl border border-line bg-white p-5">
           <TestimonialForm initial={EMPTY_FORM} onSubmit={create} onCancel={() => setAdding(false)} submitLabel={t("adm.add")} />
         </div>
       )}
 
       {items.length === 0 && !adding && (
-        <div className="rounded-[14px] border border-line bg-white p-10 text-center text-muted">
+        <div className="rounded-2xl border border-line bg-white p-10 text-center text-muted">
           {t("adm.testimonials.empty")}
         </div>
       )}
 
       <div className="grid gap-3">
         {items.map((item, index) => (
-          <div key={item.id} className="rounded-[14px] border border-line bg-white p-5">
+          <div key={item.id} className="rounded-2xl border border-line bg-white p-5">
             {editingId === item.id ? (
               <TestimonialForm
                 initial={{
@@ -239,7 +239,7 @@ export default function AdminTestimonialsPage({ items }: { items: TestimonialRow
                     type="button"
                     disabled={index === 0}
                     onClick={() => move(item.id, "up")}
-                    className="rounded-[7px] p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
+                    className="rounded-md p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
                     aria-label={t("adm.moveUp")}
                   >
                     ↑
@@ -248,7 +248,7 @@ export default function AdminTestimonialsPage({ items }: { items: TestimonialRow
                     type="button"
                     disabled={index === items.length - 1}
                     onClick={() => move(item.id, "down")}
-                    className="rounded-[7px] p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
+                    className="rounded-md p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
                     aria-label={t("adm.moveDown")}
                   >
                     ↓
@@ -263,7 +263,7 @@ export default function AdminTestimonialsPage({ items }: { items: TestimonialRow
                   <button
                     type="button"
                     onClick={() => remove(item.id)}
-                    className="ml-1 text-[13px] font-semibold text-muted hover:text-[#9c2c2c]"
+                    className="ml-1 text-[13px] font-semibold text-muted hover:text-danger"
                   >
                     {t("adm.delete")}
                   </button>

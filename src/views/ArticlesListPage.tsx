@@ -21,10 +21,10 @@ export default function ArticlesListPage({ articles }: { articles: ArticleListIt
       <main className="flex-1">
         <PublicPageHero eyebrow={t("page.articles.eyebrow")} title={t("page.articles.title")} description={t("page.articles.description")} />
 
-        <section className="py-16 sm:py-20">
-          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+        <section className="py-[calc(4rem*var(--section-scale))] sm:py-[calc(5rem*var(--section-scale))]">
+          <div className="mx-auto max-w-(--site-width) px-4 sm:px-6 lg:px-8">
             {articles.length === 0 ? (
-              <div className="rounded-[16px] border border-line bg-white p-10 text-center text-muted">
+              <div className="rounded-2xl border border-line bg-white p-10 text-center text-muted">
                 {t("page.articles.empty")}
               </div>
             ) : (
@@ -33,7 +33,7 @@ export default function ArticlesListPage({ articles }: { articles: ArticleListIt
                   <Link
                     key={article.slug}
                     href={`/articles/${article.slug}`}
-                    className="group overflow-hidden rounded-[16px] border border-line bg-white shadow-[var(--shadow-md)] transition hover:-translate-y-0.5"
+                    className="group overflow-hidden rounded-2xl border border-line bg-white shadow-[var(--shadow-md)] transition hover:-translate-y-0.5"
                   >
                     {article.coverImageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element

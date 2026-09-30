@@ -6,12 +6,12 @@ export default function PublicPageHero({ eyebrow, title, description, narrow = f
   children?: React.ReactNode;
 }) {
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(145deg,var(--color-navy-2)_0%,var(--color-navy)_68%,color-mix(in_srgb,var(--color-navy)_63%,var(--color-blue))_100%)] py-14 text-white sm:py-18">
+    <section className="relative overflow-hidden bg-[linear-gradient(145deg,var(--color-navy-2)_0%,var(--color-navy)_68%,color-mix(in_srgb,var(--color-navy)_63%,var(--color-blue))_100%)] py-[calc(3.5rem*var(--section-scale))] text-white sm:py-[calc(4.5rem*var(--section-scale))]">
       <div className="pointer-events-none absolute -right-28 -top-40 h-96 w-96 rounded-full border-[65px] border-white/[0.035]" aria-hidden="true" />
       <div className="pointer-events-none absolute bottom-0 left-[12%] h-px w-1/3 bg-gradient-to-r from-transparent via-seal/40 to-transparent" aria-hidden="true" />
-      <div className={`relative mx-auto px-4 sm:px-6 lg:px-8 ${narrow ? "max-w-[880px]" : "max-w-[1200px]"}`}>
+      <div className={`relative mx-auto px-4 sm:px-6 lg:px-8 ${narrow ? "max-w-[880px]" : "max-w-(--site-width)"}`}>
         {children}
-        <p className="mb-3 flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[.19em] text-[#8fb4ff]"><span className="h-px w-6 bg-[#8fb4ff]" />{eyebrow}</p>
+        <p className="mb-3 flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-[.19em] text-accent-light"><span className="h-px w-6 bg-accent-light" />{eyebrow}</p>
         <h1 className="max-w-[25ch] text-[clamp(30px,4vw,46px)] text-white">{title}</h1>
         {description && <p className="mt-4 max-w-[65ch] text-[15px] leading-7 text-slate-300 sm:text-[16px]">{description}</p>}
       </div>

@@ -47,8 +47,8 @@ export default function ContactPage() {
       <main className="flex-1">
         <PublicPageHero eyebrow={t("nav.contact")} title={t("page.contact.title")} description={t("page.contact.description")} />
 
-        <section className="py-16 sm:py-20">
-          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+        <section className="py-[calc(4rem*var(--section-scale))] sm:py-[calc(5rem*var(--section-scale))]">
+          <div className="mx-auto max-w-(--site-width) px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {CHANNELS.map((c) => {
                 const lines = c.lineKeys.map((key) => t(key));
@@ -56,10 +56,10 @@ export default function ContactPage() {
                   ? `tel:${lines[0].replace(/[^+\d]/g, "")}`
                   : c.id === "email" ? `mailto:${lines[0]}` : undefined;
                 const cardClass =
-                  "block rounded-[18px] border border-line bg-white px-6 py-7 shadow-[0_8px_28px_rgba(20,40,77,0.04)] transition hover:-translate-y-0.5 hover:border-blue/25 hover:shadow-[0_14px_35px_rgba(20,40,77,0.08)]";
+                  "block rounded-3xl border border-line bg-white px-6 py-7 shadow-[0_8px_28px_rgba(20,40,77,0.04)] transition hover:-translate-y-0.5 hover:border-blue/25 hover:shadow-[0_14px_35px_rgba(20,40,77,0.08)]";
                 const content = (
                   <>
-                    <div className="mb-4 grid h-11.5 w-11.5 place-items-center rounded-[11px] bg-blue-soft text-blue-2">
+                    <div className="mb-4 grid h-11.5 w-11.5 place-items-center rounded-xl bg-blue-soft text-blue-2">
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                         {c.icon}
                       </svg>
@@ -84,7 +84,7 @@ export default function ContactPage() {
               })}
             </div>
 
-            <div className="mt-14 grid gap-8 rounded-[16px] border border-line bg-white px-8 py-9 md:grid-cols-[1.2fr_.8fr] md:items-center">
+            <div className="mt-14 grid gap-8 rounded-2xl border border-line bg-white px-8 py-9 md:grid-cols-[1.2fr_.8fr] md:items-center">
               <div>
                 <h2 className="text-[22px] text-navy">{t("page.contact.ready")}</h2>
                 <p className="mt-2.5 max-w-[56ch] text-[15px] text-muted">
@@ -94,7 +94,7 @@ export default function ContactPage() {
               <div className="flex flex-wrap gap-3.5 md:justify-end">
                 <Link
                   href="/commander"
-                  className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-[24px] py-[13px] text-[15px] font-semibold text-white transition-colors hover:bg-blue-2"
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue px-[24px] py-[13px] text-[15px] font-semibold text-white transition-colors hover:bg-blue-2"
                 >
                   {t("nav.orderLong")}
                 </Link>

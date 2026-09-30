@@ -33,8 +33,8 @@ export default function AboutPage() {
       <main className="flex-1">
         <PublicPageHero eyebrow={t("page.about.eyebrow")} title={t("page.about.title")} description={t("page.about.description")} />
 
-        <section className="py-16 sm:py-20">
-          <div className="mx-auto grid max-w-[1200px] gap-10 px-4 sm:px-6 md:grid-cols-[1.1fr_.9fr] lg:gap-16 lg:px-8">
+        <section className="py-[calc(4rem*var(--section-scale))] sm:py-[calc(5rem*var(--section-scale))]">
+          <div className="mx-auto grid max-w-(--site-width) gap-10 px-4 sm:px-6 md:grid-cols-[1.1fr_.9fr] lg:gap-16 lg:px-8">
             <div>
               <h2 className="text-[26px] text-navy">{t("page.about.introTitle")}</h2>
               <p className="mt-4 text-[15.5px] leading-relaxed text-muted">
@@ -48,7 +48,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="rounded-[20px] border border-line bg-white p-7 shadow-[0_12px_38px_rgba(20,40,77,0.06)]">
+            <div className="rounded-3xl border border-line bg-white p-7 shadow-[0_12px_38px_rgba(20,40,77,0.06)]">
               <h3 className="text-[17px] text-navy">{t("page.about.practice")}</h3>
               <dl className="mt-4 grid gap-4 text-[14.5px]">
                 <div className="flex items-start justify-between gap-4 border-b border-line pb-4">
@@ -76,8 +76,8 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="bg-white py-18">
-          <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+        <section className="bg-white py-[calc(4.5rem*var(--section-scale))]">
+          <div className="mx-auto max-w-(--site-width) px-4 sm:px-6 lg:px-8">
             <div className="mb-11 max-w-[660px]">
               <span className="mb-3 inline-flex items-center gap-2 text-[13.5px] font-semibold text-blue">
                 <span className="h-0.5 w-5.5 rounded bg-blue" />
@@ -89,7 +89,7 @@ export default function AboutPage() {
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {VALUES.map((v) => (
-                <div key={v.title} className="rounded-[18px] border border-line px-5 py-6 transition hover:-translate-y-0.5 hover:border-blue/25 hover:shadow-[0_10px_28px_rgba(20,40,77,0.06)]">
+                <div key={v.title} className="rounded-3xl border border-line px-5 py-6 transition hover:-translate-y-0.5 hover:border-blue/25 hover:shadow-[0_10px_28px_rgba(20,40,77,0.06)]">
                   <h3 className="text-[16.5px] text-navy">{t(v.title)}</h3>
                   <p className="mt-2 text-[13.5px] text-muted">{t(v.desc)}</p>
                 </div>
@@ -98,19 +98,19 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="py-16">
-          <div className="mx-auto max-w-[1160px] px-[22px] text-center">
+        <section className="py-[calc(4rem*var(--section-scale))]">
+          <div className="mx-auto max-w-(--site-width) px-[22px] text-center">
             <h2 className="text-[24px] text-navy">{t("page.about.question")}</h2>
             <div className="mt-6 flex flex-wrap justify-center gap-3.5">
               <Link
                 href="/commander"
-                className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-[24px] py-[13px] text-[15px] font-semibold text-white transition-colors hover:bg-blue-2"
+                className="inline-flex items-center gap-2 rounded-xl bg-blue px-[24px] py-[13px] text-[15px] font-semibold text-white transition-colors hover:bg-blue-2"
               >
                 {t("nav.orderLong")}
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center rounded-[11px] border-[1.5px] border-line px-[24px] py-[13px] text-[15px] font-semibold text-navy transition-colors hover:border-navy"
+                className="inline-flex items-center rounded-xl border-[1.5px] border-line px-[24px] py-[13px] text-[15px] font-semibold text-navy transition-colors hover:border-navy"
               >
                 {t("cta.contact")}
               </Link>

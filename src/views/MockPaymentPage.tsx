@@ -77,7 +77,7 @@ export default function MockPaymentPage({ payment }: { payment: MockPaymentData 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[linear-gradient(145deg,var(--color-navy-2)_0%,var(--color-navy)_70%,color-mix(in_srgb,var(--color-navy)_63%,var(--color-blue))_100%)] px-4 py-10 sm:px-6">
       <div className="absolute -right-28 -top-36 h-96 w-96 rounded-full border-[70px] border-white/[0.035]" />
-      <div className="relative w-full max-w-[460px] rounded-[22px] border border-white/20 bg-white p-6 shadow-[0_25px_70px_rgba(0,0,0,0.28)] sm:p-8">
+      <div className="relative w-full max-w-[460px] rounded-3xl border border-white/20 bg-white p-6 shadow-[0_25px_70px_rgba(0,0,0,0.28)] sm:p-8">
         <Link href="/" className="mx-auto mb-6 flex w-fit items-center gap-2.5"><BrandLogo size="sm" priority /><BrandName size="compact" /></Link>
         <div className="text-center">
           <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-blue-soft px-3 py-1 text-[12.5px] font-semibold text-blue-2">
@@ -91,13 +91,13 @@ export default function MockPaymentPage({ payment }: { payment: MockPaymentData 
             {payment.phase === "ADVANCE" ? t("app.pay.titleAdvance") : t("app.pay.titleBalance")}
           </h1>
           <p className="mt-2 text-[14px] text-muted">{t("app.pay.order", { reference: payment.orderReference })}</p>
-          <div className="my-6 rounded-xl border border-line bg-[#f7f9fc] py-5">
+          <div className="my-6 rounded-xl border border-line bg-surface py-5">
             <div className="text-[30px] font-semibold tracking-tight text-navy">{payment.amount} <small className="text-[12px]">TND</small></div>
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-[10px] border border-[#f3c6c6] bg-[#fdecec] px-4 py-3 text-[13.5px] text-[#9c2c2c]">
+          <div className="mb-4 rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
             {error}
           </div>
         )}
@@ -176,7 +176,7 @@ export default function MockPaymentPage({ payment }: { payment: MockPaymentData 
           </Link>
         </div>
 
-        <div className="mt-6 rounded-[10px] bg-mist px-4 py-3 text-[12px] leading-relaxed text-muted">
+        <div className="mt-6 rounded-xl bg-mist px-4 py-3 text-[12px] leading-relaxed text-muted">
           {t("app.pay.testEnv")}
           <br />
           {t("app.pay.testCards")}

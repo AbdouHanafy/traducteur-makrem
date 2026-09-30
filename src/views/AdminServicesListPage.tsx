@@ -56,8 +56,8 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
   function moveButtons(id: string, index: number) {
     return (
       <span className="inline-flex items-center">
-        <button type="button" disabled={index === 0 || busyId === id} onClick={() => move(id, "up")} className="rounded-[7px] p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30" aria-label={t("adm.moveUp")}>↑</button>
-        <button type="button" disabled={index === services.length - 1 || busyId === id} onClick={() => move(id, "down")} className="rounded-[7px] p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30" aria-label={t("adm.moveDown")}>↓</button>
+        <button type="button" disabled={index === 0 || busyId === id} onClick={() => move(id, "up")} className="rounded-md p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30" aria-label={t("adm.moveUp")}>↑</button>
+        <button type="button" disabled={index === services.length - 1 || busyId === id} onClick={() => move(id, "down")} className="rounded-md p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30" aria-label={t("adm.moveDown")}>↓</button>
       </span>
     );
   }
@@ -68,14 +68,14 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
         <h1 className="text-[26px] text-navy">{t("adm.services.title")}</h1>
         <Link
           href="/admin/services/new"
-          className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
+          className="inline-flex items-center gap-2 rounded-xl bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
         >
           {t("adm.services.new")}
         </Link>
       </div>
 
       {/* Desktop */}
-      <div className="hidden overflow-hidden rounded-[14px] border border-line bg-white md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-line bg-white md:block">
         <table className="w-full text-left text-[13.5px]">
           <thead className="bg-mist text-[12px] uppercase tracking-wide text-muted">
             <tr>
@@ -92,9 +92,9 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
                   <div className="flex items-center gap-3">
                     {service.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={service.imageUrl} alt="" className="h-10 w-10 rounded-[8px] object-cover" />
+                      <img src={service.imageUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
                     ) : (
-                      <div className="h-10 w-10 rounded-[8px] bg-mist" />
+                      <div className="h-10 w-10 rounded-lg bg-mist" />
                     )}
                     <div>
                       <div className="font-semibold text-ink">{service.name}</div>
@@ -137,13 +137,13 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
       {/* Mobile : cartes */}
       <div className="grid gap-3 md:hidden">
         {services.map((service, index) => (
-          <div key={service.id} className="rounded-[14px] border border-line bg-white p-4">
+          <div key={service.id} className="rounded-2xl border border-line bg-white p-4">
             <div className="flex items-center gap-3">
               {service.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={service.imageUrl} alt="" className="h-11 w-11 shrink-0 rounded-[8px] object-cover" />
+                <img src={service.imageUrl} alt="" className="h-11 w-11 shrink-0 rounded-lg object-cover" />
               ) : (
-                <div className="h-11 w-11 shrink-0 rounded-[8px] bg-mist" />
+                <div className="h-11 w-11 shrink-0 rounded-lg bg-mist" />
               )}
               <div className="min-w-0">
                 <div className="truncate font-semibold text-ink">{service.name}</div>

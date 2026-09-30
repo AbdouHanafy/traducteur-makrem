@@ -20,7 +20,7 @@ const STEPS = [
 export default function Workflow() {
   const { t } = useI18n();
   return (
-    <section id="workflow" className="relative overflow-hidden bg-navy py-22 text-white">
+    <section id="workflow" className="relative overflow-hidden bg-navy py-[calc(5.5rem*var(--section-scale))] text-white">
       <svg
         className="pointer-events-none absolute -bottom-24 -left-24 h-[420px] w-[420px] text-white opacity-[.04]"
         viewBox="0 0 200 200"
@@ -31,16 +31,16 @@ export default function Workflow() {
         <circle cx="100" cy="100" r="70" stroke="currentColor" strokeWidth="1" />
       </svg>
 
-      <div className="relative mx-auto max-w-[1160px] px-[22px]">
+      <div className="relative mx-auto max-w-(--site-width) px-[22px]">
         <div className="mb-16 max-w-[660px]">
-          <span className="mb-3 inline-flex items-center gap-2 text-[13.5px] font-semibold text-[#8fb4ff]">
-            <span className="h-0.5 w-5.5 rounded bg-[#8fb4ff]" />
+          <span className="mb-3 inline-flex items-center gap-2 text-[13.5px] font-semibold text-accent-light">
+            <span className="h-0.5 w-5.5 rounded bg-accent-light" />
             {t("workflow.eyebrow")}
           </span>
           <h2 className="text-[clamp(28px,3.4vw,40px)] text-white">
             {t("workflow.title")}
           </h2>
-          <p className="mt-3.5 text-[17px] text-[#b9c8e4]">
+          <p className="mt-3.5 text-[17px] text-line">
             {t("workflow.description")}
           </p>
         </div>
@@ -67,11 +67,11 @@ export default function Workflow() {
                 {`0${i + 1}`}
               </div>
               <h4 className="text-[16.5px] text-white">{t(step.title as TranslationKey)}</h4>
-              <p className="mt-2 max-w-[26ch] text-[13.5px] text-[#a9bbdb]">{t(step.desc as TranslationKey)}</p>
+              <p className="mt-2 max-w-[26ch] text-[13.5px] text-muted-light">{t(step.desc as TranslationKey)}</p>
               {step.tag && (
                 <span
-                  className={`mt-3.5 inline-flex items-center gap-1.5 rounded-[7px] px-2.5 py-1 text-[11.5px] font-semibold ${
-                    step.pay ? "bg-[rgba(30,158,106,.16)] text-[#7ce0b1]" : "bg-white/10 text-[#cfd9ee]"
+                  className={`mt-3.5 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11.5px] font-semibold ${
+                    step.pay ? "bg-ok/15 text-ok-light" : "bg-white/10 text-muted-light"
                   }`}
                 >
                   {t(step.tag as TranslationKey)}

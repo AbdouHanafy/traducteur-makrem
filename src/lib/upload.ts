@@ -82,3 +82,16 @@ export function validateImageUpload(file: File): Promise<ValidatedUpload> {
     "Format d'image non supporté (JPEG, PNG ou WebP uniquement).",
   );
 }
+
+export const MAX_FONT_BYTES = 1024 * 1024; // 1 Mo
+
+/** Police web WOFF2 : signature "wOF2" vérifiée sur les octets, jamais sur l'extension. */
+export async function validateFontUpload(file: File): Promise<{ buffer: Buffer }> {
+  if (file.size === 0) throw new UploadValidationError("Fichier vide.", "FILE_EMPTY");
+  if (file.size > MAX_FONT_BYTES) throw new UploadValidationError("Police trop volumineuse (1 Mo maximum).", "FILE_TOO_LARGE");
+  const buffer = Buffer.from(await file.arrayBuffer());
+  if (buffer.subarray(0, 4).toString("latin1") !== "wOF2") {
+    throw new UploadValidationError("Format non supporté : seule une police .woff2 est acceptée.", "FILE_BAD_TYPE");
+  }
+  return { buffer };
+}

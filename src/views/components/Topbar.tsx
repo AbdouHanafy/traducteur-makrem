@@ -67,33 +67,33 @@ export default function Topbar() {
   }, [mobileOpen]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#e7ebf2] bg-white/90 backdrop-blur-xl">
-      <div className="mx-auto flex h-[76px] max-w-[1200px] items-center px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-edge bg-white/90 backdrop-blur-xl">
+      <div className="mx-auto flex h-[76px] max-w-(--site-width) items-center px-4 sm:px-6 lg:px-8">
         <Brand />
 
         <nav className="ml-auto hidden items-center gap-1 lg:flex" aria-label={t("app.aria.mainNav")}>
           {NAV_LINKS.slice(0, 2).map((link) => (
-            <Link key={link.href} href={link.href} aria-current={isActive(pathname, link.href) ? "page" : undefined} className={`rounded-lg px-3 py-2 text-[12.5px] font-semibold transition ${isActive(pathname, link.href) ? "bg-blue-soft text-blue-2" : "text-muted hover:bg-[#f6f8fb] hover:text-navy"}`}>{t(link.label as TranslationKey)}</Link>
+            <Link key={link.href} href={link.href} aria-current={isActive(pathname, link.href) ? "page" : undefined} className={`rounded-lg px-3 py-2 text-[12.5px] font-semibold transition ${isActive(pathname, link.href) ? "bg-blue-soft text-blue-2" : "text-muted hover:bg-surface hover:text-navy"}`}>{t(link.label as TranslationKey)}</Link>
           ))}
 
           <div className="group relative">
-            <Link href="/services" aria-current={pathname.startsWith("/services") ? "page" : undefined} className={`flex items-center gap-1 rounded-lg px-3 py-2 text-[12.5px] font-semibold transition ${pathname.startsWith("/services") ? "bg-blue-soft text-blue-2" : "text-muted hover:bg-[#f6f8fb] hover:text-navy"}`}>{t("nav.services")} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="transition group-hover:rotate-180 group-focus-within:rotate-180"><path d="m6 9 6 6 6-6" /></svg></Link>
+            <Link href="/services" aria-current={pathname.startsWith("/services") ? "page" : undefined} className={`flex items-center gap-1 rounded-lg px-3 py-2 text-[12.5px] font-semibold transition ${pathname.startsWith("/services") ? "bg-blue-soft text-blue-2" : "text-muted hover:bg-surface hover:text-navy"}`}>{t("nav.services")} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="transition group-hover:rotate-180 group-focus-within:rotate-180"><path d="m6 9 6 6 6-6" /></svg></Link>
             <div className="invisible absolute left-1/2 top-full w-[330px] -translate-x-1/2 pt-3 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-              <div className="overflow-hidden rounded-2xl border border-[#e5eaf2] bg-white p-2 shadow-[0_20px_55px_rgba(20,40,77,0.16)]">
-                {SERVICES.map((service) => <Link key={service.slug} href={`/services#${service.slug}`} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 transition hover:bg-[#f5f8fd]"><span><span className="block text-[12.5px] font-semibold text-ink">{t(service.label as TranslationKey)}</span><span className="block text-[10.5px] text-muted">{t(service.detail as TranslationKey)}</span></span><span className="text-slate-300">→</span></Link>)}
+              <div className="overflow-hidden rounded-2xl border border-edge bg-white p-2 shadow-[0_20px_55px_rgba(20,40,77,0.16)]">
+                {SERVICES.map((service) => <Link key={service.slug} href={`/services#${service.slug}`} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 transition hover:bg-surface"><span><span className="block text-[12.5px] font-semibold text-ink">{t(service.label as TranslationKey)}</span><span className="block text-[10.5px] text-muted">{t(service.detail as TranslationKey)}</span></span><span className="text-slate-300">→</span></Link>)}
                 <Link href="/services" className="mt-1 flex items-center justify-between rounded-xl bg-blue-soft px-3 py-2.5 text-[12px] font-semibold text-blue-2">{t("nav.allServices")} <span>→</span></Link>
               </div>
             </div>
           </div>
 
           {NAV_LINKS.slice(2).map((link) => (
-            <Link key={link.href} href={link.href} aria-current={isActive(pathname, link.href) ? "page" : undefined} className={`rounded-lg px-3 py-2 text-[12.5px] font-semibold transition ${isActive(pathname, link.href) ? "bg-blue-soft text-blue-2" : "text-muted hover:bg-[#f6f8fb] hover:text-navy"}`}>{t(link.label as TranslationKey)}</Link>
+            <Link key={link.href} href={link.href} aria-current={isActive(pathname, link.href) ? "page" : undefined} className={`rounded-lg px-3 py-2 text-[12.5px] font-semibold transition ${isActive(pathname, link.href) ? "bg-blue-soft text-blue-2" : "text-muted hover:bg-surface hover:text-navy"}`}>{t(link.label as TranslationKey)}</Link>
           ))}
         </nav>
 
         <div className="ml-5 hidden items-center gap-2 border-l border-line pl-5 lg:flex">
           <LanguageSwitcher />
-          <Link href={accountHref} className="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-[12.5px] font-semibold text-navy transition hover:bg-[#f5f7fb]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>{accountLabel}</Link>
+          <Link href={accountHref} className="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 text-[12.5px] font-semibold text-navy transition hover:bg-surface"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>{accountLabel}</Link>
           <Link href="/commander" className="inline-flex items-center gap-2 rounded-xl bg-navy px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-[0_8px_20px_rgba(20,40,77,0.16)] transition hover:-translate-y-0.5 hover:bg-navy-2">{t("nav.order")} <span aria-hidden="true">→</span></Link>
         </div>
 
@@ -105,7 +105,7 @@ export default function Topbar() {
           {mobileOpen && (
             <button
               type="button"
-              className="fixed inset-0 z-[70] bg-[#07101f]/55 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-[70] bg-navy-2/55 backdrop-blur-sm lg:hidden"
               onClick={() => setMobileOpen(false)}
               aria-label={t("app.shell.closeMenu")}
             />

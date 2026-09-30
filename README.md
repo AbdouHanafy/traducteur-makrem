@@ -105,7 +105,11 @@ docker-compose.yml  MySQL local, lié à 127.0.0.1 uniquement, volume persistant
 - Textes de l'interface : `src/lib/i18n.ts` (site), `i18n-app.ts` (espace client),
   `i18n-admin.ts` (backoffice) — format `[fr, ar, en, it]` par clé.
 - Contenu éditable (services, articles, FAQ, avis, sections libres) : champs en français + colonne
-  JSON `translations` (ar/en/it) ; un champ vide retombe sur le français. Couleurs : `/admin/theme`.
+  JSON `translations` (ar/en/it) ; un champ vide retombe sur le français.
+- Apparence (`/admin/theme`) : 26 couleurs, palettes, polices latines + arabes + 2 polices `.woff2` téléversées,
+  arrondi des coins, largeur et espacement, politique de lisibilité (WCAG) appliquée aussi côté serveur.
+  Les fichiers téléversés sont servis par `src/app/uploads/[...path]` (Next ne sert `public/` que pour les
+  fichiers présents au démarrage).
 - Tests bout en bout : `npm run test:e2e` (serveur dev + MySQL + seed) et
   `E2E_BASE=http://localhost:3001 tsx scripts/e2e-cache.ts` sur un `next build && next start`.
 

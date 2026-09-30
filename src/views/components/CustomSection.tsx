@@ -18,9 +18,9 @@ export default function CustomSection({ data }: { data: CustomSectionData }) {
   const hasImage = Boolean(data.imageUrl);
 
   return (
-    <section className="py-20">
+    <section className="py-[calc(5rem*var(--section-scale))]">
       <div
-        className={`mx-auto max-w-[1160px] items-center gap-12 px-[22px] ${
+        className={`mx-auto max-w-(--site-width) items-center gap-12 px-[22px] ${
           hasImage ? "grid md:grid-cols-[1fr_1fr]" : ""
         }`}
       >
@@ -38,7 +38,7 @@ export default function CustomSection({ data }: { data: CustomSectionData }) {
           {data.ctaLabel && data.ctaHref && (
             <Link
               href={data.ctaHref}
-              className="mt-6 inline-flex items-center gap-2 rounded-[11px] bg-blue px-6 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue px-6 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2"
             >
               {data.ctaLabel}
             </Link>
@@ -46,7 +46,7 @@ export default function CustomSection({ data }: { data: CustomSectionData }) {
         </div>
         {hasImage && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={data.imageUrl!} alt="" className="w-full rounded-[16px] object-cover" />
+          <img src={data.imageUrl!} alt="" className="w-full rounded-2xl object-cover" />
         )}
       </div>
     </section>

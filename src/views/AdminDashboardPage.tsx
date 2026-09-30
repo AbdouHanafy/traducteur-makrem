@@ -43,7 +43,7 @@ export default function AdminDashboardPage({ stats }: { stats: DashboardStats })
     { label: t("adm.dash.kpiRevenue"), value: `${money(stats.revenueTotal)} TND`, sub: t("adm.dash.kpiMonth", { amount: money(stats.revenueThisMonth) }), color: "bg-ok" },
     { label: t("adm.dash.kpiToProcess"), value: String(stats.ordersToProcess), sub: t("adm.dash.kpiToProcessSub"), href: "/admin/orders", color: "bg-seal" },
     { label: t("adm.dash.kpiQuotes"), value: String(stats.pendingQuotes), sub: t("adm.dash.kpiQuotesSub", { count: stats.waitingOnClient }), href: "/admin/orders", color: "bg-blue" },
-    { label: t("adm.dash.kpiClients"), value: String(stats.totalClients), sub: t("adm.dash.kpiClientsSub", { count: stats.newClientsThisWeek }), href: "/admin/users", color: "bg-[#7967c8]" },
+    { label: t("adm.dash.kpiClients"), value: String(stats.totalClients), sub: t("adm.dash.kpiClientsSub", { count: stats.newClientsThisWeek }), href: "/admin/users", color: "bg-accent-2" },
   ];
 
   return (
@@ -60,7 +60,7 @@ export default function AdminDashboardPage({ stats }: { stats: DashboardStats })
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpis.map((kpi) => {
           const content = <><div className="mb-5 flex items-center justify-between"><span className={`h-2.5 w-2.5 rounded-full ${kpi.color}`} />{kpi.href && <span className="text-[15px] text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue">→</span>}</div><div className="text-[25px] font-semibold tracking-tight text-navy">{kpi.value}</div><div className="mt-1.5 text-[12.5px] font-semibold text-ink">{kpi.label}</div><div className="mt-0.5 text-[11.5px] text-muted">{kpi.sub}</div></>;
-          return kpi.href ? <Link key={kpi.label} href={kpi.href} className="group rounded-2xl border border-[#e4e9f1] bg-white p-5 shadow-[0_8px_25px_rgba(20,40,77,0.04)] transition hover:-translate-y-0.5 hover:border-blue/30 hover:shadow-[0_14px_35px_rgba(20,40,77,0.08)]">{content}</Link> : <div key={kpi.label} className="rounded-2xl border border-[#e4e9f1] bg-white p-5 shadow-[0_8px_25px_rgba(20,40,77,0.04)]">{content}</div>;
+          return kpi.href ? <Link key={kpi.label} href={kpi.href} className="group rounded-2xl border border-edge bg-white p-5 shadow-[0_8px_25px_rgba(20,40,77,0.04)] transition hover:-translate-y-0.5 hover:border-blue/30 hover:shadow-[0_14px_35px_rgba(20,40,77,0.08)]">{content}</Link> : <div key={kpi.label} className="rounded-2xl border border-edge bg-white p-5 shadow-[0_8px_25px_rgba(20,40,77,0.04)]">{content}</div>;
         })}
       </div>
 
@@ -70,20 +70,20 @@ export default function AdminDashboardPage({ stats }: { stats: DashboardStats })
       </div>
 
       {stats.recentOrders.length === 0 ? (
-        <div className="rounded-2xl border border-[#e4e9f1] bg-white p-12 text-center text-muted shadow-[0_8px_25px_rgba(20,40,77,0.04)]">{t("adm.dash.empty")}</div>
+        <div className="rounded-2xl border border-edge bg-white p-12 text-center text-muted shadow-[0_8px_25px_rgba(20,40,77,0.04)]">{t("adm.dash.empty")}</div>
       ) : (
         <>
-          <div className="hidden overflow-hidden rounded-2xl border border-[#e4e9f1] bg-white shadow-[0_8px_25px_rgba(20,40,77,0.04)] md:block">
+          <div className="hidden overflow-hidden rounded-2xl border border-edge bg-white shadow-[0_8px_25px_rgba(20,40,77,0.04)] md:block">
             <table className="w-full text-left text-[13px]">
-              <thead className="bg-[#f8f9fc] text-[10.5px] uppercase tracking-[0.1em] text-muted"><tr><th className="px-5 py-3.5">{t("adm.col.reference")}</th><th className="px-5 py-3.5">{t("adm.col.client")}</th><th className="px-5 py-3.5">{t("adm.col.service")}</th><th className="px-5 py-3.5">{t("adm.col.status")}</th><th className="px-5 py-3.5">{t("adm.col.fileAccess")}</th><th className="px-5 py-3.5 text-right">{t("adm.col.amount")}</th></tr></thead>
+              <thead className="bg-surface text-[10.5px] uppercase tracking-[0.1em] text-muted"><tr><th className="px-5 py-3.5">{t("adm.col.reference")}</th><th className="px-5 py-3.5">{t("adm.col.client")}</th><th className="px-5 py-3.5">{t("adm.col.service")}</th><th className="px-5 py-3.5">{t("adm.col.status")}</th><th className="px-5 py-3.5">{t("adm.col.fileAccess")}</th><th className="px-5 py-3.5 text-right">{t("adm.col.amount")}</th></tr></thead>
               <tbody>
                 {stats.recentOrders.map((order) => {
                   const needsAction = ACTION_NEEDED_STATUSES.has(order.status);
-                  return <tr key={order.id} className="border-t border-mist transition hover:bg-[#f8faff]">
+                  return <tr key={order.id} className="border-t border-mist transition hover:bg-surface">
                     <td className="px-5 py-4"><Link href={`/admin/orders/${order.id}`} className="flex items-center gap-2 font-semibold text-blue hover:text-blue-2">{needsAction && <span className="h-2 w-2 shrink-0 rounded-full bg-seal" />}{order.reference}</Link></td>
                     <td className="px-5 py-4 text-ink"><span className="font-medium">{order.user.firstName} {order.user.lastName}</span><div className="text-[11.5px] text-muted">{order.user.email}</div></td>
                     <td className="px-5 py-4 text-ink">{order.service.name}</td>
-                    <td className="px-5 py-4"><span className={`inline-flex rounded-full px-2.5 py-1 text-[10.5px] font-semibold ${needsAction ? "bg-[#fff3df] text-[#9a5b12]" : "bg-blue-soft text-blue-2"}`}>{t(`app.status.${order.status}`)}</span></td>
+                    <td className="px-5 py-4"><span className={`inline-flex rounded-full px-2.5 py-1 text-[10.5px] font-semibold ${needsAction ? "bg-caution-soft text-caution" : "bg-blue-soft text-blue-2"}`}>{t(`app.status.${order.status}`)}</span></td>
                     <td className="px-5 py-4"><FileAccessBadge access={order.fileAccess} /></td>
                     <td className="px-5 py-4 text-right font-semibold text-ink">{order.totalAmount} TND</td>
                   </tr>;
@@ -95,7 +95,7 @@ export default function AdminDashboardPage({ stats }: { stats: DashboardStats })
           <div className="grid gap-3 md:hidden">
             {stats.recentOrders.map((order) => {
               const needsAction = ACTION_NEEDED_STATUSES.has(order.status);
-              return <Link key={order.id} href={`/admin/orders/${order.id}`} className="block rounded-2xl border border-[#e4e9f1] bg-white p-4 shadow-[0_6px_20px_rgba(20,40,77,0.04)]"><div className="flex items-start justify-between gap-3"><div className="flex items-center gap-2 font-semibold text-blue">{needsAction && <span className="h-2 w-2 rounded-full bg-seal" />}{order.reference}</div><span className="shrink-0 font-semibold text-ink">{order.totalAmount} TND</span></div><div className="mt-2 text-[13px] font-medium text-ink">{order.user.firstName} {order.user.lastName}</div><div className="text-[11.5px] text-muted">{order.service.name}</div><div className="mt-3 flex flex-wrap items-center gap-2"><span className={`inline-flex rounded-full px-2.5 py-1 text-[10.5px] font-semibold ${needsAction ? "bg-[#fff3df] text-[#9a5b12]" : "bg-blue-soft text-blue-2"}`}>{t(`app.status.${order.status}`)}</span><FileAccessBadge access={order.fileAccess} /></div></Link>;
+              return <Link key={order.id} href={`/admin/orders/${order.id}`} className="block rounded-2xl border border-edge bg-white p-4 shadow-[0_6px_20px_rgba(20,40,77,0.04)]"><div className="flex items-start justify-between gap-3"><div className="flex items-center gap-2 font-semibold text-blue">{needsAction && <span className="h-2 w-2 rounded-full bg-seal" />}{order.reference}</div><span className="shrink-0 font-semibold text-ink">{order.totalAmount} TND</span></div><div className="mt-2 text-[13px] font-medium text-ink">{order.user.firstName} {order.user.lastName}</div><div className="text-[11.5px] text-muted">{order.service.name}</div><div className="mt-3 flex flex-wrap items-center gap-2"><span className={`inline-flex rounded-full px-2.5 py-1 text-[10.5px] font-semibold ${needsAction ? "bg-caution-soft text-caution" : "bg-blue-soft text-blue-2"}`}>{t(`app.status.${order.status}`)}</span><FileAccessBadge access={order.fileAccess} /></div></Link>;
             })}
           </div>
         </>

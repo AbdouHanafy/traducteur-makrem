@@ -28,24 +28,24 @@ export default function Hero() {
         <path d="M100 2v196M2 100h196" stroke="currentColor" strokeWidth="0.5" />
       </svg>
 
-      <div className="mx-auto grid max-w-[1160px] items-center gap-14 px-[22px] md:grid-cols-[1.08fr_.92fr]">
+      <div className="mx-auto grid max-w-(--site-width) items-center gap-14 px-[22px] md:grid-cols-[1.08fr_.92fr]">
         <div className="relative">
-          <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/[.16] bg-white/[.08] px-3.5 py-1.5 text-[13px] font-medium text-[#dbe6f8]">
+          <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/[.16] bg-white/[.08] px-3.5 py-1.5 text-[13px] font-medium text-blue-soft">
             <span className="h-1.5 w-1.5 rounded-full bg-ok shadow-[0_0_0_4px_rgba(30,158,106,.25)]" />
             {t("hero.credential")}
           </span>
           <h1 className="text-[clamp(34px,4.6vw,58px)] font-semibold tracking-tight text-white">
             {t("hero.titleBefore")} <br className="hidden md:block" />
-            <span className="font-medium italic text-[#9fc0ff]">{t("hero.titleAccent")}</span>{" "}
+            <span className="font-medium italic text-accent-light">{t("hero.titleAccent")}</span>{" "}
             {t("hero.titleAfter")}
           </h1>
-          <p className="mt-5 max-w-[47ch] text-lg text-[#c4d2ea]">
+          <p className="mt-5 max-w-[47ch] text-lg text-muted-light">
             {t("hero.description")}
           </p>
           <div className="mt-8 flex flex-wrap gap-3.5">
             <Link
               href="/commander"
-              className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-[26px] py-[15px] text-base font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.28)] transition-colors hover:bg-blue-2"
+              className="inline-flex items-center gap-2 rounded-xl bg-blue px-[26px] py-[15px] text-base font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.28)] transition-colors hover:bg-blue-2"
             >
               {t("nav.orderLong")}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -54,7 +54,7 @@ export default function Hero() {
             </Link>
             <Link
               href="/services"
-              className="inline-flex items-center rounded-[11px] border-[1.5px] border-white/[.28] px-[26px] py-[15px] text-base font-semibold text-white transition-colors hover:border-white"
+              className="inline-flex items-center rounded-xl border-[1.5px] border-white/[.28] px-[26px] py-[15px] text-base font-semibold text-white transition-colors hover:border-white"
             >
               {t("hero.discover")}
             </Link>
@@ -63,7 +63,7 @@ export default function Hero() {
           <div className="mt-11 border-t border-white/[.14] pt-6">
             <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-3">
               <div>
-                <div className="font-serif text-[13px] uppercase tracking-[.12em] text-[#8fb4ff]">
+                <div className="font-serif text-[13px] uppercase tracking-[.12em] text-accent-light">
                   {t("hero.status")}
                 </div>
                 <div className="mt-1 text-[14px] font-medium text-white">
@@ -71,13 +71,13 @@ export default function Hero() {
                 </div>
               </div>
               <div className="sm:border-l sm:border-white/[.14] sm:pl-8">
-                <div className="font-serif text-[13px] uppercase tracking-[.12em] text-[#8fb4ff]">
+                <div className="font-serif text-[13px] uppercase tracking-[.12em] text-accent-light">
                   {t("hero.languages")}
                 </div>
                 <div className="mt-1 text-[14px] font-medium text-white">{t("hero.languagesValue")}</div>
               </div>
               <div className="sm:border-l sm:border-white/[.14] sm:pl-8">
-                <div className="font-serif text-[13px] uppercase tracking-[.12em] text-[#8fb4ff]">
+                <div className="font-serif text-[13px] uppercase tracking-[.12em] text-accent-light">
                   {t("hero.payment")}
                 </div>
                 <div className="mt-1 text-[14px] font-medium text-white">{t("hero.paymentValue")}</div>
@@ -96,7 +96,7 @@ export default function Hero() {
             </div>
             <div className="grid gap-2.5 px-[22px] py-4.5">
               {[100, 88, 72, 100, 88].map((w, i) => (
-                <span key={i} className="block h-2 rounded bg-[#e7ecf4]" style={{ width: `${w}%` }} />
+                <span key={i} className="block h-2 rounded bg-edge" style={{ width: `${w}%` }} />
               ))}
             </div>
           </div>
@@ -110,7 +110,7 @@ export default function Hero() {
             </div>
             <div className="grid gap-2.5 px-[22px] py-4.5">
               {[100, 88, 72, 100, 88, 72].map((w, i) => (
-                <span key={i} className="block h-2 rounded bg-[#e7ecf4]" style={{ width: `${w}%` }} />
+                <span key={i} className="block h-2 rounded bg-edge" style={{ width: `${w}%` }} />
               ))}
             </div>
             <svg className="absolute bottom-[14px] right-4 h-28 w-28 rotate-[-12deg] drop-shadow-[0_2px_3px_rgba(20,40,77,.18)]" viewBox="0 0 120 120">
@@ -132,7 +132,7 @@ export default function Hero() {
           </div>
 
           <div className="absolute -left-4 top-[132px] flex -rotate-3 items-center gap-2.5 rounded-xl bg-white px-3.5 py-3 text-navy shadow-[var(--shadow-md)]">
-            <div className="grid h-8.5 w-8.5 place-items-center rounded-[9px] bg-ok-soft text-ok">
+            <div className="grid h-8.5 w-8.5 place-items-center rounded-lg bg-ok-soft text-ok">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <path d="M20 6L9 17l-5-5" />
               </svg>
