@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { limit, MINUTE } from "@/lib/rate-limit";
 import { findPaymentByProviderRef, confirmPaymentTransaction } from "@/repositories/payments";
 
 /**
@@ -9,6 +10,9 @@ import { findPaymentByProviderRef, confirmPaymentTransaction } from "@/repositor
  * générique par la vérification cryptographique de sa signature native.
  */
 export async function POST(request: Request) {
+  const blocked = limit(request, "webhook", { perIp: [300, MINUTE] });
+  if (blocked) return blocked;
+
   if (process.env.PAYMENT_PROVIDER === "mock") {
     return NextResponse.json({ error: "Introuvable." }, { status: 404 });
   }

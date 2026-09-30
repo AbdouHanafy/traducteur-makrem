@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
-import { validateImageUpload, UploadValidationError } from "@/lib/upload";
+import { limit, rejectOversize, HOUR } from "@/lib/rate-limit";
+import { validateImageUpload, UploadValidationError, MAX_IMAGE_BYTES } from "@/lib/upload";
 import { writePublicMedia } from "@/lib/storage/publicStorage";
 import { createMedia, listMedia } from "@/repositories/media";
 
@@ -20,6 +21,11 @@ export async function POST(request: Request) {
   if ("error" in result) {
     return NextResponse.json({ error: result.error }, { status: result.error === "unauthenticated" ? 401 : 403 });
   }
+
+  const blocked = limit(request, "admin-media", { userId: result.session.user.id, perUser: [120, HOUR] });
+  if (blocked) return blocked;
+  const oversize = rejectOversize(request, MAX_IMAGE_BYTES);
+  if (oversize) return oversize;
 
   const formData = await request.formData();
   const file = formData.get("file");

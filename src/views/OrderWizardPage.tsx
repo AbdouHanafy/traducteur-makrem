@@ -9,6 +9,7 @@ import FileDropzone from "@/views/components/FileDropzone";
 import { DELAY_OPTIONS } from "@/lib/delay-options";
 import { signUp, useSession } from "@/lib/auth-client";
 import { useI18n } from "@/views/components/I18nProvider";
+import ConsentFields from "@/views/components/ConsentFields";
 
 interface ServiceOption {
   id: string;
@@ -48,6 +49,8 @@ export default function OrderWizardPage({ services, delayMultipliers }: { servic
   const [delayKey, setDelayKey] = useState<string>(availableDelays[0]?.key ?? DELAY_OPTIONS[0].key);
   const [file, setFile] = useState<File | null>(null);
   const [account, setAccount] = useState({ fullName: "", email: "", phone: "", password: "" });
+  const [accepted, setAccepted] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -80,10 +83,10 @@ export default function OrderWizardPage({ services, delayMultipliers }: { servic
     setLoading(true);
     if (needsAccount) {
       const { firstName, lastName } = splitFullName(account.fullName);
-      const { error: signUpError } = await signUp.email({ name: account.fullName.trim(), email: account.email, password: account.password, firstName, lastName, phone: account.phone || undefined });
+      const { error: signUpError } = await signUp.email({ name: account.fullName.trim(), email: account.email, password: account.password, firstName, lastName, phone: account.phone || undefined, termsAccepted: accepted, website: honeypot } as Parameters<typeof signUp.email>[0]);
       if (signUpError) {
         setLoading(false);
-        setError(signUpError.code === "USER_ALREADY_EXISTS" || signUpError.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL" ? t("app.err.emailExistsLogin") : t("app.err.accountCreate"));
+        setError(signUpError.code === "USER_ALREADY_EXISTS" || signUpError.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL" ? t("app.err.emailExistsLogin") : signUpError.code === "CONSENT_REQUIRED" ? t("app.err.CONSENT_REQUIRED") : signUpError.status === 429 ? t("app.err.RATE_LIMITED") : t("app.err.accountCreate"));
         return;
       }
     }
@@ -103,7 +106,7 @@ export default function OrderWizardPage({ services, delayMultipliers }: { servic
     }
     if (!response.ok) {
       const data = await response.json().catch(() => null);
-      setError(data?.code ? t(`app.err.${data.code}`) : t("app.err.generic"));
+      setError(response.status === 429 ? t("app.err.RATE_LIMITED") : data?.code ? t(`app.err.${data.code}`) : t("app.err.generic"));
       return;
     }
     const data = await response.json();
@@ -156,7 +159,7 @@ export default function OrderWizardPage({ services, delayMultipliers }: { servic
 
                   {needsAccount && <section className="rounded-2xl border border-[#e3e8f0] bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
                     <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">03</span><div><h2 className="text-[17px] text-navy">{t("order.stepContact")}</h2><p className="text-[11.5px] text-muted">{t("order.contactHint")}</p></div></div>
-                    <div className="grid gap-4"><div><label htmlFor="fullName" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.fullName")}</label><input id="fullName" required value={account.fullName} onChange={updateAccount("fullName")} autoComplete="name" placeholder="Sarra Ben Ali" className={fieldClass} /></div><div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="orderEmail" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("common.email")}</label><input id="orderEmail" required type="email" value={account.email} onChange={updateAccount("email")} autoComplete="email" placeholder="you@example.com" className={fieldClass} /></div><div><label htmlFor="orderPhone" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("common.phone")}</label><input id="orderPhone" required type="tel" value={account.phone} onChange={updateAccount("phone")} autoComplete="tel" placeholder="(+216) 22 200 170" className={fieldClass} /></div></div><div><label htmlFor="orderPassword" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.accountPassword")}</label><input id="orderPassword" required type="password" minLength={10} value={account.password} onChange={updateAccount("password")} autoComplete="new-password" placeholder={t("register.passwordHint")} className={fieldClass} /></div><p className="text-[11.5px] text-muted">{t("order.existing")} <Link href="/login?callbackUrl=/commander" className="font-semibold text-blue">{t("register.login")}</Link> {t("order.loginHint")}</p></div>
+                    <div className="grid gap-4"><div><label htmlFor="fullName" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.fullName")}</label><input id="fullName" required value={account.fullName} onChange={updateAccount("fullName")} autoComplete="name" placeholder="Sarra Ben Ali" className={fieldClass} /></div><div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="orderEmail" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("common.email")}</label><input id="orderEmail" required type="email" value={account.email} onChange={updateAccount("email")} autoComplete="email" placeholder="you@example.com" className={fieldClass} /></div><div><label htmlFor="orderPhone" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("common.phone")}</label><input id="orderPhone" required type="tel" value={account.phone} onChange={updateAccount("phone")} autoComplete="tel" placeholder="(+216) 22 200 170" className={fieldClass} /></div></div><div><label htmlFor="orderPassword" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.accountPassword")}</label><input id="orderPassword" required type="password" minLength={10} value={account.password} onChange={updateAccount("password")} autoComplete="new-password" placeholder={t("register.passwordHint")} className={fieldClass} /></div><p className="text-[11.5px] text-muted">{t("order.existing")} <Link href="/login?callbackUrl=/commander" className="font-semibold text-blue">{t("register.login")}</Link> {t("order.loginHint")}</p></div><ConsentFields accepted={accepted} onAcceptedChange={setAccepted} honeypot={honeypot} onHoneypotChange={setHoneypot} />
                   </section>}
                 </div>
 

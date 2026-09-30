@@ -1,12 +1,13 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { limit, rejectOversize, HOUR } from "@/lib/rate-limit";
 import { createOrderSchema } from "@/schemas/order";
 import { findServiceById } from "@/repositories/services";
 import { findPricingRuleByKey } from "@/repositories/pricingRules";
 import { createOrderWithSourceDocument } from "@/repositories/orders";
 import { computeQuote } from "@/lib/pricing";
-import { validateUpload, UploadValidationError } from "@/lib/upload";
+import { validateUpload, UploadValidationError, MAX_UPLOAD_BYTES } from "@/lib/upload";
 import { deletePrivateFile, writePrivateFile } from "@/lib/storage/privateStorage";
 
 export async function POST(request: Request) {
@@ -14,6 +15,11 @@ export async function POST(request: Request) {
   if (!session) {
     return NextResponse.json({ error: "Non authentifié.", code: "UNAUTHENTICATED" }, { status: 401 });
   }
+
+  const blocked = limit(request, "orders", { userId: session.user.id, perUser: [15, HOUR], perIp: [120, HOUR] });
+  if (blocked) return blocked;
+  const oversize = rejectOversize(request, MAX_UPLOAD_BYTES);
+  if (oversize) return oversize;
 
   const formData = await request.formData();
   const parsed = createOrderSchema.safeParse({

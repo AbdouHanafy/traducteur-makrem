@@ -1,6 +1,8 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "@better-auth/prisma-adapter";
 import { nextCookies } from "better-auth/next-js";
+import { APIError, createAuthMiddleware } from "better-auth/api";
+import { checkRateLimit, MINUTE } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/password";
 
@@ -25,8 +27,57 @@ export const auth = betterAuth({
       verify: ({ hash, password }) => verifyPassword(hash, password),
     },
   },
+  // Actif aussi en développement (par défaut Better Auth ne limite qu'en production).
+  // Stockage mémoire : suffisant pour une instance ; passer à "database" si plusieurs instances.
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 100,
+    customRules: {
+      "/sign-in/email": { window: 60, max: 10 },
+      "/sign-up/email": { window: 10 * 60, max: 10 },
+      "/change-password": { window: 10 * 60, max: 10 },
+      "/request-password-reset": { window: 10 * 60, max: 5 },
+      "/reset-password": { window: 10 * 60, max: 10 },
+      "/send-verification-email": { window: 10 * 60, max: 5 },
+    },
+  },
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      const body = (ctx.body ?? {}) as Record<string, unknown>;
+
+      if (ctx.path === "/sign-in/email" && typeof body.email === "string") {
+        // Freine le bourrage d'identifiants : plafond par adresse email, quelle que soit l'IP.
+        const attempt = checkRateLimit(`login:${body.email.trim().toLowerCase()}`, 15, 15 * MINUTE);
+        if (!attempt.ok) throw new APIError("TOO_MANY_REQUESTS", { message: "Trop de tentatives. Réessayez plus tard." });
+      }
+
+      if (ctx.path === "/sign-up/email") {
+        // Champ piège invisible pour les humains : un robot qui le remplit est rejeté.
+        if (typeof body.website === "string" && body.website.trim() !== "") {
+          throw new APIError("BAD_REQUEST", { message: "Requête invalide." });
+        }
+        if (body.termsAccepted !== true) {
+          throw new APIError("BAD_REQUEST", { message: "CONSENT_REQUIRED", code: "CONSENT_REQUIRED" });
+        }
+      }
+    }),
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        // Horodate le consentement (l'endpoint d'inscription l'a exigé juste avant).
+        before: async (user) => ({ data: { ...user, termsAcceptedAt: new Date() } }),
+      },
+    },
+  },
   user: {
     additionalFields: {
+      termsAcceptedAt: {
+        type: "date",
+        required: false,
+        input: false,
+      },
       role: {
         type: "string",
         required: false,

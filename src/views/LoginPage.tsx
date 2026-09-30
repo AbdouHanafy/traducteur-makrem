@@ -29,7 +29,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (signInError) {
-      setError(t("login.error"));
+      setError(signInError.status === 429 ? t("app.err.RATE_LIMITED") : t("login.error"));
       return;
     }
 

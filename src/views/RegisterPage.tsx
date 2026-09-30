@@ -6,12 +6,15 @@ import { useRouter } from "next/navigation";
 import { signUp } from "@/lib/auth-client";
 import AuthShell from "@/views/components/AuthShell";
 import { useI18n } from "@/views/components/I18nProvider";
+import ConsentFields from "@/views/components/ConsentFields";
 
 export default function RegisterPage() {
   const { t } = useI18n();
   const router = useRouter();
 
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", password: "" });
+  const [accepted, setAccepted] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -32,7 +35,9 @@ export default function RegisterPage() {
       firstName: form.firstName,
       lastName: form.lastName,
       phone: form.phone || undefined,
-    });
+      termsAccepted: accepted,
+      website: honeypot,
+    } as Parameters<typeof signUp.email>[0]);
 
     setLoading(false);
 
@@ -40,7 +45,11 @@ export default function RegisterPage() {
       setError(
         signUpError.code === "USER_ALREADY_EXISTS" || signUpError.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL"
           ? t("app.err.emailExists")
-          : t("app.err.generic"),
+          : signUpError.code === "CONSENT_REQUIRED"
+            ? t("app.err.CONSENT_REQUIRED")
+            : signUpError.status === 429
+              ? t("app.err.RATE_LIMITED")
+              : t("app.err.generic"),
       );
       return;
     }
@@ -147,6 +156,8 @@ export default function RegisterPage() {
             placeholder={t("register.passwordHint")}
           />
         </div>
+
+        <ConsentFields accepted={accepted} onAcceptedChange={setAccepted} honeypot={honeypot} onHoneypotChange={setHoneypot} />
 
         <button
           type="submit"

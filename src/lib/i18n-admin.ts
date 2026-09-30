@@ -282,6 +282,8 @@ const ROWS: Record<string, Row> = {
   "adm.content.group.orderDesc": ["Formulaire de devis, fichiers, délais et messages de confiance.", "نموذج عرض السعر والملفات والآجال ورسائل الثقة.", "Quote form, files, deadlines and reassurance messages.", "Modulo di preventivo, file, scadenze e messaggi di fiducia."],
   "adm.content.group.client": ["Espace client", "فضاء الحريف", "Client area", "Area clienti"],
   "adm.content.group.clientDesc": ["Tableau de bord, commandes, documents, compte et paiement.", "لوحة التحكم والطلبات والمستندات والحساب والدفع.", "Dashboard, orders, documents, account and payment.", "Pannello, ordini, documenti, account e pagamento."],
+  "adm.content.group.legal": ["Pages légales", "الصفحات القانونية", "Legal pages", "Pagine legali"],
+  "adm.content.group.legalDesc": ["Conditions de vente, confidentialité, mentions légales et cases de consentement.", "شروط البيع والخصوصية والإشعارات القانونية ومربعات الموافقة.", "Terms of sale, privacy, legal notice and consent checkboxes.", "Condizioni di vendita, privacy, note legali e caselle di consenso."],
   "adm.content.group.access": ["Connexion & inscription", "الدخول والتسجيل", "Login & registration", "Accesso e registrazione"],
   "adm.content.group.accessDesc": ["Textes des pages d'accès à l'espace client.", "نصوص صفحات الدخول إلى فضاء الحريف.", "Texts of the client area access pages.", "Testi delle pagine di accesso all’area clienti."],
   "adm.content.group.footer": ["Pied de page", "تذييل الصفحة", "Footer", "Piè di pagina"],

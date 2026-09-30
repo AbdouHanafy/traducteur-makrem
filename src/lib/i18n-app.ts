@@ -156,6 +156,9 @@ const ROWS: Record<string, Row> = {
   "app.account.success": ["Mot de passe modifié avec succès.", "تم تغيير كلمة المرور بنجاح.", "Password changed successfully.", "Password modificata con successo."],
 
   // Erreurs communes (inscription, commande)
+  "app.err.CONSENT_REQUIRED": ["Vous devez accepter les conditions générales et la politique de confidentialité.", "يجب قبول الشروط العامة وسياسة الخصوصية.", "You must accept the terms of sale and the privacy policy.", "Devi accettare le condizioni generali e l’informativa sulla privacy."],
+  "app.err.RATE_LIMITED": ["Trop de tentatives. Réessayez dans quelques minutes.", "محاولات كثيرة. أعيدوا المحاولة بعد بضع دقائق.", "Too many attempts. Please try again in a few minutes.", "Troppi tentativi. Riprova tra qualche minuto."],
+  "app.err.PAYLOAD_TOO_LARGE": ["Fichier trop volumineux (20 Mo maximum).", "الملف كبير جدًا (20 ميغابايت كحد أقصى).", "File too large (20 MB maximum).", "File troppo grande (massimo 20 MB)."],
   "app.err.emailExists": ["Un compte existe déjà avec cette adresse email.", "يوجد حساب بهذا البريد الإلكتروني مسبقًا.", "An account already exists with this email address.", "Esiste già un account con questo indirizzo email."],
   "app.err.emailExistsLogin": ["Un compte existe déjà avec cette adresse email. Connectez-vous puis réessayez.", "يوجد حساب بهذا البريد الإلكتروني مسبقًا. سجّلوا الدخول ثم أعيدوا المحاولة.", "An account already exists with this email address. Log in and try again.", "Esiste già un account con questo indirizzo email. Accedi e riprova."],
   "app.err.generic": ["Une erreur est survenue. Réessayez.", "حدث خطأ. أعيدوا المحاولة.", "An error occurred. Please try again.", "Si è verificato un errore. Riprova."],

@@ -70,6 +70,8 @@ model User {
   firstName     String
   lastName      String
   phone         String?
+  /// Date d'acceptation des CGV et de la politique de confidentialité (inscription publique).
+  termsAcceptedAt DateTime?
   orders        Order[]
   auditLogs     AuditLog[]
   sessions      Session[]

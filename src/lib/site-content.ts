@@ -15,6 +15,7 @@ export const SITE_CONTENT_GROUPS: SiteContentGroup[] = [
   { id: "order", label: "Commande en ligne", description: "Formulaire de devis, fichiers, délais et messages de confiance.", prefixes: ["order.", "file.", "delay."] },
   { id: "client", label: "Espace client", description: "Tableau de bord, commandes, documents, compte et paiement.", prefixes: ["app."] },
   { id: "access", label: "Connexion & inscription", description: "Textes des pages d'accès à l'espace client.", prefixes: ["auth.", "login.", "register."] },
+  { id: "legal", label: "Pages légales", description: "Conditions de vente, confidentialité, mentions légales et cases de consentement.", prefixes: ["legal."] },
   { id: "footer", label: "Pied de page", description: "Arguments de confiance, colonnes et mentions de bas de page.", prefixes: ["footer."] },
 ];
 

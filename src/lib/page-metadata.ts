@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { translate, type Locale } from "@/lib/i18n";
 import { buildMetadata } from "@/lib/seo";
 
-type PageKey = "services" | "faq" | "articles" | "contact" | "about" | "register" | "login" | "order";
+type PageKey = "services" | "faq" | "articles" | "contact" | "about" | "register" | "login" | "order" | "terms" | "privacy" | "notice";
 
 /** Titre/description SEO d'une page publique dans la langue demandée (clés `seo.<page>.*`). */
 export function pageMetadata(locale: Locale, page: PageKey, path: string, noIndex = false): Metadata {

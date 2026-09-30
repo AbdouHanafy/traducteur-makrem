@@ -5,7 +5,8 @@
  */
 const B = process.env.E2E_BASE ?? "http://localhost:3001";
 let pass = 0, fail = 0;
-function check(name: string, ok: boolean, extra = "") { (ok ? pass++ : fail++); console.log(`${ok ? "PASS" : "FAIL"}  ${name}${ok ? "" : "  -> " + extra}`); }
+function check(name: string, ok: boolean, extra = "") {
+  if (ok) pass++; else fail++; console.log(`${ok ? "PASS" : "FAIL"}  ${name}${ok ? "" : "  -> " + extra}`); }
 
 const jar = new Map<string, string>();
 async function req(path: string, init: RequestInit & { json?: unknown } = {}) {

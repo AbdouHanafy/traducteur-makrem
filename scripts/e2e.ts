@@ -2,7 +2,8 @@ import { PrismaClient } from "@prisma/client";
 const B = "http://localhost:3000";
 const prisma = new PrismaClient();
 let pass = 0, fail = 0;
-function check(name: string, ok: boolean, extra = "") { (ok ? pass++ : fail++); console.log(`${ok ? "PASS" : "FAIL"}  ${name}${ok ? "" : "  -> " + extra}`); }
+function check(name: string, ok: boolean, extra = "") {
+  if (ok) pass++; else fail++; console.log(`${ok ? "PASS" : "FAIL"}  ${name}${ok ? "" : "  -> " + extra}`); }
 
 class Client {
   jar = new Map<string, string>();
@@ -47,7 +48,7 @@ async function main() {
 
   const email = `E2E.Client${stamp}@Test.Local`;
   const client = new Client();
-  const reg = await client.req("/api/auth/sign-up/email", { method: "POST", json: { name: "E2E Client", email, password: "Passw0rd!Long", firstName: "E2E", lastName: "Client" } });
+  const reg = await client.req("/api/auth/sign-up/email", { method: "POST", json: { name: "E2E Client", email, password: "Passw0rd!Long", firstName: "E2E", lastName: "Client", termsAccepted: true } });
   check("register client", reg.status === 200, `${reg.status} ${await reg.text()}`);
   const dbUser = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
   check("registered user has role CLIENT", dbUser?.role === "CLIENT");
@@ -56,7 +57,7 @@ async function main() {
   check("client cannot use admin API (403)", (await client.req("/api/admin/services", { method: "POST", json: {} })).status === 403);
   const other = new Client();
   const email2 = `e2e.other${stamp}@test.local`;
-  await other.req("/api/auth/sign-up/email", { method: "POST", json: { name: "Other User", email: email2, password: "Passw0rd!Long", firstName: "Other", lastName: "User" } });
+  await other.req("/api/auth/sign-up/email", { method: "POST", json: { name: "Other User", email: email2, password: "Passw0rd!Long", firstName: "Other", lastName: "User", termsAccepted: true } });
 
   const service = await prisma.service.findFirst({ where: { active: true, pricePerPage: { gt: 0 } } });
   if (!service) throw new Error("no orderable service");
@@ -277,6 +278,62 @@ async function main() {
   r = await fetch(`${B}/commander?service=x`, { headers: { cookie: "site_locale=en" } });
   check("order page metadata localized", (await r.text()).includes("Order a translation"));
   check("robots.txt still served", (await fetch(`${B}/robots.txt`)).status === 200);
+
+  // --- legal pages, consent, abuse protection ---
+  for (const [path, needle] of [["/conditions-generales", "Conditions générales de vente"], ["/confidentialite", "Politique de confidentialité"], ["/mentions-legales", "Mentions légales"]] as const) {
+    const fr = await html(path, "site_locale=fr");
+    check(`${path} renders in French`, fr.status === 200 && fr.text.includes(needle), String(fr.status));
+    check(`${path} shows the firm's contact email`, fr.text.includes("contact@makramarfaoui.com"));
+  }
+  check("terms page in Arabic (rtl)", (await html("/conditions-generales", "site_locale=ar")).text.includes("الشروط العامة للبيع"));
+  check("privacy page in English", (await html("/confidentialite", "site_locale=en")).text.includes("Privacy policy"));
+  check("legal notice in Italian", (await html("/mentions-legales", "site_locale=it")).text.includes("Note legali"));
+  page = await html("/", "site_locale=en");
+  check("footer links to the three legal pages", ["/mentions-legales", "/conditions-generales", "/confidentialite"].every((href) => page.text.includes(`href="${href}"`)));
+  check("legal pages listed in sitemap", (await (await fetch(`${B}/sitemap.xml`)).text()).includes("/conditions-generales"));
+
+  const anonJson = async (extra: Record<string, unknown>) => {
+    const c = new Client();
+    const email = `consent.${stamp}.${Math.random().toString(36).slice(2, 8)}@test.local`;
+    const res = await c.req("/api/auth/sign-up/email", { method: "POST", json: { name: "Consent Test", email, password: "Passw0rd!Long", firstName: "Consent", lastName: "Test", ...extra } });
+    return { res, email };
+  };
+  let su = await anonJson({});
+  check("sign-up without consent rejected (400)", su.res.status === 400, String(su.res.status));
+  su = await anonJson({ termsAccepted: false });
+  check("sign-up with consent=false rejected (400)", su.res.status === 400, String(su.res.status));
+  su = await anonJson({ termsAccepted: true, website: "http://spam.example" });
+  check("honeypot filled -> rejected (400)", su.res.status === 400, String(su.res.status));
+  check("no account created by rejected sign-ups", (await prisma.user.count({ where: { email: su.email } })) === 0);
+  su = await anonJson({ termsAccepted: true, website: "" });
+  check("sign-up with consent accepted (200)", su.res.status === 200, String(su.res.status));
+  const consented = await prisma.user.findUnique({ where: { email: su.email } });
+  check("consent timestamp stored", !!consented?.termsAcceptedAt && Date.now() - consented.termsAcceptedAt.getTime() < 60_000);
+
+  const big = new Blob([new Uint8Array(22 * 1024 * 1024)]);
+  const bigForm = form(base);
+  bigForm.set("file", big, "huge.pdf");
+  r = await client.req("/api/orders", { method: "POST", body: bigForm });
+  check("oversized upload rejected before parsing (413)", r.status === 413, String(r.status));
+
+  // Per-IP API limit: hammer a cheap endpoint until it answers 429
+  let limited = 0;
+  for (let i = 0; i < 80; i++) {
+    const x = await fetch(`${B}/api/locale`, { method: "POST", headers: { "content-type": "application/json", "x-forwarded-for": "203.0.113.77" }, body: JSON.stringify({ locale: "fr" }) });
+    if (x.status === 429) { limited = i + 1; break; }
+  }
+  check("locale endpoint rate-limited per IP (429 after 60/min)", limited > 0 && limited <= 62, String(limited));
+  const one = await fetch(`${B}/api/locale`, { method: "POST", headers: { "content-type": "application/json", "x-forwarded-for": "203.0.113.99" }, body: JSON.stringify({ locale: "fr" }) });
+  check("another IP is unaffected", one.status === 200, String(one.status));
+
+  // Login throttling (keep last: it blocks sign-in from this IP for about a minute)
+  const victim = `victim.${stamp}@test.local`;
+  let sawLimit = 0;
+  for (let i = 1; i <= 25; i++) {
+    const attempt = await new Client().login(victim, "wrong-password-1");
+    if (attempt === 429) { sawLimit = i; break; }
+  }
+  check("repeated failed logins get throttled (429)", sawLimit > 0 && sawLimit <= 16, String(sawLimit));
 
   console.log(`\n${pass} passed, ${fail} failed`);
 }

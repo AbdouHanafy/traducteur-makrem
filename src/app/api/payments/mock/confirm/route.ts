@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { limit, MINUTE } from "@/lib/rate-limit";
 import { findPaymentByProviderRef, confirmPaymentTransaction } from "@/repositories/payments";
 import { findOrderById } from "@/repositories/orders";
 
@@ -13,6 +14,9 @@ export async function POST(request: Request) {
 
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
+
+  const blocked = limit(request, "payment-confirm", { userId: session.user.id, perUser: [30, 10 * MINUTE] });
+  if (blocked) return blocked;
 
   const body = await request.json().catch(() => null);
   if (typeof body?.providerRef !== "string") {

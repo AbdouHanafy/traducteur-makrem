@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireStaffSession } from "@/lib/rbac";
+import { limit, rejectOversize, HOUR } from "@/lib/rate-limit";
 import { findOrderById, attachTranslatedDocument } from "@/repositories/orders";
-import { validateUpload, UploadValidationError } from "@/lib/upload";
+import { validateUpload, UploadValidationError, MAX_UPLOAD_BYTES } from "@/lib/upload";
 import { deletePrivateFile, writePrivateFile, readPrivateFile } from "@/lib/storage/privateStorage";
 import { generateAndStorePreview } from "@/lib/pdf-preview";
 
@@ -17,6 +18,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if ("error" in result) {
     return NextResponse.json({ error: result.error }, { status: result.error === "unauthenticated" ? 401 : 403 });
   }
+
+  const blocked = limit(request, "admin-upload", { userId: result.session.user.id, perUser: [60, HOUR] });
+  if (blocked) return blocked;
+  const oversize = rejectOversize(request, MAX_UPLOAD_BYTES);
+  if (oversize) return oversize;
 
   const order = await findOrderById(id);
   if (!order) return NextResponse.json({ error: "Introuvable." }, { status: 404 });

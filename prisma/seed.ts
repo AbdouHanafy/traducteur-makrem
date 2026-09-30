@@ -41,7 +41,8 @@ async function upsertDemoUser(demo: DemoUser) {
         password: DEV_PASSWORD,
         firstName: demo.firstName,
         lastName: demo.lastName,
-      },
+        termsAccepted: true,
+      } as never,
     });
   } else {
     const passwordHash = await hashPassword(DEV_PASSWORD);

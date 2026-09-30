@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { isLocale, LOCALE_COOKIE } from "@/lib/i18n";
+import { limit, MINUTE } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  const blocked = limit(request, "locale", { perIp: [60, MINUTE] });
+  if (blocked) return blocked;
+
   const body = await request.json().catch(() => null);
   if (!body || !isLocale(body.locale)) {
     return NextResponse.json({ error: "Unsupported locale." }, { status: 400 });

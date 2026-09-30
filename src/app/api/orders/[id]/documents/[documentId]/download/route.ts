@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { limit, MINUTE } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { findOrderById } from "@/repositories/orders";
 import { findDocumentById } from "@/repositories/documents";
@@ -17,13 +18,16 @@ function asciiFilename(name: string): string {
  * TRANSLATED, 4) document prêt, 5) lecture par storageKey path-traversal-safe + stream.
  */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string; documentId: string }> },
 ) {
   const { id, documentId } = await params;
 
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
+
+  const blocked = limit(request, "download", { userId: session.user.id, perUser: [120, 10 * MINUTE] });
+  if (blocked) return blocked;
 
   const order = await findOrderById(id);
   if (!order) return NextResponse.json({ error: "Introuvable." }, { status: 404 });

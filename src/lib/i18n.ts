@@ -1,5 +1,6 @@
 import { getAppDictionary } from "@/lib/i18n-app";
 import { getAdminDictionary } from "@/lib/i18n-admin";
+import { getLegalDictionary } from "@/lib/i18n-legal";
 
 export const LOCALES = ["fr", "ar", "en", "it"] as const;
 export type Locale = (typeof LOCALES)[number];
@@ -286,10 +287,10 @@ Object.assign(ar, {
 });
 
 export const DICTIONARIES: Record<Locale, Dictionary> = {
-  fr: { ...fr, ...getAppDictionary("fr"), ...getAdminDictionary("fr") },
-  ar: { ...ar, ...getAppDictionary("ar"), ...getAdminDictionary("ar") },
-  en: { ...en, ...getAppDictionary("en"), ...getAdminDictionary("en") },
-  it: { ...it, ...getAppDictionary("it"), ...getAdminDictionary("it") },
+  fr: { ...fr, ...getAppDictionary("fr"), ...getAdminDictionary("fr"), ...getLegalDictionary("fr") },
+  ar: { ...ar, ...getAppDictionary("ar"), ...getAdminDictionary("ar"), ...getLegalDictionary("ar") },
+  en: { ...en, ...getAppDictionary("en"), ...getAdminDictionary("en"), ...getLegalDictionary("en") },
+  it: { ...it, ...getAppDictionary("it"), ...getAdminDictionary("it"), ...getLegalDictionary("it") },
 };
 
 /** Locale de formatage (dates, nombres) associée à chaque langue du site. */

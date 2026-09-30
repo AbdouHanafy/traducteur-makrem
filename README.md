@@ -109,6 +109,19 @@ docker-compose.yml  MySQL local, lié à 127.0.0.1 uniquement, volume persistant
 - Tests bout en bout : `npm run test:e2e` (serveur dev + MySQL + seed) et
   `E2E_BASE=http://localhost:3001 tsx scripts/e2e-cache.ts` sur un `next build && next start`.
 
+## Pages légales et protection contre les abus
+
+- Pages `/conditions-generales`, `/confidentialite`, `/mentions-legales` (4 langues), textes dans
+  `src/lib/i18n-legal.ts`, **éditables** depuis `/admin/site-content` (groupe « Pages légales »).
+  Ce sont des modèles de départ : à faire valider par le cabinet (durées de conservation, remboursement,
+  numéro d'inscription à renseigner dans `legal.notice.registration`, hébergeur).
+- L'inscription exige la case de consentement (vérifié côté serveur) et horodate `User.termsAcceptedAt`.
+- Limites : Better Auth (`src/lib/auth.ts`) sur connexion/inscription/mot de passe + plafond par email
+  à la connexion + champ piège anti-robot ; `src/lib/rate-limit.ts` sur commandes, paiements, téléchargements,
+  envois de fichiers (corps refusé avant lecture si trop gros) et changement de langue.
+- Limiteur **en mémoire** : correct pour une seule instance. Le reverse proxy doit écraser
+  `X-Forwarded-For`. Avec plusieurs instances, passer à Redis/base de données.
+
 ## Comptes de démo (dev uniquement)
 
 `npm run db:seed` crée 3 comptes via le vrai flux Better Auth (mot de passe : `Demo1234!`) :
