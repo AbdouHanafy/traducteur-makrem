@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdminSession } from "@/lib/rbac";
 import { updateUserSchema } from "@/schemas/user";
-import { findUserById, updateUserProfile, deleteUser } from "@/repositories/users";
+import { findUserById, updateUserProfile, deleteUser, countAdmins } from "@/repositories/users";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const result = await requireAdminSession();
@@ -26,6 +26,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   // laisserait le backoffice sans administrateur si c'est le dernier compte ADMIN.
   if (id === result.session.user.id && parsed.data.role !== existing.role) {
     return NextResponse.json({ error: "Vous ne pouvez pas modifier votre propre rôle." }, { status: 400 });
+  }
+
+  if (existing.role === "ADMIN" && parsed.data.role !== "ADMIN" && (await countAdmins()) <= 1) {
+    return NextResponse.json({ error: "Il doit rester au moins un administrateur." }, { status: 409 });
   }
 
   const user = await updateUserProfile(id, parsed.data);
@@ -54,6 +58,10 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
       { error: "Impossible de supprimer un utilisateur ayant des commandes." },
       { status: 409 },
     );
+  }
+
+  if (existing.role === "ADMIN" && (await countAdmins()) <= 1) {
+    return NextResponse.json({ error: "Il doit rester au moins un administrateur." }, { status: 409 });
   }
 
   await deleteUser(id);

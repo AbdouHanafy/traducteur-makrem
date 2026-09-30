@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/views/components/I18nProvider";
 
 export interface MediaRow {
   id: string;
@@ -14,6 +15,7 @@ export interface MediaRow {
 
 export default function AdminMediaPage({ items }: { items: MediaRow[] }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,7 +34,7 @@ export default function AdminMediaPage({ items }: { items: MediaRow[] }) {
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error || "Échec de l'envoi.");
+      setError(data?.error || t("adm.media.errUpload"));
       return;
     }
 
@@ -40,17 +42,22 @@ export default function AdminMediaPage({ items }: { items: MediaRow[] }) {
   }
 
   async function onDelete(id: string) {
-    if (!confirm("Supprimer cette image ? Elle disparaîtra de tous les endroits où elle est utilisée.")) return;
-    await fetch(`/api/admin/media/${id}`, { method: "DELETE" });
+    if (!confirm(t("adm.media.deleteConfirm"))) return;
+    setError(null);
+    const res = await fetch(`/api/admin/media/${id}`, { method: "DELETE" });
+    if (res.status === 409) {
+      setError(t("adm.media.errInUse"));
+      return;
+    }
     router.refresh();
   }
 
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-14">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[22px] text-navy sm:text-[26px]">Médiathèque</h1>
+        <h1 className="text-[22px] text-navy sm:text-[26px]">{t("adm.media.title")}</h1>
         <label className="inline-flex cursor-pointer items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2">
-          {uploading ? "Envoi…" : "Téléverser une image"}
+          {uploading ? t("adm.media.uploading") : t("adm.media.upload")}
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp"
@@ -69,7 +76,7 @@ export default function AdminMediaPage({ items }: { items: MediaRow[] }) {
 
       {items.length === 0 ? (
         <div className="rounded-[14px] border border-line bg-white p-10 text-center text-muted">
-          Aucune image pour l&apos;instant.
+          {t("adm.media.empty")}
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -81,13 +88,13 @@ export default function AdminMediaPage({ items }: { items: MediaRow[] }) {
                 <div className="truncate text-[12.5px] font-medium text-ink" title={item.originalName}>
                   {item.originalName}
                 </div>
-                <div className="mt-0.5 text-[11px] text-muted">{Math.round(item.sizeBytes / 1024)} Ko</div>
+                <div className="mt-0.5 text-[11px] text-muted">{t("adm.media.sizeKb", { size: Math.round(item.sizeBytes / 1024) })}</div>
                 <button
                   type="button"
                   onClick={() => onDelete(item.id)}
                   className="mt-2 text-[12px] font-semibold text-muted hover:text-[#9c2c2c]"
                 >
-                  Supprimer
+                  {t("adm.delete")}
                 </button>
               </div>
             </div>

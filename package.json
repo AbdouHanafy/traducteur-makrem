@@ -15,6 +15,7 @@
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
+    "test:e2e": "tsx scripts/e2e.ts",
     "media:service-covers": "tsx scripts/generate-service-covers.ts"
   },
   "prisma": {

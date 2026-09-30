@@ -92,6 +92,23 @@ docker-compose.yml  MySQL local, lié à 127.0.0.1 uniquement, volume persistant
 - Prisma n'est importé que côté serveur (`src/lib/prisma.ts`) ; aucun composant client ne le
   touche.
 
+## Rendu, langues et cache
+
+- Le site public vit sous `src/app/(site)/[locale]` : une page **statique par langue** (fr, ar, en,
+  it), générée à la demande puis mise en cache. `src/proxy.ts` choisit la langue (cookie
+  `site_locale`, puis `Accept-Language`) et **réécrit** `/services` → `/fr/services` en interne :
+  les URLs visibles ne changent pas.
+- Les espaces connectés (`(app)` : `/admin`, `/dashboard`, `/paiement`) restent rendus à la demande.
+- Toute modification faite depuis le backoffice appelle `revalidateSite()` (`src/lib/cache.ts`).
+  Le chemin doit contenir le nom du groupe de routes : `revalidatePath("/(site)/[locale]", "layout")`.
+  Sans `(site)`, l'invalidation est silencieusement sans effet.
+- Textes de l'interface : `src/lib/i18n.ts` (site), `i18n-app.ts` (espace client),
+  `i18n-admin.ts` (backoffice) — format `[fr, ar, en, it]` par clé.
+- Contenu éditable (services, articles, FAQ, avis, sections libres) : champs en français + colonne
+  JSON `translations` (ar/en/it) ; un champ vide retombe sur le français. Couleurs : `/admin/theme`.
+- Tests bout en bout : `npm run test:e2e` (serveur dev + MySQL + seed) et
+  `E2E_BASE=http://localhost:3001 tsx scripts/e2e-cache.ts` sur un `next build && next start`.
+
 ## Comptes de démo (dev uniquement)
 
 `npm run db:seed` crée 3 comptes via le vrai flux Better Auth (mot de passe : `Demo1234!`) :

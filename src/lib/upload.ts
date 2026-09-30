@@ -29,7 +29,12 @@ export interface ValidatedUpload {
   sha256: string;
 }
 
-export class UploadValidationError extends Error {}
+/** `code` permet au front de traduire le message (app.err.<code>) dans la langue du visiteur. */
+export class UploadValidationError extends Error {
+  constructor(message: string, readonly code: "FILE_EMPTY" | "FILE_TOO_LARGE" | "FILE_BAD_TYPE") {
+    super(message);
+  }
+}
 
 async function validateAgainst(
   file: File,
@@ -37,16 +42,16 @@ async function validateAgainst(
   maxBytes: number,
   formatMessage: string,
 ): Promise<ValidatedUpload> {
-  if (file.size === 0) throw new UploadValidationError("Fichier vide.");
+  if (file.size === 0) throw new UploadValidationError("Fichier vide.", "FILE_EMPTY");
   if (file.size > maxBytes) {
-    throw new UploadValidationError(`Fichier trop volumineux (${Math.floor(maxBytes / 1024 / 1024)} Mo maximum).`);
+    throw new UploadValidationError(`Fichier trop volumineux (${Math.floor(maxBytes / 1024 / 1024)} Mo maximum).`, "FILE_TOO_LARGE");
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
   const detected = await fileTypeFromBuffer(buffer);
 
   if (!detected || !(detected.mime in allowed)) {
-    throw new UploadValidationError(formatMessage);
+    throw new UploadValidationError(formatMessage, "FILE_BAD_TYPE");
   }
 
   return {

@@ -30,8 +30,8 @@ export async function movePartner(id: string, direction: "up" | "down") {
   const index = items.findIndex((item) => item.id === id);
   const swapIndex = direction === "up" ? index - 1 : index + 1;
   if (index < 0 || swapIndex < 0 || swapIndex >= items.length) return;
-  await prisma.$transaction([
-    prisma.partner.update({ where: { id: items[index].id }, data: { order: items[swapIndex].order } }),
-    prisma.partner.update({ where: { id: items[swapIndex].id }, data: { order: items[index].order } }),
-  ]);
+  const reordered = [...items];
+  [reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
+  // Renumérote toute la liste : deux éléments à égalité d'ordre ne bloquent plus le déplacement.
+  await prisma.$transaction(reordered.map((item, position) => prisma.partner.update({ where: { id: item.id }, data: { order: position } })));
 }

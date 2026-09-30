@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { customSectionSchema } from "@/schemas/homeSection";
 import { createCustomSection } from "@/repositories/homeSections";
@@ -25,7 +26,9 @@ export async function POST(request: Request) {
     imageUrl: parsed.data.imageUrl || null,
     ctaLabel: parsed.data.ctaLabel || null,
     ctaHref: parsed.data.ctaHref || null,
+    translations: parsed.data.translations,
   });
 
+  revalidateSite();
   return NextResponse.json({ section }, { status: 201 });
 }

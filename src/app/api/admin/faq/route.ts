@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { faqSchema } from "@/schemas/faq";
 import { createFaq } from "@/repositories/faq";
@@ -19,5 +20,6 @@ export async function POST(request: Request) {
   }
 
   const faq = await createFaq(parsed.data);
+  revalidateSite();
   return NextResponse.json({ faq }, { status: 201 });
 }

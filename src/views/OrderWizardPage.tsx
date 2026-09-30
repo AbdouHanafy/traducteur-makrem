@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Topbar from "@/views/components/Topbar";
 import Footer from "@/views/components/Footer";
 import FileDropzone from "@/views/components/FileDropzone";
-import { DELAY_OPTIONS } from "@/repositories/pricingRules";
+import { DELAY_OPTIONS } from "@/lib/delay-options";
 import { signUp, useSession } from "@/lib/auth-client";
 import { useI18n } from "@/views/components/I18nProvider";
 
@@ -23,6 +23,8 @@ const LANGUAGES = [
   { value: "en", label: "order.langEnglish" },
 ];
 
+const MAX_FILE_BYTES = 20 * 1024 * 1024;
+
 const fieldClass = "w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-3 focus:ring-blue/10";
 
 function splitFullName(fullName: string): { firstName: string; lastName: string } {
@@ -32,23 +34,26 @@ function splitFullName(fullName: string): { firstName: string; lastName: string 
   return { firstName: trimmed.slice(0, spaceIndex), lastName: trimmed.slice(spaceIndex + 1) };
 }
 
-export default function OrderWizardPage({ services, initialServiceId }: { services: ServiceOption[]; initialServiceId?: string }) {
+export default function OrderWizardPage({ services, delayMultipliers }: { services: ServiceOption[]; delayMultipliers: Record<string, string> }) {
   const { t } = useI18n();
   const router = useRouter();
+  const requestedSlug = useSearchParams().get("service");
+  const initialServiceId = services.find((service) => service.slug === requestedSlug)?.id;
   const { data: session, isPending: sessionPending } = useSession();
   const [serviceId, setServiceId] = useState(initialServiceId ?? services[0]?.id ?? "");
   const [sourceLang, setSourceLang] = useState("ar");
   const [targetLang, setTargetLang] = useState("fr");
   const [pages, setPages] = useState(1);
-  const [delayKey, setDelayKey] = useState<string>(DELAY_OPTIONS[0].key);
+  const availableDelays = DELAY_OPTIONS.filter((delay) => delay.key in delayMultipliers);
+  const [delayKey, setDelayKey] = useState<string>(availableDelays[0]?.key ?? DELAY_OPTIONS[0].key);
   const [file, setFile] = useState<File | null>(null);
   const [account, setAccount] = useState({ fullName: "", email: "", phone: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const selectedService = services.find((service) => service.id === serviceId);
-  const selectedDelay = DELAY_OPTIONS.find((delay) => delay.key === delayKey);
-  const estimatedTotal = selectedService ? Number(selectedService.pricePerPage) * pages : 0;
+  const selectedDelay = availableDelays.find((delay) => delay.key === delayKey);
+  const estimatedTotal = selectedService ? Number(selectedService.pricePerPage) * pages * Number(delayMultipliers[delayKey] ?? 1) : 0;
   const needsAccount = !sessionPending && !session;
 
   function updateAccount(field: keyof typeof account) {
@@ -67,13 +72,18 @@ export default function OrderWizardPage({ services, initialServiceId }: { servic
       return;
     }
 
+    if (file.size === 0 || file.size > MAX_FILE_BYTES) {
+      setError(t(file.size === 0 ? "app.err.FILE_EMPTY" : "app.err.FILE_TOO_LARGE"));
+      return;
+    }
+
     setLoading(true);
     if (needsAccount) {
       const { firstName, lastName } = splitFullName(account.fullName);
       const { error: signUpError } = await signUp.email({ name: account.fullName.trim(), email: account.email, password: account.password, firstName, lastName, phone: account.phone || undefined });
       if (signUpError) {
         setLoading(false);
-        setError(signUpError.status === 422 ? "Un compte existe déjà avec cette adresse email. Connectez-vous puis réessayez." : signUpError.message || "Impossible de créer le compte. Vérifiez les informations.");
+        setError(signUpError.code === "USER_ALREADY_EXISTS" || signUpError.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL" ? t("app.err.emailExistsLogin") : t("app.err.accountCreate"));
         return;
       }
     }
@@ -93,7 +103,7 @@ export default function OrderWizardPage({ services, initialServiceId }: { servic
     }
     if (!response.ok) {
       const data = await response.json().catch(() => null);
-      setError(data?.error || "Une erreur est survenue.");
+      setError(data?.code ? t(`app.err.${data.code}`) : t("app.err.generic"));
       return;
     }
     const data = await response.json();
@@ -105,7 +115,7 @@ export default function OrderWizardPage({ services, initialServiceId }: { servic
     <>
       <Topbar />
       <main className="flex-1 bg-[#f5f7fb]">
-        <section className="relative overflow-hidden bg-[linear-gradient(145deg,#0b1830_0%,#14284d_70%,#1a376b_100%)] py-12 text-white sm:py-14">
+        <section className="relative overflow-hidden bg-[linear-gradient(145deg,var(--color-navy-2)_0%,var(--color-navy)_70%,color-mix(in_srgb,var(--color-navy)_63%,var(--color-blue))_100%)] py-12 text-white sm:py-14">
           <div className="absolute -right-24 -top-32 h-80 w-80 rounded-full border-[55px] border-white/[0.035]" />
           <div className="relative mx-auto max-w-[1120px] px-4 sm:px-6 lg:px-8">
             <p className="mb-2 text-[10.5px] font-bold uppercase tracking-[.18em] text-[#8fb4ff]">{t("order.eyebrow")}</p>
@@ -135,7 +145,7 @@ export default function OrderWizardPage({ services, initialServiceId }: { servic
                         <span className="mb-3 hidden text-slate-400 sm:block" aria-hidden="true">→</span>
                         <div><label htmlFor="targetLang" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.targetLanguage")}</label><select id="targetLang" value={targetLang} onChange={(event) => setTargetLang(event.target.value)} className={fieldClass}>{LANGUAGES.map((language) => <option key={language.value} value={language.value}>{t(language.label)}</option>)}</select></div>
                       </div>
-                      <div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="pages" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.pages")}</label><input id="pages" type="number" min={1} max={500} value={pages} onChange={(event) => setPages(Math.max(1, Number(event.target.value)))} className={fieldClass} /></div><div><label htmlFor="delay" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.deadline")}</label><select id="delay" value={delayKey} onChange={(event) => setDelayKey(event.target.value)} className={fieldClass}>{DELAY_OPTIONS.map((delay) => <option key={delay.key} value={delay.key}>{t(delay.key)}</option>)}</select></div></div>
+                      <div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="pages" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.pages")}</label><input id="pages" type="number" min={1} max={500} value={pages} onChange={(event) => setPages(Math.max(1, Number(event.target.value)))} className={fieldClass} /></div><div><label htmlFor="delay" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.deadline")}</label><select id="delay" value={delayKey} onChange={(event) => setDelayKey(event.target.value)} className={fieldClass}>{availableDelays.map((delay) => <option key={delay.key} value={delay.key}>{t(delay.key)}</option>)}</select></div></div>
                     </div>
                   </section>
 

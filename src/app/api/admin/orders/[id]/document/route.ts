@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireStaffSession } from "@/lib/rbac";
 import { findOrderById, attachTranslatedDocument } from "@/repositories/orders";
 import { validateUpload, UploadValidationError } from "@/lib/upload";
-import { writePrivateFile, readPrivateFile } from "@/lib/storage/privateStorage";
+import { deletePrivateFile, writePrivateFile, readPrivateFile } from "@/lib/storage/privateStorage";
 import { generateAndStorePreview } from "@/lib/pdf-preview";
 
 /**
@@ -48,6 +48,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       sha256: upload.sha256,
     });
   } catch (e) {
+    await deletePrivateFile(storageKey);
     return NextResponse.json({ error: e instanceof Error ? e.message : "Erreur." }, { status: 409 });
   }
 

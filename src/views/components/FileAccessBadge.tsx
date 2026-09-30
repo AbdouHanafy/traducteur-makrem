@@ -1,30 +1,34 @@
+"use client";
+
 import type { TranslatedFileAccess } from "@/lib/order-file-access";
+import { useI18n } from "@/views/components/I18nProvider";
 
 const ACCESS_COPY: Record<TranslatedFileAccess, { label: string; title: string; classes: string }> = {
   NOT_READY: {
-    label: "Aucun fichier",
-    title: "La traduction finale n'a pas encore été déposée.",
+    label: "app.access.notReady",
+    title: "app.access.notReadyTitle",
     classes: "bg-mist text-muted",
   },
   LOCKED: {
-    label: "Verrouillé",
-    title: "Le client ne peut pas accéder au fichier avant la confirmation complète du solde.",
+    label: "app.access.locked",
+    title: "app.access.lockedTitle",
     classes: "bg-[#fff3df] text-[#91540e]",
   },
   UNLOCKED: {
-    label: "Déverrouillé",
-    title: "Le paiement est confirmé et le client peut télécharger le fichier.",
+    label: "app.access.unlocked",
+    title: "app.access.unlockedTitle",
     classes: "bg-[#e7f6ef] text-[#267254]",
   },
 };
 
 export default function FileAccessBadge({ access }: { access: TranslatedFileAccess }) {
+  const { t } = useI18n();
   const copy = ACCESS_COPY[access];
   const isUnlocked = access === "UNLOCKED";
 
   return (
     <span
-      title={copy.title}
+      title={t(copy.title)}
       className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold ${copy.classes}`}
     >
       {access === "NOT_READY" ? (
@@ -38,7 +42,7 @@ export default function FileAccessBadge({ access }: { access: TranslatedFileAcce
           {isUnlocked ? <path d="M8 10V7a4 4 0 0 1 7.4-2.1" /> : <path d="M8 10V7a4 4 0 0 1 8 0v3" />}
         </svg>
       )}
-      {copy.label}
+      {t(copy.label)}
     </span>
   );
 }

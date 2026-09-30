@@ -1,3 +1,6 @@
+import { getAppDictionary } from "@/lib/i18n-app";
+import { getAdminDictionary } from "@/lib/i18n-admin";
+
 export const LOCALES = ["fr", "ar", "en", "it"] as const;
 export type Locale = (typeof LOCALES)[number];
 
@@ -282,7 +285,17 @@ Object.assign(ar, {
   "hero.sourceSample": "الشهادة الأصلية", "hero.stampRing": "• مترجم محلف • تونس •", "hero.stampCenter": "مطابق للأصل", "statement.name": "مكرم العرفاوي", "testimonials.eyebrow": "آراء الحرفاء", "testimonials.title": "آراء حرفائنا", "footer.copyright": "© {year} الأستاذ مكرم العرفاوي. جميع الحقوق محفوظة.",
 });
 
-export const DICTIONARIES: Record<Locale, Dictionary> = { fr, ar, en, it };
+export const DICTIONARIES: Record<Locale, Dictionary> = {
+  fr: { ...fr, ...getAppDictionary("fr"), ...getAdminDictionary("fr") },
+  ar: { ...ar, ...getAppDictionary("ar"), ...getAdminDictionary("ar") },
+  en: { ...en, ...getAppDictionary("en"), ...getAdminDictionary("en") },
+  it: { ...it, ...getAppDictionary("it"), ...getAdminDictionary("it") },
+};
+
+/** Locale de formatage (dates, nombres) associée à chaque langue du site. */
+export function getDateLocale(locale: Locale): string {
+  return { fr: "fr-FR", ar: "ar-TN", en: "en-GB", it: "it-IT" }[locale];
+}
 
 export function translate(locale: Locale, key: TranslationKey, values?: Record<string, string | number>, overrides?: Dictionary): string {
   let value = overrides?.[key] ?? DICTIONARIES[locale][key] ?? fr[key] ?? key;

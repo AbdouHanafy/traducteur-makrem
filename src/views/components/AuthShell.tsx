@@ -25,9 +25,9 @@ export default function AuthShell({
   const { t } = useI18n();
   return (
     <div className="grid min-h-screen bg-[#f5f7fb] lg:grid-cols-[minmax(420px,.9fr)_1.1fr]">
-      <div className="relative hidden overflow-hidden bg-[linear-gradient(155deg,#0b1830_0%,#14284D_62%,#19386e_100%)] px-12 py-10 text-white lg:flex lg:flex-col lg:justify-between xl:px-16 xl:py-12">
+      <div className="relative hidden overflow-hidden bg-[linear-gradient(155deg,var(--color-navy-2)_0%,var(--color-navy)_62%,#19386e_100%)] px-12 py-10 text-white lg:flex lg:flex-col lg:justify-between xl:px-16 xl:py-12">
         <svg
-          className="pointer-events-none absolute -bottom-32 -left-32 h-[480px] w-[480px] text-[#B4894E] opacity-[.08]"
+          className="pointer-events-none absolute -bottom-32 -left-32 h-[480px] w-[480px] text-seal opacity-[.08]"
           viewBox="0 0 200 200"
           fill="none"
           aria-hidden="true"

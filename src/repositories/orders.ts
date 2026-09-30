@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import type { OrderStatus, Prisma } from "@prisma/client";
 
@@ -11,9 +12,7 @@ const ORDER_INCLUDE = {
 
 function generateReference(): string {
   const year = new Date().getFullYear();
-  const rand = Math.floor(Math.random() * 100000)
-    .toString()
-    .padStart(5, "0");
+  const rand = randomBytes(4).toString("hex").toUpperCase();
   return `CMD-${year}-${rand}`;
 }
 
@@ -61,7 +60,9 @@ export async function createOrderWithSourceDocument(input: CreateOrderInput) {
         });
         break;
       } catch (e) {
-        if (attempt === 1) throw e;
+        // Seule une collision de référence (contrainte unique) justifie un nouvel essai.
+        const isCollision = typeof e === "object" && e !== null && (e as { code?: string }).code === "P2002";
+        if (!isCollision || attempt === 1) throw e;
       }
     }
     if (!order) throw new Error("Impossible de créer la commande.");
@@ -126,8 +127,15 @@ async function transitionStatus(
   status: OrderStatus,
   actorId: string | null,
   note?: string,
+  expectedStatus?: OrderStatus,
 ) {
-  await tx.order.update({ where: { id: orderId }, data: { status } });
+  if (expectedStatus) {
+    // Mise à jour conditionnelle : une requête concurrente ne peut pas rejouer la transition.
+    const updated = await tx.order.updateMany({ where: { id: orderId, status: expectedStatus }, data: { status } });
+    if (updated.count !== 1) throw new Error("La commande a changé d'état, réessayez.");
+  } else {
+    await tx.order.update({ where: { id: orderId }, data: { status } });
+  }
   await tx.orderStatusHistory.create({ data: { orderId, status, actorId, note } });
 }
 
@@ -138,7 +146,7 @@ export async function acceptQuote(orderId: string, actorId: string) {
     if (order.status !== "DEVIS_A_VALIDER") {
       throw new Error("Ce devis ne peut plus être accepté.");
     }
-    await transitionStatus(tx, orderId, "EN_ATTENTE_ACOMPTE", actorId);
+    await transitionStatus(tx, orderId, "EN_ATTENTE_ACOMPTE", actorId, undefined, "DEVIS_A_VALIDER");
   });
 }
 
@@ -149,7 +157,7 @@ export async function startTranslation(orderId: string, actorId: string) {
     if (order.status !== "ACOMPTE_PAYE") {
       throw new Error("La traduction ne peut démarrer qu'après paiement de l'acompte.");
     }
-    await transitionStatus(tx, orderId, "EN_TRADUCTION", actorId);
+    await transitionStatus(tx, orderId, "EN_TRADUCTION", actorId, undefined, "ACOMPTE_PAYE");
   });
 }
 
@@ -165,6 +173,8 @@ export async function attachTranslatedDocument(
       throw new Error("La commande n'est pas en cours de traduction.");
     }
 
+    await transitionStatus(tx, orderId, "TRADUCTION_TERMINEE", actorId, undefined, "EN_TRADUCTION");
+
     await tx.document.create({
       data: {
         orderId,
@@ -179,7 +189,6 @@ export async function attachTranslatedDocument(
       },
     });
 
-    await transitionStatus(tx, orderId, "TRADUCTION_TERMINEE", actorId);
     // Automatique : en attente du paiement du solde pour déverrouiller le téléchargement.
     await transitionStatus(tx, orderId, "FICHIER_EN_ATTENTE_DE_SOLDE", null);
   });

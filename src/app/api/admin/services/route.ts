@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { serviceSchema } from "@/schemas/service";
 import { createService, findServiceBySlug } from "@/repositories/services";
@@ -29,5 +30,6 @@ export async function POST(request: Request) {
     imageUrl: parsed.data.imageUrl || null,
   });
 
+  revalidateSite();
   return NextResponse.json({ service }, { status: 201 });
 }

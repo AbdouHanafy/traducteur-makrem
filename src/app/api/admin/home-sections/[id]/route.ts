@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { customSectionSchema } from "@/schemas/homeSection";
 import { findHomeSectionById, updateCustomSection, deleteCustomSection } from "@/repositories/homeSections";
@@ -32,8 +33,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     imageUrl: parsed.data.imageUrl || null,
     ctaLabel: parsed.data.ctaLabel || null,
     ctaHref: parsed.data.ctaHref || null,
+    translations: parsed.data.translations,
   });
 
+  revalidateSite();
   return NextResponse.json({ section });
 }
 
@@ -50,5 +53,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     return NextResponse.json({ error: e instanceof Error ? e.message : "Erreur." }, { status: 409 });
   }
 
+  revalidateSite();
   return NextResponse.json({ ok: true });
 }

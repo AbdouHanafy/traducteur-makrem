@@ -7,15 +7,20 @@ import type { CreatePaymentInput, CreatePaymentResult, PaymentProvider } from ".
  * la confirmation passe par un vrai POST serveur (`/api/payments/mock/confirm`, voir cette
  * route) — jamais un simple `setTimeout` ou un `useState` côté navigateur.
  */
+function mockRedirectUrl(providerRef: string, orderId: string, phase: string): string {
+  return `/paiement/mock/${providerRef}?orderId=${orderId}&phase=${phase}`;
+}
+
 export const mockPaymentProvider: PaymentProvider = {
   name: "mock",
   async createPayment({ orderId, phase }: CreatePaymentInput): Promise<CreatePaymentResult> {
     const providerRef = `mock_${randomUUID()}`;
     return {
       providerRef,
-      redirectUrl: `/paiement/mock/${providerRef}?orderId=${orderId}&phase=${phase}`,
+      redirectUrl: mockRedirectUrl(providerRef, orderId, phase),
     };
   },
+  redirectUrlFor: (providerRef, orderId, phase) => mockRedirectUrl(providerRef, orderId, phase),
 };
 
 export function getPaymentProvider(): PaymentProvider {

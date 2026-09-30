@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { testimonialSchema } from "@/schemas/testimonial";
 import { createTestimonial } from "@/repositories/testimonials";
@@ -23,5 +24,6 @@ export async function POST(request: Request) {
     authorRole: parsed.data.authorRole || null,
     rating: parsed.data.rating ?? null,
   });
+  revalidateSite();
   return NextResponse.json({ testimonial }, { status: 201 });
 }

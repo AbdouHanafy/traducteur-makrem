@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { moveArticle } from "@/repositories/articles";
 
@@ -16,5 +17,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   await moveArticle(id, direction);
+  revalidateSite();
   return NextResponse.json({ ok: true });
 }

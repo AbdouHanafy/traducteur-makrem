@@ -3,20 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import LockedPreview from "@/views/components/LockedPreview";
-
-const STATUS_LABELS: Record<string, string> = {
-  DEMANDE: "Demande",
-  DEVIS_A_VALIDER: "Devis à valider",
-  EN_ATTENTE_ACOMPTE: "En attente d'acompte",
-  ACOMPTE_PAYE: "Acompte payé",
-  EN_TRADUCTION: "En traduction",
-  TRADUCTION_TERMINEE: "Traduction terminée",
-  FICHIER_EN_ATTENTE_DE_SOLDE: "En attente du solde",
-  SOLDE_PAYE: "Solde payé",
-  TELECHARGEABLE: "Téléchargeable",
-  TERMINEE: "Terminée",
-  ANNULEE: "Annulée",
-};
+import { getDateLocale } from "@/lib/i18n";
+import { useI18n } from "@/views/components/I18nProvider";
 
 export interface OrderDetailData {
   id: string;
@@ -37,6 +25,7 @@ export interface OrderDetailData {
 
 export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
   const router = useRouter();
+  const { t, locale } = useI18n();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,7 +38,7 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
     const res = await fetch(`/api/orders/${order.id}/accept-quote`, { method: "POST" });
     setLoading(false);
     if (!res.ok) {
-      setError("Impossible d'accepter le devis.");
+      setError(t("app.order.errAccept"));
       return;
     }
     router.refresh();
@@ -61,7 +50,7 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
     const res = await fetch(`/api/orders/${order.id}/payment/${phase}`, { method: "POST" });
     setLoading(false);
     if (!res.ok) {
-      setError("Impossible de lancer le paiement.");
+      setError(t("app.order.errPay"));
       return;
     }
     const data = await res.json();
@@ -72,12 +61,12 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
     <div className="mx-auto max-w-[820px] px-6 py-10 md:py-14">
       <div className="mb-8">
         <span className="mb-2 inline-flex items-center rounded-full bg-blue-soft px-3 py-1 text-[12.5px] font-semibold text-blue-2">
-          {STATUS_LABELS[order.status] ?? order.status}
+          {t(`app.status.${order.status}`)}
         </span>
         <h1 className="font-serif text-[26px] text-navy">{order.reference}</h1>
         <p className="mt-1 text-[14px] text-muted">
           {order.service.name} · {order.sourceLang.toUpperCase()} → {order.targetLang.toUpperCase()} ·{" "}
-          {order.pages} page{order.pages > 1 ? "s" : ""}
+          {t(order.pages > 1 ? "app.order.pagesMany" : "app.order.pagesOne", { count: order.pages })}
         </p>
       </div>
 
@@ -90,24 +79,24 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
       <div className="grid gap-6 md:grid-cols-[1.3fr_1fr]">
         <div className="grid gap-6">
           <section className="rounded-[14px] border border-line bg-white p-6">
-            <h2 className="mb-4 text-[16.5px] text-navy">Document source</h2>
+            <h2 className="mb-4 text-[16.5px] text-navy">{t("app.order.source")}</h2>
             {sourceDoc ? (
               <a
                 href={`/api/orders/${order.id}/documents/${sourceDoc.id}/download`}
                 className="inline-flex items-center gap-2 text-[14px] font-semibold text-blue hover:text-blue-2"
               >
-                Télécharger {sourceDoc.originalName}
+                {t("app.order.download", { name: sourceDoc.originalName })}
               </a>
             ) : (
-              <p className="text-[13.5px] text-muted">Aucun document.</p>
+              <p className="text-[13.5px] text-muted">{t("app.order.noDocument")}</p>
             )}
           </section>
 
           <section className="rounded-[14px] border border-line bg-white p-6">
-            <h2 className="mb-4 text-[16.5px] text-navy">Traduction certifiée</h2>
+            <h2 className="mb-4 text-[16.5px] text-navy">{t("app.order.translation")}</h2>
             {!translatedDoc ? (
               <p className="text-[13.5px] text-muted">
-                Le traducteur n&apos;a pas encore déposé le fichier final.
+                {t("app.order.notYet")}
               </p>
             ) : order.balancePaid ? (
               <a
@@ -117,7 +106,7 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
                 </svg>
-                Télécharger le fichier certifié
+                {t("app.order.downloadCertified")}
               </a>
             ) : (
               <LockedPreview fileName={translatedDoc.originalName} />
@@ -127,22 +116,22 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
 
         <div className="grid gap-6">
           <section className="rounded-[14px] border border-line bg-white p-6">
-            <h2 className="mb-4 text-[16.5px] text-navy">Paiement</h2>
+            <h2 className="mb-4 text-[16.5px] text-navy">{t("app.order.payment")}</h2>
             <dl className="grid gap-2.5 text-[14px]">
               <div className="flex justify-between">
-                <dt className="text-muted">Total</dt>
+                <dt className="text-muted">{t("app.order.total")}</dt>
                 <dd className="font-semibold text-ink">{order.totalAmount} TND</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted">Acompte (50%)</dt>
+                <dt className="text-muted">{t("app.order.advance")}</dt>
                 <dd className={order.advancePaid ? "text-ok font-semibold" : "font-semibold text-ink"}>
-                  {order.advanceAmount} TND {order.advancePaid && "· payé"}
+                  {order.advanceAmount} TND {order.advancePaid && `· ${t("app.order.paid")}`}
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted">Solde (50%)</dt>
+                <dt className="text-muted">{t("app.order.balance")}</dt>
                 <dd className={order.balancePaid ? "text-ok font-semibold" : "font-semibold text-ink"}>
-                  {order.balanceAmount} TND {order.balancePaid && "· payé"}
+                  {order.balanceAmount} TND {order.balancePaid && `· ${t("app.order.paid")}`}
                 </dd>
               </div>
             </dl>
@@ -155,7 +144,7 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
                   onClick={acceptQuote}
                   className="inline-flex items-center justify-center rounded-[11px] bg-blue px-5 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
                 >
-                  Accepter le devis
+                  {t("app.order.acceptQuote")}
                 </button>
               )}
               {order.status === "EN_ATTENTE_ACOMPTE" && (
@@ -165,7 +154,7 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
                   onClick={() => pay("advance")}
                   className="inline-flex items-center justify-center rounded-[11px] bg-blue px-5 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
                 >
-                  Payer l&apos;acompte ({order.advanceAmount} TND)
+                  {t("app.order.payAdvance", { amount: order.advanceAmount })}
                 </button>
               )}
               {order.status === "FICHIER_EN_ATTENTE_DE_SOLDE" && (
@@ -175,21 +164,21 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
                   onClick={() => pay("balance")}
                   className="inline-flex items-center justify-center rounded-[11px] bg-ok px-5 py-3 text-[14.5px] font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-60"
                 >
-                  Payer le solde ({order.balanceAmount} TND)
+                  {t("app.order.payBalance", { amount: order.balanceAmount })}
                 </button>
               )}
             </div>
           </section>
 
           <section className="rounded-[14px] border border-line bg-white p-6">
-            <h2 className="mb-4 text-[16.5px] text-navy">Suivi</h2>
+            <h2 className="mb-4 text-[16.5px] text-navy">{t("app.order.tracking")}</h2>
             <ol className="grid gap-3">
               {order.statusHistory.map((h, i) => (
                 <li key={i} className="flex items-start gap-3 text-[13.5px]">
                   <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-blue" />
                   <div>
-                    <div className="font-medium text-ink">{STATUS_LABELS[h.status] ?? h.status}</div>
-                    <div className="text-muted">{new Date(h.createdAt).toLocaleString("fr-FR")}</div>
+                    <div className="font-medium text-ink">{t(`app.status.${h.status}`)}</div>
+                    <div className="text-muted">{new Date(h.createdAt).toLocaleString(getDateLocale(locale))}</div>
                   </div>
                 </li>
               ))}

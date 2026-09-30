@@ -23,4 +23,6 @@ export interface CreatePaymentResult {
 export interface PaymentProvider {
   name: string;
   createPayment(input: CreatePaymentInput): Promise<CreatePaymentResult>;
+  /** URL de reprise d'un paiement déjà créé (évite d'empiler des paiements PENDING). */
+  redirectUrlFor(providerRef: string, orderId: string, phase: PaymentPhaseValue): string;
 }

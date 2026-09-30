@@ -16,6 +16,9 @@ const STANDARD_FONT_DATA_URL =
   path.join(process.cwd(), "node_modules", "pdfjs-dist", "standard_fonts").split(path.sep).join("/") +
   "/";
 
+/** Plafond de pages rendues : la copie de contrôle n'a pas besoin de tout le document. */
+const MAX_PREVIEW_PAGES = 100;
+
 export async function renderWatermarkedPdfPreview(
   pdfBytes: Buffer,
   watermarkText: string,
@@ -33,7 +36,7 @@ export async function renderWatermarkedPdfPreview(
   const pages: Buffer[] = [];
 
   try {
-    for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber++) {
+    for (let pageNumber = 1; pageNumber <= Math.min(doc.numPages, MAX_PREVIEW_PAGES); pageNumber++) {
       const page = await doc.getPage(pageNumber);
       const viewport = page.getViewport({ scale: 1.4 });
       const canvas = createCanvas(viewport.width, viewport.height);

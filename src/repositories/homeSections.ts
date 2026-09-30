@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import type { TranslationsMap } from "@/lib/localize";
+import { withTranslations } from "@/repositories/_json";
 import type { HomeSectionType } from "@prisma/client";
 
 export function listVisibleHomeSections() {
@@ -20,18 +22,19 @@ export interface CustomSectionInput {
   imageUrl?: string | null;
   ctaLabel?: string | null;
   ctaHref?: string | null;
+  translations?: TranslationsMap | null;
 }
 
 /** Nouvelle section libre ajoutée en dernière position. */
 export async function createCustomSection(data: CustomSectionInput) {
   const last = await prisma.homeSection.findFirst({ orderBy: { order: "desc" } });
   return prisma.homeSection.create({
-    data: { ...data, type: "CUSTOM", order: (last?.order ?? -1) + 1 },
+    data: { ...withTranslations(data), type: "CUSTOM", order: (last?.order ?? -1) + 1 },
   });
 }
 
 export function updateCustomSection(id: string, data: CustomSectionInput) {
-  return prisma.homeSection.update({ where: { id }, data });
+  return prisma.homeSection.update({ where: { id }, data: withTranslations(data) });
 }
 
 export function toggleHomeSectionVisibility(id: string, visible: boolean) {
@@ -56,13 +59,11 @@ export async function moveHomeSection(id: string, direction: "up" | "down") {
   const swapIndex = direction === "up" ? index - 1 : index + 1;
   if (swapIndex < 0 || swapIndex >= items.length) return;
 
-  const current = items[index];
-  const swap = items[swapIndex];
 
-  await prisma.$transaction([
-    prisma.homeSection.update({ where: { id: current.id }, data: { order: swap.order } }),
-    prisma.homeSection.update({ where: { id: swap.id }, data: { order: current.order } }),
-  ]);
+  const reordered = [...items];
+  [reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
+  // Renumérote toute la liste : deux éléments à égalité d'ordre ne bloquent plus le déplacement.
+  await prisma.$transaction(reordered.map((item, position) => prisma.homeSection.update({ where: { id: item.id }, data: { order: position } })));
 }
 
 export const SYSTEM_SECTION_LABELS: Record<HomeSectionType, string> = {

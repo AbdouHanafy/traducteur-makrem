@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { serviceSchema } from "@/schemas/service";
 import { findServiceById, findServiceBySlug, updateService, deactivateService } from "@/repositories/services";
@@ -33,6 +34,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     imageUrl: parsed.data.imageUrl || null,
   });
 
+  revalidateSite();
   return NextResponse.json({ service });
 }
 
@@ -47,5 +49,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   if (!existing) return NextResponse.json({ error: "Introuvable." }, { status: 404 });
 
   await deactivateService(id);
+  revalidateSite();
   return NextResponse.json({ ok: true });
 }

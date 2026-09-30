@@ -2,13 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/views/components/I18nProvider";
 
 type Role = "CLIENT" | "ADMIN";
-
-const ROLE_LABELS: Record<Role, string> = {
-  CLIENT: "Client",
-  ADMIN: "Admin",
-};
 
 export interface UserFormValues {
   id?: string;
@@ -28,6 +24,8 @@ export default function AdminUserFormPage({
   isSelf: boolean;
 }) {
   const router = useRouter();
+  const { t } = useI18n();
+  const roleLabel = (role: Role) => t(role === "ADMIN" ? "adm.users.roleAdmin" : "adm.users.roleClient");
   const isEdit = Boolean(initial.id);
   const [form, setForm] = useState({ ...initial, password: "" });
   const [loading, setLoading] = useState(false);
@@ -54,7 +52,7 @@ export default function AdminUserFormPage({
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error || "Une erreur est survenue.");
+      setError(data?.error || t("adm.errorGeneric"));
       return;
     }
 
@@ -64,7 +62,7 @@ export default function AdminUserFormPage({
 
   async function onDelete() {
     if (!initial.id) return;
-    if (!confirm(`Supprimer définitivement le compte de ${initial.firstName} ${initial.lastName} ?`)) return;
+    if (!confirm(t("adm.userForm.deleteConfirm", { name: `${initial.firstName} ${initial.lastName}` }))) return;
 
     setDeleting(true);
     setError(null);
@@ -73,7 +71,7 @@ export default function AdminUserFormPage({
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error || "Impossible de supprimer cet utilisateur.");
+      setError(data?.error || t("adm.userForm.deleteErr"));
       return;
     }
 
@@ -83,7 +81,7 @@ export default function AdminUserFormPage({
 
   return (
     <div className="mx-auto max-w-[680px] px-6 py-14">
-      <h1 className="mb-8 text-[26px] text-navy">{isEdit ? "Modifier l'utilisateur" : "Nouvel utilisateur"}</h1>
+      <h1 className="mb-8 text-[26px] text-navy">{isEdit ? t("adm.userForm.titleEdit") : t("adm.userForm.titleNew")}</h1>
 
       <form onSubmit={onSubmit} className="grid gap-5 rounded-[14px] border border-line bg-white p-7">
         {error && (
@@ -94,7 +92,7 @@ export default function AdminUserFormPage({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Prénom</label>
+            <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">{t("adm.firstName")}</label>
             <input
               required
               value={form.firstName}
@@ -103,7 +101,7 @@ export default function AdminUserFormPage({
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Nom</label>
+            <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">{t("adm.lastName")}</label>
             <input
               required
               value={form.lastName}
@@ -114,7 +112,7 @@ export default function AdminUserFormPage({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Email</label>
+          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">{t("adm.email")}</label>
           {isEdit ? (
             <>
               <input
@@ -123,7 +121,7 @@ export default function AdminUserFormPage({
                 className="w-full rounded-[10px] border border-line bg-mist px-4 py-3 text-[15px] text-muted"
               />
               <p className="mt-1.5 text-[12.5px] text-muted">
-                L&apos;email ne peut pas être modifié ici — c&apos;est l&apos;identifiant de connexion.
+                {t("adm.userForm.emailLocked")}
               </p>
             </>
           ) : (
@@ -138,7 +136,7 @@ export default function AdminUserFormPage({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Téléphone</label>
+          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">{t("adm.phone")}</label>
           <input
             value={form.phone}
             onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
@@ -148,38 +146,38 @@ export default function AdminUserFormPage({
 
         {!isEdit && (
           <div>
-            <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Mot de passe temporaire</label>
+            <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">{t("adm.userForm.tempPassword")}</label>
             <input
               required
               type="password"
               minLength={10}
               value={form.password}
               onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-              placeholder="10 caractères minimum"
+              placeholder={t("adm.userForm.passwordHint")}
               className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue"
             />
             <p className="mt-1.5 text-[12.5px] text-muted">
-              À communiquer à l&apos;utilisateur — modifiable ensuite depuis son espace.
+              {t("adm.userForm.passwordNote")}
             </p>
           </div>
         )}
 
         <div>
-          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Rôle</label>
+          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">{t("adm.userForm.role")}</label>
           <select
             disabled={isSelf}
             value={form.role}
             onChange={(e) => setForm((f) => ({ ...f, role: e.target.value as Role }))}
             className="w-full rounded-[10px] border border-line bg-white px-4 py-3 text-[15px] text-ink outline-none focus:border-blue disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {(Object.keys(ROLE_LABELS) as Role[]).map((r) => (
+            {(["CLIENT", "ADMIN"] as Role[]).map((r) => (
               <option key={r} value={r}>
-                {ROLE_LABELS[r]}
+                {roleLabel(r)}
               </option>
             ))}
           </select>
           {isSelf && (
-            <p className="mt-1.5 text-[12.5px] text-muted">Vous ne pouvez pas modifier votre propre rôle.</p>
+            <p className="mt-1.5 text-[12.5px] text-muted">{t("adm.userForm.selfRole")}</p>
           )}
         </div>
 
@@ -189,7 +187,7 @@ export default function AdminUserFormPage({
             disabled={loading}
             className="inline-flex w-fit items-center justify-center rounded-[11px] bg-blue px-6 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
           >
-            {loading ? "Enregistrement…" : "Enregistrer"}
+            {loading ? t("adm.saving") : t("adm.save")}
           </button>
 
           {isEdit && !isSelf && (
@@ -197,10 +195,10 @@ export default function AdminUserFormPage({
               type="button"
               disabled={deleting || (initial.orderCount ?? 0) > 0}
               onClick={onDelete}
-              title={(initial.orderCount ?? 0) > 0 ? "Impossible de supprimer un utilisateur ayant des commandes." : undefined}
+              title={(initial.orderCount ?? 0) > 0 ? t("adm.userForm.hasOrders") : undefined}
               className="text-[13.5px] font-semibold text-[#9c2c2c] hover:text-[#7a2222] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {deleting ? "Suppression…" : "Supprimer l'utilisateur"}
+              {deleting ? t("adm.userForm.deleting") : t("adm.userForm.deleteBtn")}
             </button>
           )}
         </div>

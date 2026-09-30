@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { SITE_CONTENT_KEY_SET } from "@/lib/site-content";
 import { saveSiteContent } from "@/repositories/siteContent";
@@ -20,5 +21,6 @@ export async function PUT(request: Request) {
   }
 
   await saveSiteContent(parsed.data.locale, parsed.data.values);
+  revalidateSite();
   return NextResponse.json({ ok: true });
 }

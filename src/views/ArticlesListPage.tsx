@@ -39,7 +39,7 @@ export default function ArticlesListPage({ articles }: { articles: ArticleListIt
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={article.coverImageUrl} alt="" className="h-44 w-full object-cover" />
                     ) : (
-                      <div className="grid h-44 w-full place-items-center bg-[linear-gradient(135deg,#EDF0F5,#DCE3EE)]">
+                      <div className="grid h-44 w-full place-items-center bg-[linear-gradient(135deg,var(--color-mist),var(--color-line))]">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2456B8" strokeWidth="1.6">
                           <path d="M4 4h16v16H4z" />
                           <path d="M8 9h8M8 13h8M8 17h5" />

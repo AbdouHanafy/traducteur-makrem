@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import type { TranslationsMap } from "@/lib/localize";
+import { withTranslations } from "@/repositories/_json";
 
 export function listPublishedArticles() {
   return prisma.article.findMany({ where: { published: true }, orderBy: { order: "asc" } });
@@ -27,13 +29,14 @@ export interface ArticleInput {
   body: string;
   coverImageUrl?: string | null;
   published: boolean;
+  translations?: TranslationsMap | null;
 }
 
 export async function createArticle(data: ArticleInput) {
   const last = await prisma.article.findFirst({ orderBy: { order: "desc" } });
   return prisma.article.create({
     data: {
-      ...data,
+      ...withTranslations(data),
       order: (last?.order ?? -1) + 1,
       publishedAt: data.published ? new Date() : null,
     },
@@ -47,7 +50,7 @@ export async function updateArticle(id: string, data: ArticleInput) {
   return prisma.article.update({
     where: { id },
     data: {
-      ...data,
+      ...withTranslations(data),
       // Ne fixe publishedAt qu'au premier passage en publié — jamais recalculé ensuite,
       // même mentalité que le snapshot financier des commandes (pas de recalcul rétroactif).
       ...(becomingPublished ? { publishedAt: new Date() } : {}),
@@ -68,11 +71,9 @@ export async function moveArticle(id: string, direction: "up" | "down") {
   const swapIndex = direction === "up" ? index - 1 : index + 1;
   if (swapIndex < 0 || swapIndex >= items.length) return;
 
-  const current = items[index];
-  const swap = items[swapIndex];
 
-  await prisma.$transaction([
-    prisma.article.update({ where: { id: current.id }, data: { order: swap.order } }),
-    prisma.article.update({ where: { id: swap.id }, data: { order: current.order } }),
-  ]);
+  const reordered = [...items];
+  [reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
+  // Renumérote toute la liste : deux éléments à égalité d'ordre ne bloquent plus le déplacement.
+  await prisma.$transaction(reordered.map((item, position) => prisma.article.update({ where: { id: item.id }, data: { order: position } })));
 }

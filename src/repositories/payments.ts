@@ -18,6 +18,13 @@ export function findPaymentByProviderRef(providerRef: string) {
   return prisma.payment.findUnique({ where: { providerRef } });
 }
 
+export function findPendingPayment(orderId: string, phase: PaymentPhase, provider: string) {
+  return prisma.payment.findFirst({
+    where: { orderId, phase, provider, status: "PENDING" },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export function findSucceededBalancePayment(orderId: string, amount: Prisma.Decimal) {
   return prisma.payment.findFirst({
     where: {

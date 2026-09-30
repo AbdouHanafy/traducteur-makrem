@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/views/components/I18nProvider";
 
 interface ArticleRow {
   id: string;
@@ -13,6 +14,7 @@ interface ArticleRow {
 
 export default function AdminArticlesListPage({ articles }: { articles: ArticleRow[] }) {
   const router = useRouter();
+  const { t } = useI18n();
 
   async function move(id: string, direction: "up" | "down") {
     await fetch(`/api/admin/articles/${id}/move`, {
@@ -24,7 +26,7 @@ export default function AdminArticlesListPage({ articles }: { articles: ArticleR
   }
 
   async function deleteArticle(id: string) {
-    if (!confirm("Supprimer cet article ?")) return;
+    if (!confirm(t("adm.articles.deleteConfirm"))) return;
     await fetch(`/api/admin/articles/${id}`, { method: "DELETE" });
     router.refresh();
   }
@@ -32,18 +34,18 @@ export default function AdminArticlesListPage({ articles }: { articles: ArticleR
   return (
     <div className="mx-auto max-w-[1000px] px-6 py-14">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[26px] text-navy">Articles</h1>
+        <h1 className="text-[26px] text-navy">{t("adm.articles.title")}</h1>
         <Link
           href="/admin/articles/new"
           className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
         >
-          Nouvel article
+          {t("adm.articles.new")}
         </Link>
       </div>
 
       {articles.length === 0 ? (
         <div className="rounded-[14px] border border-line bg-white p-10 text-center text-muted">
-          Aucun article pour l&apos;instant.
+          {t("adm.articles.empty")}
         </div>
       ) : (
         <div className="grid gap-3">
@@ -59,7 +61,7 @@ export default function AdminArticlesListPage({ articles }: { articles: ArticleR
                     disabled={index === 0}
                     onClick={() => move(article.id, "up")}
                     className="rounded-[7px] p-1 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
-                    aria-label="Monter"
+                    aria-label={t("adm.moveUp")}
                   >
                     ↑
                   </button>
@@ -68,7 +70,7 @@ export default function AdminArticlesListPage({ articles }: { articles: ArticleR
                     disabled={index === articles.length - 1}
                     onClick={() => move(article.id, "down")}
                     className="rounded-[7px] p-1 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
-                    aria-label="Descendre"
+                    aria-label={t("adm.moveDown")}
                   >
                     ↓
                   </button>
@@ -89,7 +91,7 @@ export default function AdminArticlesListPage({ articles }: { articles: ArticleR
                         article.published ? "bg-ok-soft text-ok" : "bg-mist text-muted"
                       }`}
                     >
-                      {article.published ? "Publié" : "Brouillon"}
+                      {article.published ? t("adm.published") : t("adm.draft")}
                     </span>
                   </div>
                   <div className="truncate text-[12px] text-muted">{article.slug}</div>
@@ -98,14 +100,14 @@ export default function AdminArticlesListPage({ articles }: { articles: ArticleR
 
               <div className="flex items-center gap-4 border-t border-line pt-3 sm:border-t-0 sm:pt-0">
                 <Link href={`/admin/articles/${article.id}`} className="text-[13.5px] font-semibold text-blue hover:text-blue-2">
-                  Modifier
+                  {t("adm.edit")}
                 </Link>
                 <button
                   type="button"
                   onClick={() => deleteArticle(article.id)}
                   className="text-[13.5px] font-semibold text-muted hover:text-[#9c2c2c]"
                 >
-                  Supprimer
+                  {t("adm.delete")}
                 </button>
               </div>
             </div>

@@ -14,10 +14,10 @@ export default function Hero() {
   return (
     <section
       id="top"
-      className="relative overflow-hidden bg-[linear-gradient(175deg,#0C1A34_0%,#14284D_58%,#132752_100%)] pb-16 pt-14 text-white"
+      className="relative overflow-hidden bg-[linear-gradient(175deg,var(--color-navy-2)_0%,var(--color-navy)_58%,#132752_100%)] pb-16 pt-14 text-white"
     >
       <svg
-        className="pointer-events-none absolute -right-40 -top-40 h-[560px] w-[560px] text-[#B4894E] opacity-[.09] md:-right-24 md:-top-24"
+        className="pointer-events-none absolute -right-40 -top-40 h-[560px] w-[560px] text-seal opacity-[.09] md:-right-24 md:-top-24"
         viewBox="0 0 200 200"
         fill="none"
         aria-hidden="true"

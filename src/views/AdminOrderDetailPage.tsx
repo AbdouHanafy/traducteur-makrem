@@ -4,20 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { TranslatedFileAccess } from "@/lib/order-file-access";
 import FileAccessBadge from "@/views/components/FileAccessBadge";
-
-const STATUS_LABELS: Record<string, string> = {
-  DEMANDE: "Demande",
-  DEVIS_A_VALIDER: "Devis à valider",
-  EN_ATTENTE_ACOMPTE: "En attente d'acompte",
-  ACOMPTE_PAYE: "Acompte payé",
-  EN_TRADUCTION: "En traduction",
-  TRADUCTION_TERMINEE: "Traduction terminée",
-  FICHIER_EN_ATTENTE_DE_SOLDE: "En attente du solde",
-  SOLDE_PAYE: "Solde payé",
-  TELECHARGEABLE: "Téléchargeable",
-  TERMINEE: "Terminée",
-  ANNULEE: "Annulée",
-};
+import { useI18n } from "@/views/components/I18nProvider";
 
 export interface AdminOrderDetailData {
   id: string;
@@ -49,6 +36,7 @@ interface Step {
 
 export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetailData }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -63,7 +51,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
     const res = await fetch(`/api/admin/orders/${order.id}/status`, { method: "POST" });
     setLoading(false);
     if (!res.ok) {
-      setError("Impossible de démarrer la traduction.");
+      setError(t("adm.order.errStart"));
       return;
     }
     router.refresh();
@@ -72,7 +60,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
   async function uploadTranslated(e: React.FormEvent) {
     e.preventDefault();
     if (!file) {
-      setError("Sélectionnez le fichier final.");
+      setError(t("adm.order.errSelectFile"));
       return;
     }
     setLoading(true);
@@ -83,7 +71,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
     setLoading(false);
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error || "Échec de l'envoi du fichier.");
+      setError(data?.error || t("adm.order.errUpload"));
       return;
     }
     router.refresh();
@@ -97,41 +85,41 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
   const steps: Step[] = [
     {
       key: "quote",
-      title: "Devis accepté par le client",
-      description: "Étape automatique dès que le client valide le devis calculé.",
+      title: t("adm.order.stepQuote"),
+      description: t("adm.order.stepQuoteDesc"),
       state: quoteAccepted ? "done" : "current",
       waitingOnClient: !quoteAccepted,
     },
     {
       key: "advance",
-      title: "Acompte réglé (50 %)",
-      description: `${order.advanceAmount} TND à régler par le client avant le lancement.`,
+      title: t("adm.order.stepAdvance"),
+      description: t("adm.order.stepAdvanceDesc", { amount: order.advanceAmount }),
       state: order.advancePaid ? "done" : quoteAccepted ? "current" : "pending",
       waitingOnClient: quoteAccepted && !order.advancePaid,
     },
     {
       key: "start",
-      title: "Démarrer la traduction",
-      description: "À vous de lancer le travail une fois l'acompte confirmé.",
+      title: t("adm.order.stepStart"),
+      description: t("adm.order.stepStartDesc"),
       state: translationStarted ? "done" : order.advancePaid ? "current" : "pending",
     },
     {
       key: "deliver",
-      title: "Déposer le fichier traduit",
-      description: "Le fichier final, une fois prêt — une copie de contrôle interne est générée automatiquement.",
+      title: t("adm.order.stepDeliver"),
+      description: t("adm.order.stepDeliverDesc"),
       state: translatedDoc ? "done" : translationStarted ? "current" : "pending",
     },
     {
       key: "balance",
-      title: "Solde réglé (50 %)",
-      description: `${order.balanceAmount} TND à régler par le client pour débloquer le fichier.`,
+      title: t("adm.order.stepBalance"),
+      description: t("adm.order.stepBalanceDesc", { amount: order.balanceAmount }),
       state: order.balancePaid ? "done" : translatedDoc ? "current" : "pending",
       waitingOnClient: Boolean(translatedDoc) && !order.balancePaid,
     },
     {
       key: "done",
-      title: "Commande terminée",
-      description: "Le client peut télécharger le fichier certifié définitif.",
+      title: t("adm.order.stepDone"),
+      description: t("adm.order.stepDoneDesc"),
       state: isDone ? "done" : "pending",
     },
   ];
@@ -146,18 +134,18 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
                 isCancelled ? "bg-mist text-muted" : "bg-blue-soft text-blue-2"
               }`}
             >
-              {STATUS_LABELS[order.status] ?? order.status}
+              {t(`app.status.${order.status}`)}
             </span>
             <FileAccessBadge access={order.fileAccess} />
           </div>
           <h1 className="font-serif text-[26px] text-navy">{order.reference}</h1>
           <p className="mt-1 text-[14px] text-muted">
             {order.service.name} · {order.sourceLang.toUpperCase()} → {order.targetLang.toUpperCase()} ·{" "}
-            {order.pages} page{order.pages > 1 ? "s" : ""}
+            {t(order.pages > 1 ? "adm.order.pagesMany" : "adm.order.pagesOne", { count: order.pages })}
           </p>
         </div>
         <div className="rounded-[12px] border border-line bg-white px-5 py-3 text-right">
-          <div className="text-[12px] uppercase tracking-wide text-muted">Montant total</div>
+          <div className="text-[12px] uppercase tracking-wide text-muted">{t("adm.order.total")}</div>
           <div className="font-serif text-[22px] text-navy">{order.totalAmount} TND</div>
         </div>
       </div>
@@ -170,7 +158,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
 
       <div className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
         <section className="rounded-[14px] border border-line bg-white p-6">
-          <h2 className="mb-5 text-[16.5px] text-navy">Suivi du traitement</h2>
+          <h2 className="mb-5 text-[16.5px] text-navy">{t("adm.order.tracking")}</h2>
 
           <ol className="grid gap-0">
             {steps.map((step, index) => (
@@ -211,7 +199,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
                     </h3>
                     {step.waitingOnClient && (
                       <span className="rounded-full bg-mist px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-muted">
-                        En attente du client
+                        {t("adm.order.waitingClient")}
                       </span>
                     )}
                   </div>
@@ -224,7 +212,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
                       onClick={startTranslation}
                       className="mt-3 inline-flex items-center justify-center rounded-[10px] bg-blue px-4 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
                     >
-                      Démarrer la traduction
+                      {t("adm.order.startBtn")}
                     </button>
                   )}
 
@@ -241,7 +229,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
                         disabled={loading}
                         className="inline-flex w-fit items-center justify-center rounded-[10px] bg-ok px-4 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-60"
                       >
-                        Déposer le fichier final
+                        {t("adm.order.uploadBtn")}
                       </button>
                     </form>
                   )}
@@ -253,7 +241,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
 
         <div className="grid gap-6">
           <section className="rounded-[14px] border border-line bg-white p-6">
-            <h2 className="mb-3 text-[16.5px] text-navy">Client</h2>
+            <h2 className="mb-3 text-[16.5px] text-navy">{t("adm.order.client")}</h2>
             <p className="text-[14px] font-medium text-ink">
               {order.user.firstName} {order.user.lastName}
             </p>
@@ -264,7 +252,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
           </section>
 
           <section className="rounded-[14px] border border-line bg-white p-6">
-            <h2 className="mb-3 text-[16.5px] text-navy">Documents</h2>
+            <h2 className="mb-3 text-[16.5px] text-navy">{t("adm.order.documents")}</h2>
             <div className="grid gap-2.5 text-[13.5px]">
               {sourceDoc ? (
                 <a
@@ -274,10 +262,10 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
                   </svg>
-                  Source : {sourceDoc.originalName}
+                  {t("adm.order.source", { name: sourceDoc.originalName })}
                 </a>
               ) : (
-                <p className="text-muted">Aucun document source.</p>
+                <p className="text-muted">{t("adm.order.noSource")}</p>
               )}
               {translatedDoc ? (
                 <div className="rounded-xl border border-line bg-[#fafbfd] p-3">
@@ -289,19 +277,19 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
                       <svg className="shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
                       </svg>
-                      <span className="truncate">Traduction : {translatedDoc.originalName}</span>
+                      <span className="truncate">{t("adm.order.translation", { name: translatedDoc.originalName })}</span>
                     </a>
                     <FileAccessBadge access={order.fileAccess} />
                   </div>
                   <p className="mt-2 text-[11.5px] leading-relaxed text-muted">
                     {order.fileAccess === "UNLOCKED"
-                      ? "Le client peut télécharger ce fichier."
-                      : "Visible par l’admin uniquement ; aucun contenu n’est transmis au client avant paiement."}
+                      ? t("adm.order.unlockedNote")
+                      : t("adm.order.lockedNote")}
                   </p>
                 </div>
               ) : (
                 <div className="flex items-center justify-between gap-2 text-muted">
-                  <p>Traduction pas encore déposée.</p>
+                  <p>{t("adm.order.notDeposited")}</p>
                   <FileAccessBadge access="NOT_READY" />
                 </div>
               )}

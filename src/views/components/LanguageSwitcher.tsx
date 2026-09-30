@@ -92,6 +92,7 @@ export default function LanguageSwitcher({ dark = false }: { dark?: boolean }) {
         body: JSON.stringify({ locale: nextLocale }),
       });
       if (response.ok) router.refresh();
+      else console.error("Changement de langue impossible.");
     } finally {
       setPending(false);
     }

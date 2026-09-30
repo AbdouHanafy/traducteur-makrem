@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/views/components/I18nProvider";
 import MediaPicker from "@/views/components/MediaPicker";
+import TranslationEditor from "@/views/components/TranslationEditor";
+import type { TranslationsMap } from "@/lib/localize";
 
 export interface HomeSectionRow {
   id: string;
@@ -16,6 +19,7 @@ export interface HomeSectionRow {
   imageUrl: string;
   ctaLabel: string;
   ctaHref: string;
+  translations: TranslationsMap;
 }
 
 interface CustomFormValues {
@@ -25,6 +29,7 @@ interface CustomFormValues {
   imageUrl: string;
   ctaLabel: string;
   ctaHref: string;
+  translations: TranslationsMap;
 }
 
 function CustomSectionForm({
@@ -38,6 +43,7 @@ function CustomSectionForm({
   onCancel: () => void;
   submitLabel: string;
 }) {
+  const { t } = useI18n();
   const [values, setValues] = useState(initial);
   const [loading, setLoading] = useState(false);
 
@@ -54,14 +60,14 @@ function CustomSectionForm({
       <input
         value={values.eyebrow}
         onChange={(e) => setValues((v) => ({ ...v, eyebrow: e.target.value }))}
-        placeholder="Sur-titre (optionnel)"
+        placeholder={t("adm.home.eyebrow")}
         className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
       />
       <input
         required
         value={values.title}
         onChange={(e) => setValues((v) => ({ ...v, title: e.target.value }))}
-        placeholder="Titre"
+        placeholder={t("adm.title")}
         className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
       />
       <textarea
@@ -69,12 +75,12 @@ function CustomSectionForm({
         rows={4}
         value={values.body}
         onChange={(e) => setValues((v) => ({ ...v, body: e.target.value }))}
-        placeholder="Texte"
+        placeholder={t("adm.home.text")}
         className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
       />
       <div>
         <span className="mb-1.5 block text-[12.5px] font-semibold text-ink">
-          Image (optionnelle — la section passe en deux colonnes si présente)
+          {t("adm.home.image")}
         </span>
         <MediaPicker value={values.imageUrl} onChange={(url) => setValues((v) => ({ ...v, imageUrl: url }))} />
       </div>
@@ -82,19 +88,30 @@ function CustomSectionForm({
         <input
           value={values.ctaLabel}
           onChange={(e) => setValues((v) => ({ ...v, ctaLabel: e.target.value }))}
-          placeholder="Bouton — libellé"
+          placeholder={t("adm.home.ctaLabel")}
           className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
         />
         <input
           value={values.ctaHref}
           onChange={(e) => setValues((v) => ({ ...v, ctaHref: e.target.value }))}
-          placeholder="Bouton — lien (/contact, /commander...)"
+          placeholder={t("adm.home.ctaHref")}
           className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
         />
       </div>
+      <TranslationEditor
+        fields={[
+          { name: "eyebrow", label: t("adm.home.eyebrow") },
+          { name: "title", label: t("adm.title") },
+          { name: "body", label: t("adm.home.text"), multiline: true, rows: 4 },
+          { name: "ctaLabel", label: t("adm.home.ctaLabel") },
+        ]}
+        base={{ eyebrow: values.eyebrow, title: values.title, body: values.body, ctaLabel: values.ctaLabel }}
+        value={values.translations}
+        onChange={(translations) => setValues((v) => ({ ...v, translations }))}
+      />
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onCancel} className="rounded-[9px] px-4 py-2 text-[13.5px] text-muted">
-          Annuler
+          {t("adm.cancel")}
         </button>
         <button
           type="submit"
@@ -108,10 +125,11 @@ function CustomSectionForm({
   );
 }
 
-const EMPTY_FORM: CustomFormValues = { eyebrow: "", title: "", body: "", imageUrl: "", ctaLabel: "", ctaHref: "" };
+const EMPTY_FORM: CustomFormValues = { eyebrow: "", title: "", body: "", imageUrl: "", ctaLabel: "", ctaHref: "", translations: {} };
 
 export default function AdminHomeSectionsPage({ sections }: { sections: HomeSectionRow[] }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -136,7 +154,7 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
   }
 
   async function deleteSection(id: string) {
-    if (!confirm("Supprimer cette section ?")) return;
+    if (!confirm(t("adm.home.deleteConfirm"))) return;
     await fetch(`/api/admin/home-sections/${id}`, { method: "DELETE" });
     router.refresh();
   }
@@ -162,21 +180,19 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
   return (
     <div className="mx-auto max-w-[820px] px-6 py-14">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[22px] text-navy sm:text-[26px]">Sections de la page d&apos;accueil</h1>
+        <h1 className="text-[22px] text-navy sm:text-[26px]">{t("adm.home.title")}</h1>
         {!adding && (
           <button
             type="button"
             onClick={() => setAdding(true)}
             className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
           >
-            Ajouter une section
+            {t("adm.home.add")}
           </button>
         )}
       </div>
       <p className="mb-8 text-[13.5px] text-muted">
-        Les sections système (en-tête, prestations, etc.) gardent leur mise en page ; vous
-        pouvez les réordonner et les masquer. Une section personnalisée peut être ajoutée,
-        éditée et positionnée n&apos;importe où.
+        {t("adm.home.note")}
       </p>
 
       {adding && (
@@ -185,7 +201,7 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
             initial={EMPTY_FORM}
             onSubmit={createSection}
             onCancel={() => setAdding(false)}
-            submitLabel="Ajouter"
+            submitLabel={t("adm.add")}
           />
         </div>
       )}
@@ -202,10 +218,11 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
                   imageUrl: section.imageUrl,
                   ctaLabel: section.ctaLabel,
                   ctaHref: section.ctaHref,
+                  translations: section.translations,
                 }}
                 onSubmit={(values) => updateSection(section.id, values)}
                 onCancel={() => setEditingId(null)}
-                submitLabel="Enregistrer"
+                submitLabel={t("adm.save")}
               />
             ) : (
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -216,14 +233,14 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
                         section.isCustom ? "bg-blue-soft text-blue-2" : "bg-mist text-muted"
                       }`}
                     >
-                      {section.isCustom ? "Personnalisée" : "Système"}
+                      {section.isCustom ? t("adm.home.custom") : t("adm.home.system")}
                     </span>
                     <span className="font-semibold text-ink">
-                      {section.isCustom ? section.title || "(sans titre)" : section.label}
+                      {section.isCustom ? section.title || t("adm.home.untitled") : t(`adm.home.sectionLabel.${section.type}`)}
                     </span>
                     {!section.visible && (
                       <span className="rounded-full bg-mist px-2 py-0.5 text-[11px] font-semibold text-muted">
-                        Masquée
+                        {t("adm.hiddenF")}
                       </span>
                     )}
                   </div>
@@ -237,7 +254,7 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
                     disabled={index === 0}
                     onClick={() => move(section.id, "up")}
                     className="rounded-[7px] p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
-                    aria-label="Monter"
+                    aria-label={t("adm.moveUp")}
                   >
                     ↑
                   </button>
@@ -246,7 +263,7 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
                     disabled={index === sections.length - 1}
                     onClick={() => move(section.id, "down")}
                     className="rounded-[7px] p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
-                    aria-label="Descendre"
+                    aria-label={t("adm.moveDown")}
                   >
                     ↓
                   </button>
@@ -255,7 +272,7 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
                     onClick={() => toggleVisible(section.id, !section.visible)}
                     className="ml-2 text-[13px] font-semibold text-muted hover:text-navy"
                   >
-                    {section.visible ? "Masquer" : "Afficher"}
+                    {section.visible ? t("adm.hide") : t("adm.show")}
                   </button>
                   {section.isCustom && (
                     <>
@@ -264,14 +281,14 @@ export default function AdminHomeSectionsPage({ sections }: { sections: HomeSect
                         onClick={() => setEditingId(section.id)}
                         className="ml-1 text-[13px] font-semibold text-blue hover:text-blue-2"
                       >
-                        Modifier
+                        {t("adm.edit")}
                       </button>
                       <button
                         type="button"
                         onClick={() => deleteSection(section.id)}
                         className="ml-1 text-[13px] font-semibold text-muted hover:text-[#9c2c2c]"
                       >
-                        Supprimer
+                        {t("adm.delete")}
                       </button>
                     </>
                   )}

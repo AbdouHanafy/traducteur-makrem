@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import LogoutButton from "@/views/components/LogoutButton";
 import BrandLogo from "@/views/components/BrandLogo";
 import BrandName from "@/views/components/BrandName";
+import { useI18n } from "@/views/components/I18nProvider";
 
 export type WorkspaceIcon = "home" | "orders" | "users" | "page" | "services" | "articles" | "reviews" | "faq" | "media" | "files" | "support" | "account";
 
@@ -52,6 +53,7 @@ export default function WorkspaceShell({ mode, user, groups, children, primaryAc
   primaryAction?: { href: string; label: string };
 }) {
   const pathname = usePathname();
+  const { t } = useI18n();
   const [mobileOpen, setMobileOpen] = useState(false);
   const allItems = groups.flatMap((group) => group.items);
   const currentItem = [...allItems].reverse().find((item) => isActive(pathname, item.href));
@@ -94,7 +96,7 @@ export default function WorkspaceShell({ mode, user, groups, children, primaryAc
           <BrandLogo size="sm" onDark priority />
           <BrandName size="compact" onDark />
         </Link>
-        <button type="button" onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white lg:hidden" aria-label="Fermer le menu">
+        <button type="button" onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-slate-400 hover:bg-white/10 hover:text-white lg:hidden" aria-label={t("app.shell.closeMenu")}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12" /></svg>
         </button>
       </div>
@@ -108,25 +110,25 @@ export default function WorkspaceShell({ mode, user, groups, children, primaryAc
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#315fae] text-[11.5px] font-bold text-white">{initials}</span>
           <span className="min-w-0 flex-1"><span className="block truncate text-[12.5px] font-semibold text-white">{user.name}</span><span className="block truncate text-[10.5px] text-slate-400">{user.email}</span></span>
         </div>
-        <div className="flex items-center justify-between px-1"><Link href="/" className="text-[12px] font-medium text-slate-400 hover:text-white">Voir le site</Link><LogoutButton variant="sidebar" /></div>
+        <div className="flex items-center justify-between px-1"><Link href="/" className="text-[12px] font-medium text-slate-400 hover:text-white">{t("app.shell.viewSite")}</Link><LogoutButton variant="sidebar" /></div>
       </div>
     </>
   );
 
   return (
     <div className="min-h-screen bg-[#f5f7fb]">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[272px] flex-col overflow-hidden bg-[#101d36] px-5 py-6 shadow-[12px_0_40px_rgba(15,29,54,0.08)] lg:flex">{sidebar}</aside>
-      {mobileOpen && <button type="button" className="fixed inset-0 z-50 bg-[#07101f]/60 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Fermer le menu" />}
-      <aside role="dialog" aria-modal="true" aria-label="Navigation" aria-hidden={!mobileOpen} inert={!mobileOpen ? true : undefined} className={`fixed inset-y-0 left-0 z-[60] flex w-[min(86vw,310px)] flex-col bg-[#101d36] px-5 py-6 shadow-2xl transition-transform duration-300 lg:hidden ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>{sidebar}</aside>
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[272px] flex-col overflow-hidden bg-navy-2 px-5 py-6 shadow-[12px_0_40px_rgba(15,29,54,0.08)] lg:flex">{sidebar}</aside>
+      {mobileOpen && <button type="button" className="fixed inset-0 z-50 bg-[#07101f]/60 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)} aria-label={t("app.shell.closeMenu")} />}
+      <aside role="dialog" aria-modal="true" aria-label={t("app.shell.navigation")} aria-hidden={!mobileOpen} inert={!mobileOpen ? true : undefined} className={`fixed inset-y-0 left-0 z-[60] flex w-[min(86vw,310px)] flex-col bg-navy-2 px-5 py-6 shadow-2xl transition-transform duration-300 lg:hidden ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>{sidebar}</aside>
 
       <div className="min-w-0 lg:pl-[272px]">
         <header className="sticky top-0 z-30 flex h-[72px] items-center justify-between border-b border-[#e6eaf1] bg-white/90 px-4 backdrop-blur-xl sm:px-7 lg:px-10">
           <div className="flex min-w-0 items-center gap-3">
-            <button type="button" onClick={() => setMobileOpen(true)} className="rounded-xl border border-line bg-white p-2.5 text-navy shadow-sm lg:hidden" aria-label="Ouvrir le menu" aria-expanded={mobileOpen}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
-            <div className="min-w-0"><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">{mode === "admin" ? "Back-office" : "Mon espace"}</div><div className="truncate text-[15px] font-semibold text-navy">{currentItem?.label ?? (mode === "admin" ? "Administration" : "Espace client")}</div></div>
+            <button type="button" onClick={() => setMobileOpen(true)} className="rounded-xl border border-line bg-white p-2.5 text-navy shadow-sm lg:hidden" aria-label={t("app.shell.openMenu")} aria-expanded={mobileOpen}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
+            <div className="min-w-0"><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">{mode === "admin" ? t("app.shell.backoffice") : t("app.shell.mySpace")}</div><div className="truncate text-[15px] font-semibold text-navy">{currentItem?.label ?? (mode === "admin" ? t("app.shell.admin") : t("app.shell.clientSpace"))}</div></div>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/" className="hidden items-center gap-2 rounded-xl border border-line bg-white px-3.5 py-2 text-[12.5px] font-semibold text-muted transition hover:border-blue/30 hover:text-blue sm:flex">Voir le site<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17 17 7M7 7h10v10" /></svg></Link>
+            <Link href="/" className="hidden items-center gap-2 rounded-xl border border-line bg-white px-3.5 py-2 text-[12.5px] font-semibold text-muted transition hover:border-blue/30 hover:text-blue sm:flex">{t("app.shell.viewSite")}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17 17 7M7 7h10v10" /></svg></Link>
             <span className="grid h-9 w-9 place-items-center rounded-full bg-blue-soft text-[11px] font-bold text-blue-2 lg:hidden">{initials}</span>
           </div>
         </header>

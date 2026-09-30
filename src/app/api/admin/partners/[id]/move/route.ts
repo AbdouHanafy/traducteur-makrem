@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { movePartner } from "@/repositories/partners";
 import { partnerMoveSchema } from "@/schemas/partner";
@@ -10,5 +11,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!parsed.success) return NextResponse.json({ error: "Direction invalide." }, { status: 400 });
   const { id } = await params;
   await movePartner(id, parsed.data.direction);
+  revalidateSite();
   return NextResponse.json({ ok: true });
 }

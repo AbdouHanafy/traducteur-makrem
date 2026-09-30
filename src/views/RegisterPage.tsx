@@ -38,9 +38,9 @@ export default function RegisterPage() {
 
     if (signUpError) {
       setError(
-        signUpError.status === 422
-          ? "Un compte existe déjà avec cette adresse email."
-          : signUpError.message || "Une erreur est survenue. Réessayez.",
+        signUpError.code === "USER_ALREADY_EXISTS" || signUpError.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL"
+          ? t("app.err.emailExists")
+          : t("app.err.generic"),
       );
       return;
     }

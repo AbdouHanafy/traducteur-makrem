@@ -7,6 +7,10 @@ import { findDocumentById } from "@/repositories/documents";
 import { findSucceededBalancePayment } from "@/repositories/payments";
 import { readPrivateFile } from "@/lib/storage/privateStorage";
 
+function asciiFilename(name: string): string {
+  return name.replace(/[^\x20-\x7e]|["\\]/g, "_");
+}
+
 /**
  * Téléchargement du fichier réel — les 5 vérifications de ARCHITECTURE.md §5 :
  * 1) session valide, 2) order.userId === session.user.id (ou staff), 3) solde payé si
@@ -64,7 +68,7 @@ export async function GET(
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
       "Content-Type": document.mimeType,
-      "Content-Disposition": `attachment; filename="${encodeURIComponent(document.originalName)}"`,
+      "Content-Disposition": `attachment; filename="${asciiFilename(document.originalName)}"; filename*=UTF-8''${encodeURIComponent(document.originalName)}`,
       "Content-Length": String(buffer.byteLength),
       "Cache-Control": "private, no-store",
       "X-Content-Type-Options": "nosniff",

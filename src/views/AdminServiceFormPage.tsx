@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import MediaPicker from "@/views/components/MediaPicker";
+import { useI18n } from "@/views/components/I18nProvider";
+import TranslationEditor from "@/views/components/TranslationEditor";
+import type { TranslationsMap } from "@/lib/localize";
 
 export interface ServiceFormValues {
   id?: string;
@@ -12,10 +15,12 @@ export interface ServiceFormValues {
   pricePerPage: string;
   imageUrl: string;
   active: boolean;
+  translations: TranslationsMap;
 }
 
 export default function AdminServiceFormPage({ initial }: { initial: ServiceFormValues }) {
   const router = useRouter();
+  const { t } = useI18n();
   const isEdit = Boolean(initial.id);
   const [form, setForm] = useState(initial);
   const [loading, setLoading] = useState(false);
@@ -46,7 +51,7 @@ export default function AdminServiceFormPage({ initial }: { initial: ServiceForm
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error || "Une erreur est survenue.");
+      setError(data?.error || t("adm.errorGeneric"));
       return;
     }
 
@@ -56,7 +61,7 @@ export default function AdminServiceFormPage({ initial }: { initial: ServiceForm
 
   return (
     <div className="mx-auto max-w-[680px] px-6 py-14">
-      <h1 className="mb-8 text-[26px] text-navy">{isEdit ? "Modifier le service" : "Nouveau service"}</h1>
+      <h1 className="mb-8 text-[26px] text-navy">{isEdit ? t("adm.serviceForm.titleEdit") : t("adm.serviceForm.titleNew")}</h1>
 
       <form onSubmit={onSubmit} className="grid gap-5 rounded-[14px] border border-line bg-white p-7">
         {error && (
@@ -66,7 +71,7 @@ export default function AdminServiceFormPage({ initial }: { initial: ServiceForm
         )}
 
         <div>
-          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Nom</label>
+          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">{t("adm.name")}</label>
           <input
             required
             value={form.name}
@@ -79,7 +84,7 @@ export default function AdminServiceFormPage({ initial }: { initial: ServiceForm
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Slug</label>
+          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">{t("adm.serviceForm.slug")}</label>
           <input
             required
             value={form.slug}
@@ -89,7 +94,7 @@ export default function AdminServiceFormPage({ initial }: { initial: ServiceForm
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Description</label>
+          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">{t("adm.serviceForm.description")}</label>
           <textarea
             required
             rows={3}
@@ -101,7 +106,7 @@ export default function AdminServiceFormPage({ initial }: { initial: ServiceForm
 
         <div>
           <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-            Prix par page (TND) — 0 = &quot;sur devis&quot;
+            {t("adm.serviceForm.price")}
           </label>
           <input
             required
@@ -115,9 +120,19 @@ export default function AdminServiceFormPage({ initial }: { initial: ServiceForm
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Photo</label>
+          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">{t("adm.serviceForm.photo")}</label>
           <MediaPicker value={form.imageUrl} onChange={(url) => setForm((f) => ({ ...f, imageUrl: url }))} />
         </div>
+
+        <TranslationEditor
+          fields={[
+            { name: "name", label: t("adm.name") },
+            { name: "description", label: t("adm.serviceForm.description"), multiline: true },
+          ]}
+          base={{ name: form.name, description: form.description }}
+          value={form.translations}
+          onChange={(translations) => setForm((f) => ({ ...f, translations }))}
+        />
 
         <label className="flex items-center gap-2.5 text-[14px] text-ink">
           <input
@@ -126,7 +141,7 @@ export default function AdminServiceFormPage({ initial }: { initial: ServiceForm
             onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
             className="h-4 w-4"
           />
-          Service actif (visible sur le site)
+          {t("adm.serviceForm.active")}
         </label>
 
         <button
@@ -134,7 +149,7 @@ export default function AdminServiceFormPage({ initial }: { initial: ServiceForm
           disabled={loading}
           className="mt-1.5 inline-flex w-fit items-center justify-center rounded-[11px] bg-blue px-6 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
         >
-          {loading ? "Enregistrement…" : "Enregistrer"}
+          {loading ? t("adm.saving") : t("adm.save")}
         </button>
       </form>
     </div>

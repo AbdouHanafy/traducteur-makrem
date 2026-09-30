@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireOrderOwner } from "@/lib/rbac";
-import { getPaymentProvider } from "@/lib/payments/mock";
-import { createPaymentRecord } from "@/repositories/payments";
+import { startOrderPayment } from "@/lib/payments/start";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -18,22 +17,5 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Acompte non exigible pour cette commande." }, { status: 409 });
   }
 
-  const provider = getPaymentProvider();
-  const { redirectUrl, providerRef } = await provider.createPayment({
-    orderId: order.id,
-    phase: "ADVANCE",
-    amount: order.advanceAmount,
-    currency: "TND",
-  });
-
-  await createPaymentRecord({
-    orderId: order.id,
-    phase: "ADVANCE",
-    amount: order.advanceAmount,
-    currency: "TND",
-    provider: provider.name,
-    providerRef,
-  });
-
-  return NextResponse.json({ redirectUrl });
+  return NextResponse.json(await startOrderPayment(order, "ADVANCE"));
 }

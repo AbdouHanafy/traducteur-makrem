@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import type { TranslationsMap } from "@/lib/localize";
+import { withTranslations } from "@/repositories/_json";
 
 export function listActiveFaqs() {
   return prisma.faqItem.findMany({ where: { active: true }, orderBy: { order: "asc" } });
@@ -16,16 +18,17 @@ export interface FaqInput {
   question: string;
   answer: string;
   active: boolean;
+  translations?: TranslationsMap | null;
 }
 
 /** Nouvelle question ajoutée en dernière position (ordre max + 1). */
 export async function createFaq(data: FaqInput) {
   const last = await prisma.faqItem.findFirst({ orderBy: { order: "desc" } });
-  return prisma.faqItem.create({ data: { ...data, order: (last?.order ?? -1) + 1 } });
+  return prisma.faqItem.create({ data: { ...withTranslations(data), order: (last?.order ?? -1) + 1 } });
 }
 
 export function updateFaq(id: string, data: Partial<FaqInput>) {
-  return prisma.faqItem.update({ where: { id }, data });
+  return prisma.faqItem.update({ where: { id }, data: withTranslations(data) });
 }
 
 export function deleteFaq(id: string) {
@@ -41,11 +44,9 @@ export async function moveFaq(id: string, direction: "up" | "down") {
   const swapIndex = direction === "up" ? index - 1 : index + 1;
   if (swapIndex < 0 || swapIndex >= items.length) return;
 
-  const current = items[index];
-  const swap = items[swapIndex];
 
-  await prisma.$transaction([
-    prisma.faqItem.update({ where: { id: current.id }, data: { order: swap.order } }),
-    prisma.faqItem.update({ where: { id: swap.id }, data: { order: current.order } }),
-  ]);
+  const reordered = [...items];
+  [reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
+  // Renumérote toute la liste : deux éléments à égalité d'ordre ne bloquent plus le déplacement.
+  await prisma.$transaction(reordered.map((item, position) => prisma.faqItem.update({ where: { id: item.id }, data: { order: position } })));
 }

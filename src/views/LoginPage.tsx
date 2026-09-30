@@ -12,7 +12,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedCallback = searchParams.get("callbackUrl");
-  const callbackUrl = requestedCallback?.startsWith("/") && !requestedCallback.startsWith("//") ? requestedCallback : "/dashboard";
+  const callbackUrl = requestedCallback?.startsWith("/") && !requestedCallback.startsWith("//") && !requestedCallback.includes("\\") ? requestedCallback : "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

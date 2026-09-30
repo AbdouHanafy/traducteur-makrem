@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { safeUrlField, translationsField } from "@/schemas/common";
+import { TRANSLATABLE_FIELDS } from "@/lib/localize";
 
 const slugPattern = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
@@ -7,8 +9,9 @@ export const articleSchema = z.object({
   title: z.string().trim().min(1, "Titre requis.").max(200),
   excerpt: z.string().trim().min(1, "Résumé requis.").max(400),
   body: z.string().trim().min(1, "Contenu requis.").max(20000),
-  coverImageUrl: z.string().trim().max(500).optional().or(z.literal("")),
-  published: z.coerce.boolean(),
+  coverImageUrl: safeUrlField(500),
+  published: z.boolean(),
+  translations: translationsField(TRANSLATABLE_FIELDS.article),
 });
 
 export type ArticleFormInput = z.infer<typeof articleSchema>;

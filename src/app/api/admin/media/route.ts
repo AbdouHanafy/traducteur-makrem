@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { validateImageUpload, UploadValidationError } from "@/lib/upload";
 import { writePublicMedia } from "@/lib/storage/publicStorage";
@@ -48,5 +49,6 @@ export async function POST(request: Request) {
     uploadedById: result.session.user.id,
   });
 
+  revalidateSite();
   return NextResponse.json({ media }, { status: 201 });
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { articleSchema } from "@/schemas/article";
 import { createArticle, findArticleBySlug } from "@/repositories/articles";
@@ -24,5 +25,6 @@ export async function POST(request: Request) {
   }
 
   const article = await createArticle({ ...parsed.data, coverImageUrl: parsed.data.coverImageUrl || null });
+  revalidateSite();
   return NextResponse.json({ article }, { status: 201 });
 }

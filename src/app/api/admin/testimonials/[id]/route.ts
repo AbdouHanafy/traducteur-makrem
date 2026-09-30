@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { testimonialSchema } from "@/schemas/testimonial";
 import { findTestimonialById, updateTestimonial, deleteTestimonial } from "@/repositories/testimonials";
@@ -27,6 +28,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     authorRole: parsed.data.authorRole || null,
     rating: parsed.data.rating ?? null,
   });
+  revalidateSite();
   return NextResponse.json({ testimonial });
 }
 
@@ -41,5 +43,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   if (!existing) return NextResponse.json({ error: "Introuvable." }, { status: 404 });
 
   await deleteTestimonial(id);
+  revalidateSite();
   return NextResponse.json({ ok: true });
 }

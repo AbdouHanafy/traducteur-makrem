@@ -95,7 +95,7 @@ export default function TestimonialsCarousel({ testimonials }: { testimonials: T
             <button
               type="button"
               onClick={() => setIndex((i) => (i - 1 + testimonials.length) % testimonials.length)}
-              aria-label="Avis précédent"
+              aria-label={t("app.aria.prevReview")}
               className="grid h-9 w-9 place-items-center rounded-full border border-line bg-white text-navy transition-colors hover:border-blue"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -119,7 +119,7 @@ export default function TestimonialsCarousel({ testimonials }: { testimonials: T
             <button
               type="button"
               onClick={() => setIndex((i) => (i + 1) % testimonials.length)}
-              aria-label="Avis suivant"
+              aria-label={t("app.aria.nextReview")}
               className="grid h-9 w-9 place-items-center rounded-full border border-line bg-white text-navy transition-colors hover:border-blue"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">

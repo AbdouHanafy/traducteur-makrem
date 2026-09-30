@@ -19,15 +19,9 @@ export async function requireOrderOwner(orderId: string) {
   return { session, order };
 }
 
-export async function requireStaffSession() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) return { error: "unauthenticated" as const };
-
-  if (session.user.role !== "ADMIN") {
-    return { error: "forbidden" as const };
-  }
-
-  return { session };
+/** Le back-office n'a qu'un seul rôle privilégié : "staff" et "admin" sont synonymes. */
+export function requireStaffSession() {
+  return requireAdminSession();
 }
 
 /**

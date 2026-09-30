@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useI18n } from "@/views/components/I18nProvider";
 
 interface ServiceRow {
   id: string;
@@ -16,6 +17,7 @@ interface ServiceRow {
 
 export default function AdminServicesListPage({ services }: { services: ServiceRow[] }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [busyId, setBusyId] = useState<string | null>(null);
 
   async function toggleActive(service: ServiceRow) {
@@ -40,15 +42,35 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
     router.refresh();
   }
 
+  async function move(id: string, direction: "up" | "down") {
+    setBusyId(id);
+    await fetch(`/api/admin/services/${id}/move`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ direction }),
+    });
+    setBusyId(null);
+    router.refresh();
+  }
+
+  function moveButtons(id: string, index: number) {
+    return (
+      <span className="inline-flex items-center">
+        <button type="button" disabled={index === 0 || busyId === id} onClick={() => move(id, "up")} className="rounded-[7px] p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30" aria-label={t("adm.moveUp")}>↑</button>
+        <button type="button" disabled={index === services.length - 1 || busyId === id} onClick={() => move(id, "down")} className="rounded-[7px] p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30" aria-label={t("adm.moveDown")}>↓</button>
+      </span>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-14">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[26px] text-navy">Services</h1>
+        <h1 className="text-[26px] text-navy">{t("adm.services.title")}</h1>
         <Link
           href="/admin/services/new"
           className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
         >
-          Nouveau service
+          {t("adm.services.new")}
         </Link>
       </div>
 
@@ -57,14 +79,14 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
         <table className="w-full text-left text-[13.5px]">
           <thead className="bg-mist text-[12px] uppercase tracking-wide text-muted">
             <tr>
-              <th className="px-5 py-3">Service</th>
-              <th className="px-5 py-3">Prix / page</th>
-              <th className="px-5 py-3">Statut</th>
+              <th className="px-5 py-3">{t("adm.col.service")}</th>
+              <th className="px-5 py-3">{t("adm.services.colPrice")}</th>
+              <th className="px-5 py-3">{t("adm.col.status")}</th>
               <th className="px-5 py-3" />
             </tr>
           </thead>
           <tbody>
-            {services.map((service) => (
+            {services.map((service, index) => (
               <tr key={service.id} className="border-t border-line">
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-3">
@@ -87,13 +109,14 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
                       service.active ? "bg-ok-soft text-ok" : "bg-mist text-muted"
                     }`}
                   >
-                    {service.active ? "Actif" : "Désactivé"}
+                    {service.active ? t("adm.active") : t("adm.disabled")}
                   </span>
                 </td>
                 <td className="px-5 py-3.5 text-right">
                   <div className="flex items-center justify-end gap-3">
+                    {moveButtons(service.id, index)}
                     <Link href={`/admin/services/${service.id}`} className="font-semibold text-blue hover:text-blue-2">
-                      Modifier
+                      {t("adm.edit")}
                     </Link>
                     <button
                       type="button"
@@ -101,7 +124,7 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
                       onClick={() => toggleActive(service)}
                       className="text-muted hover:text-navy disabled:opacity-50"
                     >
-                      {service.active ? "Désactiver" : "Réactiver"}
+                      {service.active ? t("adm.disable") : t("adm.reenable")}
                     </button>
                   </div>
                 </td>
@@ -113,7 +136,7 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
 
       {/* Mobile : cartes */}
       <div className="grid gap-3 md:hidden">
-        {services.map((service) => (
+        {services.map((service, index) => (
           <div key={service.id} className="rounded-[14px] border border-line bg-white p-4">
             <div className="flex items-center gap-3">
               {service.imageUrl ? (
@@ -134,12 +157,13 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
                   service.active ? "bg-ok-soft text-ok" : "bg-mist text-muted"
                 }`}
               >
-                {service.active ? "Actif" : "Désactivé"}
+                {service.active ? t("adm.active") : t("adm.disabled")}
               </span>
             </div>
             <div className="mt-3 flex items-center gap-4 border-t border-line pt-3">
+              {moveButtons(service.id, index)}
               <Link href={`/admin/services/${service.id}`} className="text-[13.5px] font-semibold text-blue hover:text-blue-2">
-                Modifier
+                {t("adm.edit")}
               </Link>
               <button
                 type="button"
@@ -147,7 +171,7 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
                 onClick={() => toggleActive(service)}
                 className="text-[13.5px] font-semibold text-muted hover:text-navy disabled:opacity-50"
               >
-                {service.active ? "Désactiver" : "Réactiver"}
+                {service.active ? t("adm.disable") : t("adm.reenable")}
               </button>
             </div>
           </div>

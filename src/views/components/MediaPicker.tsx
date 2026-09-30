@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "@/views/components/I18nProvider";
 
 interface MediaItem {
   id: string;
@@ -20,6 +21,7 @@ export default function MediaPicker({
   value: string;
   onChange: (url: string) => void;
 }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -54,7 +56,7 @@ export default function MediaPicker({
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error || "Échec de l'envoi.");
+      setError(data?.error || t("adm.media.errUpload"));
       return;
     }
 
@@ -71,7 +73,7 @@ export default function MediaPicker({
           <img src={value} alt="" className="h-16 w-16 rounded-[8px] border border-line object-cover" />
         ) : (
           <div className="grid h-16 w-16 place-items-center rounded-[8px] border border-dashed border-line text-[11px] text-muted">
-            Aucune
+            {t("adm.picker.none")}
           </div>
         )}
         <div className="grid gap-1.5">
@@ -80,7 +82,7 @@ export default function MediaPicker({
             onClick={() => setOpen((v) => !v)}
             className="rounded-[8px] border border-line px-3 py-1.5 text-[13px] font-semibold text-navy hover:border-blue"
           >
-            {open ? "Fermer" : "Choisir une image"}
+            {open ? t("adm.picker.close") : t("adm.picker.choose")}
           </button>
           {value && (
             <button
@@ -88,7 +90,7 @@ export default function MediaPicker({
               onClick={() => onChange("")}
               className="text-[12.5px] text-muted hover:text-[#9c2c2c]"
             >
-              Retirer l&apos;image
+              {t("adm.picker.remove")}
             </button>
           )}
         </div>
@@ -104,7 +106,7 @@ export default function MediaPicker({
 
           <label className="mb-3 block">
             <span className="mb-1.5 block text-[12.5px] font-semibold text-ink">
-              {uploading ? "Envoi en cours…" : "Téléverser une nouvelle image"}
+              {uploading ? t("adm.picker.uploadingLong") : t("adm.picker.uploadNew")}
             </span>
             <input
               type="file"
@@ -116,9 +118,9 @@ export default function MediaPicker({
           </label>
 
           {loading ? (
-            <p className="text-[13px] text-muted">Chargement de la médiathèque…</p>
+            <p className="text-[13px] text-muted">{t("adm.picker.loading")}</p>
           ) : items.length === 0 ? (
-            <p className="text-[13px] text-muted">Aucune image dans la médiathèque pour l&apos;instant.</p>
+            <p className="text-[13px] text-muted">{t("adm.picker.emptyLibrary")}</p>
           ) : (
             <div className="grid grid-cols-5 gap-2">
               {items.map((item) => (

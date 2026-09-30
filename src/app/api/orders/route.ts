@@ -7,12 +7,12 @@ import { findPricingRuleByKey } from "@/repositories/pricingRules";
 import { createOrderWithSourceDocument } from "@/repositories/orders";
 import { computeQuote } from "@/lib/pricing";
 import { validateUpload, UploadValidationError } from "@/lib/upload";
-import { writePrivateFile } from "@/lib/storage/privateStorage";
+import { deletePrivateFile, writePrivateFile } from "@/lib/storage/privateStorage";
 
 export async function POST(request: Request) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) {
-    return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
+    return NextResponse.json({ error: "Non authentifié.", code: "UNAUTHENTICATED" }, { status: 401 });
   }
 
   const formData = await request.formData();
@@ -26,24 +26,28 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Données invalides.", issues: parsed.error.flatten().fieldErrors },
+      {
+        error: "Données invalides.",
+        code: parsed.error.issues.some((issue) => issue.path[0] === "targetLang" && issue.message.includes("différentes")) ? "SAME_LANGUAGE" : "INVALID_DATA",
+        issues: parsed.error.flatten().fieldErrors,
+      },
       { status: 400 },
     );
   }
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
-    return NextResponse.json({ error: "Document source requis." }, { status: 400 });
+    return NextResponse.json({ error: "Document source requis.", code: "FILE_REQUIRED" }, { status: 400 });
   }
 
   const service = await findServiceById(parsed.data.serviceId);
   if (!service || !service.active || service.pricePerPage.isZero()) {
-    return NextResponse.json({ error: "Service invalide." }, { status: 400 });
+    return NextResponse.json({ error: "Service invalide.", code: "INVALID_SERVICE" }, { status: 400 });
   }
 
   const pricingRule = await findPricingRuleByKey(parsed.data.delayKey);
   if (!pricingRule || !pricingRule.active) {
-    return NextResponse.json({ error: "Délai invalide." }, { status: 400 });
+    return NextResponse.json({ error: "Délai invalide.", code: "INVALID_DELAY" }, { status: 400 });
   }
 
   let upload;
@@ -51,7 +55,7 @@ export async function POST(request: Request) {
     upload = await validateUpload(file);
   } catch (e) {
     if (e instanceof UploadValidationError) {
-      return NextResponse.json({ error: e.message }, { status: 400 });
+      return NextResponse.json({ error: e.message, code: e.code }, { status: 400 });
     }
     throw e;
   }
@@ -64,24 +68,30 @@ export async function POST(request: Request) {
 
   const storageKey = await writePrivateFile(upload.buffer, upload.extension);
 
-  const order = await createOrderWithSourceDocument({
-    userId: session.user.id,
-    serviceId: service.id,
-    sourceLang: parsed.data.sourceLang,
-    targetLang: parsed.data.targetLang,
-    pages: parsed.data.pages,
-    delayKey: parsed.data.delayKey,
-    totalAmount: quote.totalAmount,
-    advanceAmount: quote.advanceAmount,
-    balanceAmount: quote.balanceAmount,
-    document: {
-      storageKey,
-      originalName: file.name,
-      mimeType: upload.mimeType,
-      sizeBytes: upload.sizeBytes,
-      sha256: upload.sha256,
-    },
-  });
+  let order;
+  try {
+    order = await createOrderWithSourceDocument({
+      userId: session.user.id,
+      serviceId: service.id,
+      sourceLang: parsed.data.sourceLang,
+      targetLang: parsed.data.targetLang,
+      pages: parsed.data.pages,
+      delayKey: parsed.data.delayKey,
+      totalAmount: quote.totalAmount,
+      advanceAmount: quote.advanceAmount,
+      balanceAmount: quote.balanceAmount,
+      document: {
+        storageKey,
+        originalName: file.name,
+        mimeType: upload.mimeType,
+        sizeBytes: upload.sizeBytes,
+        sha256: upload.sha256,
+      },
+    });
+  } catch (e) {
+    await deletePrivateFile(storageKey);
+    throw e;
+  }
 
   return NextResponse.json({ id: order.id, reference: order.reference }, { status: 201 });
 }

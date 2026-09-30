@@ -31,11 +31,10 @@ export default function SupportPage() {
     : { ...channel, label: t("common.email"), lines: [email], href: `mailto:${email}` });
   return (
     <div className="mx-auto max-w-[900px] px-4 py-8 sm:px-7 lg:px-10 lg:py-10">
-      <p className="mb-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-blue">Nous sommes disponibles</p>
-      <h1 className="mb-2 text-[27px] text-navy sm:text-[30px]">Aide & contact</h1>
+      <p className="mb-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-blue">{t("app.support.eyebrow")}</p>
+      <h1 className="mb-2 text-[27px] text-navy sm:text-[30px]">{t("app.support.title")}</h1>
       <p className="mb-8 max-w-2xl text-[14px] leading-6 text-muted">
-        Un souci avec une commande, un paiement ou votre document ? Contactez directement le
-        cabinet — pensez à indiquer la référence de votre commande (ex. CMD-2026-XXXXX).
+        {t("app.support.intro")}
       </p>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -62,15 +61,14 @@ export default function SupportPage() {
 
       <div className="mt-8 grid gap-2 rounded-2xl border border-[#e4e9f1] bg-white p-6 text-[14px] shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
         <p className="text-ink">
-          Vous pouvez aussi consulter la{" "}
+          {t("app.support.also")}{" "}
           <Link href="/faq" className="font-semibold text-blue hover:text-blue-2">
-            FAQ
-          </Link>{" "}
-          ou la{" "}
+            {t("app.support.faqLink")}
+          </Link>
+          {" · "}
           <Link href="/contact" className="font-semibold text-blue hover:text-blue-2">
-            page contact
-          </Link>{" "}
-          du cabinet.
+            {t("app.support.contactLink")}
+          </Link>
         </p>
       </div>
     </div>

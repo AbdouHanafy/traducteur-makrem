@@ -1,26 +1,27 @@
 import { randomUUID } from "node:crypto";
 import path from "node:path";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 
 /**
  * Stockage privé des documents — HORS `public/` (ARCHITECTURE.md §5). `storageKey` est un nom
  * aléatoire (UUID), jamais dérivé d'un input utilisateur : le nom original du fichier n'est
  * conservé qu'en DB pour affichage, jamais utilisé comme chemin.
  */
-const STORAGE_ROOT = process.env.PRIVATE_STORAGE_ROOT;
-
-if (!STORAGE_ROOT) {
-  throw new Error("PRIVATE_STORAGE_ROOT n'est pas défini (voir .env.example).");
+function getStorageRoot(): string {
+  const root = process.env.PRIVATE_STORAGE_ROOT;
+  if (!root) throw new Error("PRIVATE_STORAGE_ROOT n'est pas défini (voir .env.example).");
+  return root;
 }
 
 function resolveSafePath(storageKey: string): string {
+  const STORAGE_ROOT = getStorageRoot();
   // storageKey n'est jamais un input utilisateur brut (voir writeFile ci-dessous), mais on
   // refuse tout de même toute tentative de path traversal par défense en profondeur.
   if (storageKey.includes("..") || path.isAbsolute(storageKey)) {
     throw new Error("Clé de stockage invalide.");
   }
-  const resolved = path.resolve(STORAGE_ROOT!, storageKey);
-  if (!resolved.startsWith(path.resolve(STORAGE_ROOT!) + path.sep)) {
+  const resolved = path.resolve(STORAGE_ROOT, storageKey);
+  if (!resolved.startsWith(path.resolve(STORAGE_ROOT) + path.sep)) {
     throw new Error("Clé de stockage invalide.");
   }
   return resolved;
@@ -32,6 +33,11 @@ export async function writePrivateFile(buffer: Buffer, extension: string): Promi
   await mkdir(path.dirname(fullPath), { recursive: true });
   await writeFile(fullPath, buffer);
   return storageKey;
+}
+
+/** Nettoyage d'un fichier écrit dont l'enregistrement en base a échoué (best effort). */
+export async function deletePrivateFile(storageKey: string): Promise<void> {
+  await unlink(resolveSafePath(storageKey)).catch(() => {});
 }
 
 export async function readPrivateFile(storageKey: string): Promise<Buffer> {

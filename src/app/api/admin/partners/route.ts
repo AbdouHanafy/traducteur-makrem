@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { createPartner } from "@/repositories/partners";
 import { partnerSchema } from "@/schemas/partner";
@@ -16,5 +17,6 @@ export async function POST(request: Request) {
     logoUrl: parsed.data.logoUrl || null,
     websiteUrl: parsed.data.websiteUrl || null,
   });
+  revalidateSite();
   return NextResponse.json({ partner }, { status: 201 });
 }

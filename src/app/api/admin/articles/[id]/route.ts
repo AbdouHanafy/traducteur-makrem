@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { articleSchema } from "@/schemas/article";
 import { findArticleById, findArticleBySlug, updateArticle, deleteArticle } from "@/repositories/articles";
@@ -28,6 +29,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   const article = await updateArticle(id, { ...parsed.data, coverImageUrl: parsed.data.coverImageUrl || null });
+  revalidateSite();
   return NextResponse.json({ article });
 }
 
@@ -42,5 +44,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   if (!existing) return NextResponse.json({ error: "Introuvable." }, { status: 404 });
 
   await deleteArticle(id);
+  revalidateSite();
   return NextResponse.json({ ok: true });
 }

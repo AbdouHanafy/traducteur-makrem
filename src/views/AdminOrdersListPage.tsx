@@ -4,20 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { TranslatedFileAccess } from "@/lib/order-file-access";
 import FileAccessBadge from "@/views/components/FileAccessBadge";
-
-const STATUS_LABELS: Record<string, string> = {
-  DEMANDE: "Demande",
-  DEVIS_A_VALIDER: "Devis à valider",
-  EN_ATTENTE_ACOMPTE: "En attente d'acompte",
-  ACOMPTE_PAYE: "Acompte payé",
-  EN_TRADUCTION: "En traduction",
-  TRADUCTION_TERMINEE: "Traduction terminée",
-  FICHIER_EN_ATTENTE_DE_SOLDE: "En attente du solde",
-  SOLDE_PAYE: "Solde payé",
-  TELECHARGEABLE: "Téléchargeable",
-  TERMINEE: "Terminée",
-  ANNULEE: "Annulée",
-};
+import { useI18n } from "@/views/components/I18nProvider";
 
 /** Statuts où la balle est dans le camp du traducteur, pas du client — c'est ce qui doit
  * sauter aux yeux dans une liste d'ops, pas l'exhaustivité du statut brut. */
@@ -34,15 +21,16 @@ interface AdminOrderRow {
 }
 
 const FILTERS = [
-  { key: "action", label: "À traiter", match: (o: AdminOrderRow) => ACTION_NEEDED_STATUSES.has(o.status) },
-  { key: "waiting", label: "En attente client", match: (o: AdminOrderRow) => ["EN_ATTENTE_ACOMPTE", "FICHIER_EN_ATTENTE_DE_SOLDE"].includes(o.status) },
-  { key: "locked", label: "Fichiers verrouillés", match: (o: AdminOrderRow) => o.fileAccess === "LOCKED" },
-  { key: "unlocked", label: "Fichiers ouverts", match: (o: AdminOrderRow) => o.fileAccess === "UNLOCKED" },
-  { key: "done", label: "Terminées", match: (o: AdminOrderRow) => ["TELECHARGEABLE", "TERMINEE"].includes(o.status) },
-  { key: "all", label: "Toutes", match: () => true },
+  { key: "action", label: "adm.orders.fToProcess", match: (o: AdminOrderRow) => ACTION_NEEDED_STATUSES.has(o.status) },
+  { key: "waiting", label: "adm.orders.fWaiting", match: (o: AdminOrderRow) => ["EN_ATTENTE_ACOMPTE", "FICHIER_EN_ATTENTE_DE_SOLDE"].includes(o.status) },
+  { key: "locked", label: "adm.orders.fLocked", match: (o: AdminOrderRow) => o.fileAccess === "LOCKED" },
+  { key: "unlocked", label: "adm.orders.fUnlocked", match: (o: AdminOrderRow) => o.fileAccess === "UNLOCKED" },
+  { key: "done", label: "adm.orders.fDone", match: (o: AdminOrderRow) => ["TELECHARGEABLE", "TERMINEE"].includes(o.status) },
+  { key: "all", label: "adm.orders.fAll", match: () => true },
 ] as const;
 
 export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[] }) {
+  const { t } = useI18n();
   const [filterKey, setFilterKey] = useState<(typeof FILTERS)[number]["key"]>("action");
 
   const counts = useMemo(
@@ -56,9 +44,9 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
   return (
     <div className="mx-auto max-w-[1180px] px-4 py-8 sm:px-7 lg:px-10 lg:py-10">
       <div className="mb-7">
-        <p className="mb-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-blue">Opérations</p>
-        <h1 className="text-[27px] text-navy sm:text-[30px]">Commandes</h1>
-        <p className="mt-2 text-[13.5px] text-muted">Priorisez les dossiers à traiter et suivez chaque livraison.</p>
+        <p className="mb-1.5 text-[10.5px] font-bold uppercase tracking-[0.18em] text-blue">{t("adm.orders.eyebrow")}</p>
+        <h1 className="text-[27px] text-navy sm:text-[30px]">{t("adm.orders.title")}</h1>
+        <p className="mt-2 text-[13.5px] text-muted">{t("adm.orders.subtitle")}</p>
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
@@ -74,14 +62,14 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
             <div className={`text-[25px] font-semibold ${filterKey === f.key ? "text-blue-2" : "text-navy"}`}>
               {counts[f.key]}
             </div>
-            <div className="text-[12.5px] font-medium text-muted">{f.label}</div>
+            <div className="text-[12.5px] font-medium text-muted">{t(f.label)}</div>
           </button>
         ))}
       </div>
 
       {filteredOrders.length === 0 ? (
         <div className="rounded-2xl border border-[#e4e9f1] bg-white p-12 text-center text-muted shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
-          Aucune commande dans ce filtre.
+          {t("adm.orders.emptyFilter")}
         </div>
       ) : (
         <>
@@ -92,19 +80,19 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
             <table className="w-full text-left text-[13.5px]">
               <thead className="bg-[#f8f9fc] text-[10.5px] uppercase tracking-[0.1em] text-muted">
                 <tr>
-                  <th className="px-5 py-3">Référence</th>
-                  <th className="px-5 py-3">Client</th>
-                  <th className="px-5 py-3">Service</th>
-                  <th className="px-5 py-3">Statut</th>
-                  <th className="px-5 py-3">Accès fichier</th>
-                  <th className="px-5 py-3">Montant</th>
+                  <th className="px-5 py-3">{t("adm.col.reference")}</th>
+                  <th className="px-5 py-3">{t("adm.col.client")}</th>
+                  <th className="px-5 py-3">{t("adm.col.service")}</th>
+                  <th className="px-5 py-3">{t("adm.col.status")}</th>
+                  <th className="px-5 py-3">{t("adm.col.fileAccess")}</th>
+                  <th className="px-5 py-3">{t("adm.col.amount")}</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredOrders.map((order) => {
                   const needsAction = ACTION_NEEDED_STATUSES.has(order.status);
                   return (
-                    <tr key={order.id} className="border-t border-[#edf0f5] transition hover:bg-[#f8faff]">
+                    <tr key={order.id} className="border-t border-mist transition hover:bg-[#f8faff]">
                       <td className="px-5 py-3.5">
                         <Link href={`/admin/orders/${order.id}`} className="flex items-center gap-2 font-semibold text-blue hover:text-blue-2">
                           {needsAction && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-seal" aria-hidden="true" />}
@@ -122,7 +110,7 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
                             needsAction ? "bg-[#fdf1e2] text-[#9a5b12]" : "bg-blue-soft text-blue-2"
                           }`}
                         >
-                          {STATUS_LABELS[order.status] ?? order.status}
+                          {t(`app.status.${order.status}`)}
                         </span>
                       </td>
                       <td className="px-5 py-3.5"><FileAccessBadge access={order.fileAccess} /></td>
@@ -162,10 +150,10 @@ export default function AdminOrdersListPage({ orders }: { orders: AdminOrderRow[
                         needsAction ? "bg-[#fdf1e2] text-[#9a5b12]" : "bg-blue-soft text-blue-2"
                       }`}
                     >
-                      {STATUS_LABELS[order.status] ?? order.status}
+                      {t(`app.status.${order.status}`)}
                     </span>
                   </div>
-                  <div className="mt-3 border-t border-[#edf0f5] pt-3">
+                  <div className="mt-3 border-t border-mist pt-3">
                     <FileAccessBadge access={order.fileAccess} />
                   </div>
                 </Link>

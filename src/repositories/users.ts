@@ -25,7 +25,7 @@ export function findUserById(id: string) {
 }
 
 export function findUserByEmail(email: string) {
-  return prisma.user.findUnique({ where: { email } });
+  return prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
 }
 
 export interface CreateUserInput {
@@ -48,7 +48,7 @@ export async function createUser(input: CreateUserInput) {
   return prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
-        email: input.email,
+        email: input.email.trim().toLowerCase(),
         name: `${input.firstName} ${input.lastName}`,
         firstName: input.firstName,
         lastName: input.lastName,
@@ -83,6 +83,10 @@ export function updateUserProfile(id: string, input: UpdateUserProfileInput) {
       role: input.role,
     },
   });
+}
+
+export function countAdmins() {
+  return prisma.user.count({ where: { role: "ADMIN" } });
 }
 
 export function deleteUser(id: string) {

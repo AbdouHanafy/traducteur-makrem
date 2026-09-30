@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import MediaPicker from "@/views/components/MediaPicker";
+import { useI18n } from "@/views/components/I18nProvider";
+import TranslationEditor from "@/views/components/TranslationEditor";
+import type { TranslationsMap } from "@/lib/localize";
 
 export interface ArticleFormValues {
   id?: string;
@@ -12,10 +15,12 @@ export interface ArticleFormValues {
   body: string;
   coverImageUrl: string;
   published: boolean;
+  translations: TranslationsMap;
 }
 
 export default function AdminArticleFormPage({ initial }: { initial: ArticleFormValues }) {
   const router = useRouter();
+  const { t } = useI18n();
   const isEdit = Boolean(initial.id);
   const [form, setForm] = useState(initial);
   const [loading, setLoading] = useState(false);
@@ -46,7 +51,7 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
 
     if (!res.ok) {
       const data = await res.json().catch(() => null);
-      setError(data?.error || "Une erreur est survenue.");
+      setError(data?.error || t("adm.errorGeneric"));
       return;
     }
 
@@ -56,7 +61,7 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
 
   return (
     <div className="mx-auto max-w-[720px] px-6 py-14">
-      <h1 className="mb-8 text-[26px] text-navy">{isEdit ? "Modifier l'article" : "Nouvel article"}</h1>
+      <h1 className="mb-8 text-[26px] text-navy">{isEdit ? t("adm.articleForm.titleEdit") : t("adm.articleForm.titleNew")}</h1>
 
       <form onSubmit={onSubmit} className="grid gap-5 rounded-[14px] border border-line bg-white p-7">
         {error && (
@@ -66,7 +71,7 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
         )}
 
         <div>
-          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Titre</label>
+          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">{t("adm.title")}</label>
           <input
             required
             value={form.title}
@@ -79,7 +84,7 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Slug</label>
+          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">{t("adm.serviceForm.slug")}</label>
           <input
             required
             value={form.slug}
@@ -90,7 +95,7 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
 
         <div>
           <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-            Résumé <span className="font-normal text-muted">(affiché dans la liste des articles)</span>
+            {t("adm.articleForm.summary")} <span className="font-normal text-muted">{t("adm.articleForm.summaryHint")}</span>
           </label>
           <textarea
             required
@@ -102,7 +107,7 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Contenu</label>
+          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">{t("adm.articleForm.content")}</label>
           <textarea
             required
             rows={12}
@@ -113,9 +118,20 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
         </div>
 
         <div>
-          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">Image de couverture</label>
+          <label className="mb-1.5 block text-[13.5px] font-semibold text-ink">{t("adm.articleForm.cover")}</label>
           <MediaPicker value={form.coverImageUrl} onChange={(url) => setForm((f) => ({ ...f, coverImageUrl: url }))} />
         </div>
+
+        <TranslationEditor
+          fields={[
+            { name: "title", label: t("adm.title") },
+            { name: "excerpt", label: t("adm.articleForm.summary"), multiline: true, rows: 2 },
+            { name: "body", label: t("adm.articleForm.content"), multiline: true, rows: 10 },
+          ]}
+          base={{ title: form.title, excerpt: form.excerpt, body: form.body }}
+          value={form.translations}
+          onChange={(translations) => setForm((f) => ({ ...f, translations }))}
+        />
 
         <label className="flex items-center gap-2.5 text-[14px] text-ink">
           <input
@@ -124,7 +140,7 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
             onChange={(e) => setForm((f) => ({ ...f, published: e.target.checked }))}
             className="h-4 w-4"
           />
-          Publié (visible sur le site)
+          {t("adm.articleForm.published")}
         </label>
 
         <button
@@ -132,7 +148,7 @@ export default function AdminArticleFormPage({ initial }: { initial: ArticleForm
           disabled={loading}
           className="mt-1.5 inline-flex w-fit items-center justify-center rounded-[11px] bg-blue px-6 py-3 text-[14.5px] font-semibold text-white transition-colors hover:bg-blue-2 disabled:opacity-60"
         >
-          {loading ? "Enregistrement…" : "Enregistrer"}
+          {loading ? t("adm.saving") : t("adm.save")}
         </button>
       </form>
     </div>

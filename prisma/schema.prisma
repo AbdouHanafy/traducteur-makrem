@@ -130,7 +130,9 @@ model Service {
   name         String
   description  String   @db.Text
   pricePerPage Decimal  @db.Decimal(10, 3)
-  imageUrl     String?
+  imageUrl     String? @db.VarChar(500)
+  order        Int      @default(0)
+  translations Json?
   active       Boolean  @default(true)
   orders       Order[]
   createdAt    DateTime @default(now())
@@ -165,6 +167,7 @@ model FaqItem {
   answer    String   @db.Text
   order     Int      @default(0)
   active    Boolean  @default(true)
+  translations Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -183,9 +186,10 @@ model Article {
   title         String
   excerpt       String    @db.Text
   body          String    @db.Text
-  coverImageUrl String?
+  coverImageUrl String? @db.VarChar(500)
   order         Int       @default(0)
   published     Boolean   @default(false)
+  translations  Json?
   publishedAt   DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -218,6 +222,7 @@ model Testimonial {
   rating     Int?
   order      Int      @default(0)
   active     Boolean  @default(true)
+  translations Json?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -239,9 +244,10 @@ model HomeSection {
   eyebrow  String?
   title    String?
   body     String?         @db.Text
-  imageUrl String?
+  imageUrl String? @db.VarChar(500)
   ctaLabel String?
-  ctaHref  String?
+  ctaHref  String? @db.VarChar(500)
+  translations Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -269,8 +275,8 @@ model SiteContent {
 model Partner {
   id         String   @id @default(cuid())
   name       String
-  logoUrl    String?
-  websiteUrl String?
+  logoUrl    String? @db.VarChar(500)
+  websiteUrl String? @db.VarChar(500)
   order      Int      @default(0)
   active     Boolean  @default(true)
   createdAt  DateTime @default(now())
@@ -370,4 +376,14 @@ model AuditLog {
 
   @@index([actorId])
   @@index([resource])
+}
+
+/**
+ * Réglages clé/valeur du site pilotés depuis le backoffice (couleurs du thème, etc.). Seules
+ * les valeurs personnalisées sont stockées : l'absence d'une clé = valeur par défaut du code.
+ */
+model SiteSetting {
+  key       String   @id @db.VarChar(100)
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
 }

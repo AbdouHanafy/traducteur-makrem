@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import type { TranslationsMap } from "@/lib/localize";
+import { withTranslations } from "@/repositories/_json";
 
 export function listActiveTestimonials() {
   return prisma.testimonial.findMany({ where: { active: true }, orderBy: { order: "asc" } });
@@ -18,15 +20,16 @@ export interface TestimonialInput {
   quote: string;
   rating?: number | null;
   active: boolean;
+  translations?: TranslationsMap | null;
 }
 
 export async function createTestimonial(data: TestimonialInput) {
   const last = await prisma.testimonial.findFirst({ orderBy: { order: "desc" } });
-  return prisma.testimonial.create({ data: { ...data, order: (last?.order ?? -1) + 1 } });
+  return prisma.testimonial.create({ data: { ...withTranslations(data), order: (last?.order ?? -1) + 1 } });
 }
 
 export function updateTestimonial(id: string, data: TestimonialInput) {
-  return prisma.testimonial.update({ where: { id }, data });
+  return prisma.testimonial.update({ where: { id }, data: withTranslations(data) });
 }
 
 export function deleteTestimonial(id: string) {
@@ -42,11 +45,9 @@ export async function moveTestimonial(id: string, direction: "up" | "down") {
   const swapIndex = direction === "up" ? index - 1 : index + 1;
   if (swapIndex < 0 || swapIndex >= items.length) return;
 
-  const current = items[index];
-  const swap = items[swapIndex];
 
-  await prisma.$transaction([
-    prisma.testimonial.update({ where: { id: current.id }, data: { order: swap.order } }),
-    prisma.testimonial.update({ where: { id: swap.id }, data: { order: current.order } }),
-  ]);
+  const reordered = [...items];
+  [reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
+  // Renumérote toute la liste : deux éléments à égalité d'ordre ne bloquent plus le déplacement.
+  await prisma.$transaction(reordered.map((item, position) => prisma.testimonial.update({ where: { id: item.id }, data: { order: position } })));
 }

@@ -42,7 +42,7 @@ export default function ServiceCard({ service, anchor = true }: { service: Servi
             className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
           />
         ) : (
-          <div className="grid h-full w-full place-items-center bg-[linear-gradient(135deg,#EDF0F5,#DCE3EE)]">
+          <div className="grid h-full w-full place-items-center bg-[linear-gradient(135deg,var(--color-mist),var(--color-line))]">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2456B8" strokeWidth="1.6">
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
               <path d="M14 2v6h6M8 13h8M8 17h5" />

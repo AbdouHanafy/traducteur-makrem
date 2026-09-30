@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/views/components/I18nProvider";
+import TranslationEditor from "@/views/components/TranslationEditor";
+import type { TranslationsMap } from "@/lib/localize";
 
 export interface TestimonialRow {
   id: string;
@@ -10,6 +13,7 @@ export interface TestimonialRow {
   quote: string;
   rating: number | null;
   active: boolean;
+  translations: TranslationsMap;
 }
 
 interface FormValues {
@@ -18,12 +22,14 @@ interface FormValues {
   quote: string;
   rating: number;
   active: boolean;
+  translations: TranslationsMap;
 }
 
 function Stars({ value }: { value: number | null }) {
+  const { t } = useI18n();
   if (!value) return null;
   return (
-    <span className="text-[#B4894E]" aria-label={`${value} sur 5`}>
+    <span className="text-seal" aria-label={t("adm.testimonials.ratingOf", { n: value })}>
       {"★".repeat(value)}
       <span className="text-line">{"★".repeat(5 - value)}</span>
     </span>
@@ -41,6 +47,7 @@ function TestimonialForm({
   onCancel: () => void;
   submitLabel: string;
 }) {
+  const { t } = useI18n();
   const [values, setValues] = useState(initial);
   const [loading, setLoading] = useState(false);
 
@@ -59,13 +66,13 @@ function TestimonialForm({
           required
           value={values.authorName}
           onChange={(e) => setValues((v) => ({ ...v, authorName: e.target.value }))}
-          placeholder="Nom du client"
+          placeholder={t("adm.testimonials.authorName")}
           className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
         />
         <input
           value={values.authorRole}
           onChange={(e) => setValues((v) => ({ ...v, authorRole: e.target.value }))}
-          placeholder="Contexte (optionnel — ex. Extrait de naissance)"
+          placeholder={t("adm.testimonials.context")}
           className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
         />
       </div>
@@ -74,12 +81,21 @@ function TestimonialForm({
         rows={3}
         value={values.quote}
         onChange={(e) => setValues((v) => ({ ...v, quote: e.target.value }))}
-        placeholder="Avis du client"
+        placeholder={t("adm.testimonials.quote")}
         className="w-full rounded-[10px] border border-line bg-white px-4 py-2.5 text-[14.5px] text-ink outline-none focus:border-blue"
+      />
+      <TranslationEditor
+        fields={[
+          { name: "authorRole", label: t("adm.testimonials.context") },
+          { name: "quote", label: t("adm.testimonials.quote"), multiline: true },
+        ]}
+        base={{ authorRole: values.authorRole, quote: values.quote }}
+        value={values.translations}
+        onChange={(translations) => setValues((v) => ({ ...v, translations }))}
       />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <label className="text-[13.5px] text-ink">Note</label>
+          <label className="text-[13.5px] text-ink">{t("adm.testimonials.rating")}</label>
           <select
             value={values.rating}
             onChange={(e) => setValues((v) => ({ ...v, rating: Number(e.target.value) }))}
@@ -93,12 +109,12 @@ function TestimonialForm({
           </select>
           <label className="flex items-center gap-2 text-[13.5px] text-ink">
             <input type="checkbox" checked={values.active} onChange={(e) => setValues((v) => ({ ...v, active: e.target.checked }))} className="h-4 w-4" />
-            Publié
+            {t("adm.published")}
           </label>
         </div>
         <div className="flex gap-2">
           <button type="button" onClick={onCancel} className="rounded-[9px] px-4 py-2 text-[13.5px] text-muted">
-            Annuler
+            {t("adm.cancel")}
           </button>
           <button
             type="submit"
@@ -113,10 +129,11 @@ function TestimonialForm({
   );
 }
 
-const EMPTY_FORM: FormValues = { authorName: "", authorRole: "", quote: "", rating: 5, active: true };
+const EMPTY_FORM: FormValues = { authorName: "", authorRole: "", quote: "", rating: 5, active: true, translations: {} };
 
 export default function AdminTestimonialsPage({ items }: { items: TestimonialRow[] }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -141,7 +158,7 @@ export default function AdminTestimonialsPage({ items }: { items: TestimonialRow
   }
 
   async function remove(id: string) {
-    if (!confirm("Supprimer cet avis ?")) return;
+    if (!confirm(t("adm.testimonials.deleteConfirm"))) return;
     await fetch(`/api/admin/testimonials/${id}`, { method: "DELETE" });
     router.refresh();
   }
@@ -158,32 +175,30 @@ export default function AdminTestimonialsPage({ items }: { items: TestimonialRow
   return (
     <div className="mx-auto max-w-[820px] px-6 py-14">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[22px] text-navy sm:text-[26px]">Avis clients</h1>
+        <h1 className="text-[22px] text-navy sm:text-[26px]">{t("adm.testimonials.title")}</h1>
         {!adding && (
           <button
             type="button"
             onClick={() => setAdding(true)}
             className="inline-flex items-center gap-2 rounded-[11px] bg-blue px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-blue-2"
           >
-            Ajouter un avis
+            {t("adm.testimonials.add")}
           </button>
         )}
       </div>
       <p className="mb-8 text-[13.5px] text-muted">
-        Le carrousel n&apos;apparaît sur la page d&apos;accueil que s&apos;il y a au moins un
-        avis publié ici — n&apos;ajoutez que de vrais avis de clients, jamais de contenu
-        inventé.
+        {t("adm.testimonials.note")}
       </p>
 
       {adding && (
         <div className="mb-5 rounded-[14px] border border-line bg-white p-5">
-          <TestimonialForm initial={EMPTY_FORM} onSubmit={create} onCancel={() => setAdding(false)} submitLabel="Ajouter" />
+          <TestimonialForm initial={EMPTY_FORM} onSubmit={create} onCancel={() => setAdding(false)} submitLabel={t("adm.add")} />
         </div>
       )}
 
       {items.length === 0 && !adding && (
         <div className="rounded-[14px] border border-line bg-white p-10 text-center text-muted">
-          Aucun avis pour l&apos;instant.
+          {t("adm.testimonials.empty")}
         </div>
       )}
 
@@ -198,10 +213,11 @@ export default function AdminTestimonialsPage({ items }: { items: TestimonialRow
                   quote: item.quote,
                   rating: item.rating ?? 5,
                   active: item.active,
+                  translations: item.translations,
                 }}
                 onSubmit={(values) => update(item.id, values)}
                 onCancel={() => setEditingId(null)}
-                submitLabel="Enregistrer"
+                submitLabel={t("adm.save")}
               />
             ) : (
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -212,7 +228,7 @@ export default function AdminTestimonialsPage({ items }: { items: TestimonialRow
                     <Stars value={item.rating} />
                     {!item.active && (
                       <span className="rounded-full bg-mist px-2 py-0.5 text-[11px] font-semibold text-muted">
-                        Non publié
+                        {t("adm.unpublished")}
                       </span>
                     )}
                   </div>
@@ -224,7 +240,7 @@ export default function AdminTestimonialsPage({ items }: { items: TestimonialRow
                     disabled={index === 0}
                     onClick={() => move(item.id, "up")}
                     className="rounded-[7px] p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
-                    aria-label="Monter"
+                    aria-label={t("adm.moveUp")}
                   >
                     ↑
                   </button>
@@ -233,7 +249,7 @@ export default function AdminTestimonialsPage({ items }: { items: TestimonialRow
                     disabled={index === items.length - 1}
                     onClick={() => move(item.id, "down")}
                     className="rounded-[7px] p-1.5 text-muted hover:bg-mist hover:text-navy disabled:opacity-30"
-                    aria-label="Descendre"
+                    aria-label={t("adm.moveDown")}
                   >
                     ↓
                   </button>
@@ -242,14 +258,14 @@ export default function AdminTestimonialsPage({ items }: { items: TestimonialRow
                     onClick={() => setEditingId(item.id)}
                     className="ml-2 text-[13px] font-semibold text-blue hover:text-blue-2"
                   >
-                    Modifier
+                    {t("adm.edit")}
                   </button>
                   <button
                     type="button"
                     onClick={() => remove(item.id)}
                     className="ml-1 text-[13px] font-semibold text-muted hover:text-[#9c2c2c]"
                   >
-                    Supprimer
+                    {t("adm.delete")}
                   </button>
                 </div>
               </div>

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { faqSchema } from "@/schemas/faq";
 import { findFaqById, updateFaq, deleteFaq } from "@/repositories/faq";
@@ -23,6 +24,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   const faq = await updateFaq(id, parsed.data);
+  revalidateSite();
   return NextResponse.json({ faq });
 }
 
@@ -37,5 +39,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   if (!existing) return NextResponse.json({ error: "Introuvable." }, { status: 404 });
 
   await deleteFaq(id);
+  revalidateSite();
   return NextResponse.json({ ok: true });
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/cache";
 import { requireAdminSession } from "@/lib/rbac";
 import { deletePartner, findPartnerById, updatePartner } from "@/repositories/partners";
 import { partnerSchema } from "@/schemas/partner";
@@ -18,6 +19,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     logoUrl: parsed.data.logoUrl || null,
     websiteUrl: parsed.data.websiteUrl || null,
   });
+  revalidateSite();
   return NextResponse.json({ partner });
 }
 
@@ -27,5 +29,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   const { id } = await params;
   if (!await findPartnerById(id)) return NextResponse.json({ error: "Introuvable." }, { status: 404 });
   await deletePartner(id);
+  revalidateSite();
   return NextResponse.json({ ok: true });
 }
