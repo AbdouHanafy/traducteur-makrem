@@ -30,3 +30,21 @@ export async function saveSiteContent(locale: Locale, values: Record<string, str
     if (customized.length > 0) await tx.siteContent.createMany({ data: customized });
   });
 }
+
+/**
+ * Modifie UN seul texte (éditeur visuel). `null` ou une valeur identique au texte d'origine
+ * supprime la personnalisation : le texte redevient celui du dictionnaire.
+ */
+export async function saveSiteContentEntry(locale: Locale, key: string, value: string | null) {
+  const original = DICTIONARIES[locale][key] ?? DICTIONARIES.fr[key] ?? key;
+  if (value === null || value === original) {
+    await prisma.siteContent.deleteMany({ where: { locale, key } });
+    return { customized: false, value: original };
+  }
+  await prisma.siteContent.upsert({
+    where: { key_locale: { key, locale } },
+    create: { key, locale, value },
+    update: { value },
+  });
+  return { customized: true, value };
+}

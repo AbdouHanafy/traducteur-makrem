@@ -14,10 +14,19 @@ import { hashPassword, verifyPassword } from "@/lib/password";
  * son propre rôle, seule la valeur par défaut ("CLIENT" côté Prisma) s'applique à l'inscription
  * publique — voir ARCHITECTURE.md §7 (RBAC).
  */
+const authSecret = process.env.AUTH_SECRET || process.env.BETTER_AUTH_SECRET;
+
+// Sans secret, Better Auth retombe sur une valeur par défaut PUBLIQUE : n'importe qui pourrait forger
+// un cookie de session. En production on refuse de démarrer (sauf pendant `next build`, qui n'a pas
+// accès aux secrets de l'environnement d'exécution).
+if (process.env.NODE_ENV === "production" && process.env.NEXT_PHASE !== "phase-production-build" && (!authSecret || authSecret.length < 32)) {
+  throw new Error("AUTH_SECRET manquant ou trop court (32 caractères minimum). Générez-en un : openssl rand -base64 32");
+}
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "mysql" }),
   baseURL: process.env.NEXTAUTH_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000",
-  secret: process.env.AUTH_SECRET || process.env.BETTER_AUTH_SECRET,
+  secret: authSecret,
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 10,

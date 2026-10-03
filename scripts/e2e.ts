@@ -108,7 +108,7 @@ async function main() {
   check("status ACOMPTE_PAYE + advancePaid", order.status === "ACOMPTE_PAYE" && order.advancePaid);
 
   const admin = new Client();
-  check("admin login", (await admin.login("admin@makram-arfaoui.local", "Demo1234!")) === 200);
+  check("admin login", (await admin.login("admin@makram-arfaoui.local", "Demo12345!")) === 200);
   check("admin /admin = 200", (await admin.req("/admin")).status === 200);
   check("admin /admin/orders = 200", (await admin.req("/admin/orders")).status === 200);
   check("admin /admin/orders/[id] = 200", (await admin.req(`/admin/orders/${orderId}`)).status === 200);
@@ -350,6 +350,28 @@ async function main() {
   check("font file removed from disk", (await fetch(`${B}${uploadedFont.url}`)).status === 404);
   page = await asText(admin, "/admin/theme", "fr");
   check("theme page offers layout, Arabic fonts and custom fonts", page.text.includes("Mise en page") && page.text.includes("Cairo") && page.text.includes("Vos propres polices"));
+
+  // --- visual editor: single-text API ---
+  const entry = (json: unknown, c: Client = admin) => c.req("/api/admin/site-content/entry", { method: "PATCH", json });
+  r = await entry({ locale: "fr", key: "hero.description", value: `Texte e2e ${stamp}` });
+  const savedEntry = await r.json().catch(() => ({}));
+  check("single text saved", r.status === 200 && savedEntry.customized === true, String(r.status));
+  check("saved text appears on the public page", (await html("/", "site_locale=fr")).text.includes(`Texte e2e ${stamp}`));
+  check("other languages untouched", !(await html("/", "site_locale=en")).text.includes(`Texte e2e ${stamp}`));
+  const before = await prisma.siteContent.count();
+  r = await entry({ locale: "fr", key: "hero.credential", value: `Autre ${stamp}` });
+  check("saving a second text keeps the first one", r.status === 200 && (await prisma.siteContent.count()) === before + 1 && (await html("/", "site_locale=fr")).text.includes(`Texte e2e ${stamp}`));
+  r = await entry({ locale: "fr", key: "hero.credential", value: null });
+  r = await entry({ locale: "fr", key: "hero.description", value: null });
+  check("null restores the original text", r.status === 200 && (await r.json()).customized === false && !(await html("/", "site_locale=fr")).text.includes(`Texte e2e ${stamp}`));
+  r = await entry({ locale: "fr", key: "adm.save", value: "Hack" });
+  check("admin-interface keys are not editable (400)", r.status === 400 && (await r.json()).code === "KEY_NOT_EDITABLE");
+  check("unknown key rejected (400)", (await entry({ locale: "fr", key: "nope.nothing", value: "x" })).status === 400);
+  check("unknown language rejected (400)", (await entry({ locale: "xx", key: "hero.description", value: "x" })).status === 400);
+  check("text longer than 10000 chars rejected (400)", (await entry({ locale: "fr", key: "hero.description", value: "x".repeat(10001) })).status === 400);
+  check("client cannot edit texts (403)", (await entry({ locale: "fr", key: "hero.description", value: "x" }, client)).status === 403);
+  check("anonymous cannot edit texts (401)", (await entry({ locale: "fr", key: "hero.description", value: "x" }, new Client())).status === 401);
+  check("site can be framed by itself only (editor preview)", (await fetch(B)).headers.get("x-frame-options") === "SAMEORIGIN" && /frame-ancestors 'self'/.test((await fetch(B)).headers.get("content-security-policy") ?? ""));
 
   // --- legal pages, consent, abuse protection ---
   for (const [path, needle] of [["/conditions-generales", "Conditions générales de vente"], ["/confidentialite", "Politique de confidentialité"], ["/mentions-legales", "Mentions légales"]] as const) {

@@ -106,6 +106,10 @@ docker-compose.yml  MySQL local, lié à 127.0.0.1 uniquement, volume persistant
   `i18n-admin.ts` (backoffice) — format `[fr, ar, en, it]` par clé.
 - Contenu éditable (services, articles, FAQ, avis, sections libres) : champs en français + colonne
   JSON `translations` (ar/en/it) ; un champ vide retombe sur le français.
+- Textes du site (`/admin/site-content`) : **éditeur visuel** — aperçu de la vraie page dans une iframe
+  (`?__edit=1`, même origine uniquement), chaque texte porte une signature invisible (`src/lib/i18n-edit.ts`) ;
+  un clic ouvre le texte à modifier. Enregistrement texte par texte (`PATCH /api/admin/site-content/entry`).
+  Test navigateur : `npm run test:editor` (Chrome installé + serveur dev).
 - Apparence (`/admin/theme`) : 26 couleurs, palettes, polices latines + arabes + 2 polices `.woff2` téléversées,
   arrondi des coins, largeur et espacement, politique de lisibilité (WCAG) appliquée aussi côté serveur.
   Les fichiers téléversés sont servis par `src/app/uploads/[...path]` (Next ne sert `public/` que pour les
@@ -128,7 +132,7 @@ docker-compose.yml  MySQL local, lié à 127.0.0.1 uniquement, volume persistant
 
 ## Comptes de démo (dev uniquement)
 
-`npm run db:seed` crée 3 comptes via le vrai flux Better Auth (mot de passe : `Demo1234!`) :
+`npm run db:seed` crée 3 comptes via le vrai flux Better Auth (mot de passe : `Demo12345!`) :
 `admin@makram-arfaoui.local` (ADMIN — assure aussi la traduction) et
 `client-demo@makram-arfaoui.local` (CLIENT).
 

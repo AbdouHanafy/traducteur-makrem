@@ -16,6 +16,7 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "test:e2e": "tsx scripts/e2e.ts",
+    "test:editor": "tsx scripts/e2e-editor.ts",
     "media:service-covers": "tsx scripts/generate-service-covers.ts"
   },
   "prisma": {
@@ -42,6 +43,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
+    "playwright-core": "^1.63.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",
     "typescript": "^5"

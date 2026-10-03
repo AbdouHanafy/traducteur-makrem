@@ -16,7 +16,7 @@ import { hashPassword } from "../src/lib/password";
 
 const prisma = new PrismaClient();
 
-const DEV_PASSWORD = "Demo1234!";
+const DEV_PASSWORD = "Demo12345!";
 
 interface DemoUser {
   email: string;

@@ -33,7 +33,7 @@ async function main() {
   check("cached page is per-language (FR vs EN)", (await get("/services", "en")).text.includes('lang="en"') && (await get("/services", "fr")).text.includes('lang="fr"'));
   check("unknown language segment is 404", (await fetch(`${B}/xx/services`)).status === 404);
 
-  const login = await req("/api/auth/sign-in/email", { method: "POST", json: { email: "admin@makram-arfaoui.local", password: "Demo1234!" } });
+  const login = await req("/api/auth/sign-in/email", { method: "POST", json: { email: "admin@makram-arfaoui.local", password: "Demo12345!" } });
   check("admin login (production)", login.status === 200, String(login.status));
 
   const stamp = Date.now();
