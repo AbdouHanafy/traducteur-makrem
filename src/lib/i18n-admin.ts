@@ -529,6 +529,20 @@ const ROWS: Record<string, Row> = {
   "adm.pricing.lastActive": ["Au moins un délai doit rester proposé aux clients.", "يجب أن يبقى أجل واحد على الأقل متاحًا للحرفاء.", "At least one deadline must stay offered to clients.", "Almeno una scadenza deve restare proposta ai clienti."],
   "adm.pricing.existingOrders": ["Les commandes déjà passées gardent le prix calculé à leur création : modifier un coefficient n'a aucun effet sur elles.", "تحتفظ الطلبات السابقة بالسعر المحتسب عند إنشائها: تعديل المعامل لا يؤثر فيها.", "Existing orders keep the price calculated when they were created: changing a coefficient does not affect them.", "Gli ordini già effettuati mantengono il prezzo calcolato alla creazione: modificare un coefficiente non li riguarda."],
 
+  // Ajustement du devis par l'administrateur
+  "adm.quote.title": ["Ajuster le devis", "تعديل عرض السعر", "Adjust the quote", "Modifica il preventivo"],
+  "adm.quote.intro": ["Tant que le client n'a pas accepté (total actuel : {total} TND), vous pouvez corriger le nombre de pages réel ou fixer un total négocié. Le client est prévenu par e-mail et doit relire le nouveau montant avant d'accepter.", "ما دام الحريف لم يقبل بعد (المجموع الحالي: {total} د.ت)، يمكنكم تصحيح عدد الصفحات الفعلي أو تحديد مجموع متفق عليه. يُعلَم الحريف بالبريد الإلكتروني ويجب أن يطّلع على المبلغ الجديد قبل القبول.", "While the client has not accepted yet (current total: {total} TND), you can correct the real page count or set a negotiated total. The client is notified by e-mail and must review the new amount before accepting.", "Finché il cliente non ha accettato (totale attuale: {total} TND), puoi correggere il numero reale di pagine o fissare un totale concordato. Il cliente viene avvisato via email e deve rivedere il nuovo importo prima di accettare."],
+  "adm.quote.pages": ["Nombre de pages", "عدد الصفحات", "Number of pages", "Numero di pagine"],
+  "adm.quote.total": ["Total imposé (TND, optionnel)", "مجموع محدد (د.ت، اختياري)", "Fixed total (TND, optional)", "Totale fissato (TND, facoltativo)"],
+  "adm.quote.totalAuto": ["Vide = prix unitaire d'origine", "فارغ = سعر الوحدة الأصلي", "Empty = original unit price", "Vuoto = prezzo unitario originale"],
+  "adm.quote.reason": ["Motif (visible par le client)", "السبب (ظاهر للحريف)", "Reason (visible to the client)", "Motivo (visibile al cliente)"],
+  "adm.quote.reasonHint": ["Ex. : le document compte 5 pages et non 3.", "مثال: الوثيقة تحتوي على 5 صفحات وليس 3.", "E.g. the document has 5 pages, not 3.", "Es. il documento ha 5 pagine, non 3."],
+  "adm.quote.submit": ["Enregistrer et prévenir le client", "حفظ وإعلام الحريف", "Save and notify the client", "Salva e avvisa il cliente"],
+  "adm.quote.saved": ["Devis ajusté : nouveau total {total} TND. Le client a été prévenu.", "تم تعديل العرض: المجموع الجديد {total} د.ت. تم إعلام الحريف.", "Quote adjusted: new total {total} TND. The client has been notified.", "Preventivo modificato: nuovo totale {total} TND. Il cliente è stato avvisato."],
+  "adm.quote.locked": ["Impossible : le client a déjà accepté ce devis.", "غير ممكن: الحريف قبل هذا العرض بالفعل.", "Not possible: the client has already accepted this quote.", "Impossibile: il cliente ha già accettato questo preventivo."],
+  "adm.quote.noChange": ["Aucune modification : changez le nombre de pages ou le total.", "لا يوجد تعديل: غيّروا عدد الصفحات أو المجموع.", "No change: edit the page count or the total.", "Nessuna modifica: cambia il numero di pagine o il totale."],
+  "adm.quote.errSave": ["Impossible d'ajuster le devis.", "تعذّر تعديل العرض.", "Unable to adjust the quote.", "Impossibile modificare il preventivo."],
+
   // Traductions de contenu
   "adm.tr.legend": ["Traductions", "الترجمات", "Translations", "Traduzioni"],
   "adm.tr.hint": ["Le français est la langue de base. Un champ vide reprend le texte français.", "الفرنسية هي اللغة الأساسية. الحقل الفارغ يعتمد النص الفرنسي.", "French is the base language. An empty field falls back to the French text.", "Il francese è la lingua di base. Un campo vuoto usa il testo francese."],

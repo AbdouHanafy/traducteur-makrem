@@ -5,6 +5,7 @@ export type EmailTemplate =
   | "RESET_PASSWORD"
   | "ORDER_RECEIVED"
   | "QUOTE_ACCEPTED"
+  | "QUOTE_UPDATED"
   | "PAYMENT_CONFIRMED"
   | "TRANSLATION_READY";
 
@@ -57,6 +58,11 @@ export function renderEmail(template: EmailTemplate, payload: Payload): { subjec
       subject = `Paiement confirmé — ${String(payload.reference ?? "")}`;
       body = `<p>${escapeHtml(greeting)}</p><p>Le paiement de ${escapeHtml(payload.amount)} TND (${escapeHtml(payload.phase)}) est confirmé.</p>${link(payload.url, "Suivre ma commande")}`;
       text = `${greeting}\n\nPaiement de ${String(payload.amount ?? "")} TND confirmé. ${String(payload.url ?? "")}`;
+      break;
+    case "QUOTE_UPDATED":
+      subject = `Devis ${String(payload.reference ?? "")} mis à jour`;
+      body = `<p>${escapeHtml(greeting)}</p><p>Après examen de votre document, le devis <strong>${escapeHtml(payload.reference)}</strong> a été ajusté. Nouveau total : <strong>${escapeHtml(payload.total)} TND</strong>.</p><p>Motif : ${escapeHtml(payload.reason)}</p><p>Merci de le relire avant de l'accepter.</p>${link(payload.url, "Voir le devis")}`;
+      text = `${greeting}\n\nLe devis ${String(payload.reference ?? "")} a été ajusté. Nouveau total : ${String(payload.total ?? "")} TND.\nMotif : ${String(payload.reason ?? "")}\n${String(payload.url ?? "")}`;
       break;
     case "TRANSLATION_READY":
       subject = `Traduction prête — ${String(payload.reference ?? "")}`;

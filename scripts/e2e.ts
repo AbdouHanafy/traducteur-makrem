@@ -489,6 +489,56 @@ async function main() {
   page = await asText(admin, "/admin/pricing", "fr");
   check("pricing admin page renders the three delays", page.status === 200 && page.text.includes("coefficients") && page.text.includes("delay.express") && page.text.includes("delay.urgent"), String(page.status));
 
+  // --- admin quote adjustment ---
+  const quoteClient = new Client();
+  await quoteClient.req("/api/auth/sign-up/email", { method: "POST", json: { name: "Quote Test", email: `quote.${stamp}@test.local`, password: "Passw0rd!Long", firstName: "Quote", lastName: "Test", termsAccepted: true } });
+  const newQuoteOrder = async (pages: string) => (await (await quoteClient.req("/api/orders", { method: "POST", body: mkForm({ pages }) })).json()).id as string;
+  const adjust = (id: string, json: unknown, c: Client = admin) => c.req(`/api/admin/orders/${id}/quote`, { method: "POST", json });
+  const qOrder = await newQuoteOrder("4");
+  const q0 = await prisma.order.findUniqueOrThrow({ where: { id: qOrder } });
+  r = await adjust(qOrder, { pages: 6, reason: "Le document compte 6 pages et non 4." });
+  const q1 = await prisma.order.findUniqueOrThrow({ where: { id: qOrder } });
+  check("pages-only adjustment keeps the original unit price (total x 6/4)", r.status === 200 && q1.pages === 6 && q1.totalAmount.equals(q0.totalAmount.mul(6).div(4).toDecimalPlaces(3)), `${q0.totalAmount} -> ${q1.totalAmount}`);
+  check("advance + balance always equal the total", q1.advanceAmount.add(q1.balanceAmount).equals(q1.totalAmount));
+  check("the adjustment is audited with reason, before and after", (await prisma.auditLog.count({ where: { action: "QUOTE_ADJUSTED", resource: `order:${qOrder}` } })) === 1);
+  check("the adjustment appears in the order history with its reason", (await prisma.orderStatusHistory.count({ where: { orderId: qOrder, note: { contains: "Le document compte 6 pages" } } })) === 1);
+  check("the client is e-mailed about the new quote", (await prisma.emailOutbox.count({ where: { template: "QUOTE_UPDATED", recipient: `quote.${stamp}@test.local` } })) === 1);
+  r = await adjust(qOrder, { pages: 6, total: 123.456, reason: "Tarif négocié par téléphone." });
+  const q2 = await prisma.order.findUniqueOrThrow({ where: { id: qOrder } });
+  check("a negotiated total overrides the computed one (50/50 split)", r.status === 200 && q2.totalAmount.equals("123.456") && q2.advanceAmount.add(q2.balanceAmount).equals("123.456"), `${q2.totalAmount}`);
+  check("adjustment without a reason rejected (400)", (await adjust(qOrder, { pages: 7, reason: "" })).status === 400);
+  check("zero pages rejected (400)", (await adjust(qOrder, { pages: 0, reason: "erreur" })).status === 400);
+  check("negative total rejected (400)", (await adjust(qOrder, { pages: 6, total: -5, reason: "erreur" })).status === 400);
+  r = await adjust(qOrder, { pages: 6, total: 123.456, reason: "Rien ne change." });
+  check("an adjustment that changes nothing is refused (400 NO_CHANGE)", r.status === 400 && (await r.json()).code === "NO_CHANGE");
+  check("clients cannot adjust their own quote (403)", (await adjust(qOrder, { pages: 1, total: 1, reason: "je triche" }, quoteClient)).status === 403);
+  check("unknown order is 404", (await adjust("doesnotexist", { pages: 2, reason: "test" })).status === 404);
+  check("adjust panel is shown for a quote awaiting approval", (await asText(admin, `/admin/orders/${qOrder}`, "fr")).text.includes("Ajuster le devis"));
+
+  // the client accepts only the amount they actually saw
+  r = await quoteClient.req(`/api/orders/${qOrder}/accept-quote`, { method: "POST", json: { expectedTotal: q0.totalAmount.toString() } });
+  check("accepting a stale amount is refused (409 QUOTE_CHANGED)", r.status === 409 && (await r.json()).code === "QUOTE_CHANGED");
+  check("...and the order is still awaiting approval", (await prisma.order.findUniqueOrThrow({ where: { id: qOrder } })).status === "DEVIS_A_VALIDER");
+  r = await quoteClient.req(`/api/orders/${qOrder}/accept-quote`, { method: "POST", json: { expectedTotal: "123.456" } });
+  check("accepting the current amount works (200)", r.status === 200, String(r.status));
+  r = await adjust(qOrder, { pages: 9, total: 500, reason: "Trop tard." });
+  check("an accepted quote can no longer be adjusted (409 QUOTE_LOCKED)", r.status === 409 && (await r.json()).code === "QUOTE_LOCKED");
+  check("adjust panel is hidden once accepted", !(await asText(admin, `/admin/orders/${qOrder}`, "fr")).text.includes("Ajuster le devis"));
+
+  // race: whatever the order of events, an accepted total is always the one the client saw
+  let violations = 0;
+  for (let trial = 0; trial < 8; trial++) {
+    const raceOrder = await newQuoteOrder("2");
+    const seen = (await prisma.order.findUniqueOrThrow({ where: { id: raceOrder } })).totalAmount;
+    await Promise.all([
+      quoteClient.req(`/api/orders/${raceOrder}/accept-quote`, { method: "POST", json: { expectedTotal: seen.toString() } }),
+      adjust(raceOrder, { pages: 3, reason: `course ${trial}` }),
+    ]);
+    const final = await prisma.order.findUniqueOrThrow({ where: { id: raceOrder } });
+    if (final.status !== "DEVIS_A_VALIDER" && !final.totalAmount.equals(seen)) violations++;
+  }
+  check("race accept vs adjust: the client never accepts a total they did not see", violations === 0, `${violations} violation(s)`);
+
   // --- visual editor: single-text API ---
   const entry = (json: unknown, c: Client = admin) => c.req("/api/admin/site-content/entry", { method: "PATCH", json });
   r = await entry({ locale: "fr", key: "hero.description", value: `Texte e2e ${stamp}` });

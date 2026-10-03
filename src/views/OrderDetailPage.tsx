@@ -42,10 +42,17 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
   async function acceptQuote() {
     setLoading(true);
     setError(null);
-    const res = await fetch(`/api/orders/${order.id}/accept-quote`, { method: "POST" });
+    const res = await fetch(`/api/orders/${order.id}/accept-quote`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ expectedTotal: order.totalAmount }),
+    });
     setLoading(false);
     if (!res.ok) {
-      setError(t("app.order.errAccept"));
+      const data = await res.json().catch(() => null);
+      setError(data?.code === "QUOTE_CHANGED" ? t("app.order.quoteChanged") : t("app.order.errAccept"));
+      // Le devis a changé : on recharge pour afficher le nouveau montant avant toute acceptation.
+      if (data?.code === "QUOTE_CHANGED") router.refresh();
       return;
     }
     router.refresh();

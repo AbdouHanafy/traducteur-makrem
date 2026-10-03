@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import type { OrderStatus, Prisma } from "@prisma/client";
 import { enqueueEmail } from "@/lib/email/outbox";
+import { splitQuote } from "@/lib/pricing";
 
 const ORDER_INCLUDE = {
   service: true,
@@ -165,13 +166,37 @@ async function transitionStatus(
 }
 
 /** Client accepte le devis : DEVIS_A_VALIDER -> EN_ATTENTE_ACOMPTE. */
-export async function acceptQuote(orderId: string, actorId: string) {
+export class QuoteChangedError extends Error {
+  constructor() {
+    super("Le devis a été modifié. Relisez le nouveau montant avant de l'accepter.");
+  }
+}
+
+export class QuoteLockedError extends Error {
+  constructor() {
+    super("Le devis ne peut plus être modifié : le client l'a déjà accepté ou la commande a avancé.");
+  }
+}
+
+export async function acceptQuote(orderId: string, actorId: string, expectedTotal?: string) {
   return prisma.$transaction(async (tx) => {
     const order = await tx.order.findUniqueOrThrow({ where: { id: orderId } });
     if (order.status !== "DEVIS_A_VALIDER") {
       throw new Error("Ce devis ne peut plus être accepté.");
     }
-    await transitionStatus(tx, orderId, "EN_ATTENTE_ACOMPTE", actorId, undefined, "DEVIS_A_VALIDER");
+    // Le client accepte le montant qu'il a vu : si le devis a été ajusté entre-temps, il doit le relire.
+    if (expectedTotal !== undefined && !order.totalAmount.equals(expectedTotal)) {
+      throw new QuoteChangedError();
+    }
+    // La lecture ci-dessus peut être périmée (isolation REPEATABLE READ) : un ajustement validé entre
+    // temps ne la ferait pas échouer. L'écriture est donc elle-même conditionnée au statut ET au montant
+    // vu par le client — c'est elle qui garantit qu'on n'accepte jamais un total inconnu du client.
+    const accepted = await tx.order.updateMany({
+      where: { id: orderId, status: "DEVIS_A_VALIDER", ...(expectedTotal !== undefined ? { totalAmount: expectedTotal } : {}) },
+      data: { status: "EN_ATTENTE_ACOMPTE" },
+    });
+    if (accepted.count !== 1) throw expectedTotal !== undefined ? new QuoteChangedError() : new Error("Ce devis ne peut plus être accepté.");
+    await tx.orderStatusHistory.create({ data: { orderId, status: "EN_ATTENTE_ACOMPTE", actorId } });
     const user = await tx.user.findUniqueOrThrow({ where: { id: order.userId }, select: { email: true, firstName: true } });
     const baseUrl = (process.env.NEXTAUTH_URL || "http://localhost:3000").replace(/\/$/, "");
     await enqueueEmail(tx, {
@@ -230,5 +255,58 @@ export async function attachTranslatedDocument(
       template: "TRANSLATION_READY",
       payload: { name: user.firstName, reference: order.reference, url: `${baseUrl}/dashboard/orders/${order.id}` },
     });
+  });
+}
+
+/**
+ * Ajuste un devis encore en attente d'acceptation (nombre de pages réel, ou total négocié). Sans total
+ * imposé, le nouveau total conserve le prix unitaire d'origine : total × nouvelles pages / anciennes
+ * pages. Tout est tracé (historique + journal d'audit) et le client est prévenu par e-mail.
+ */
+export async function adjustQuote(
+  orderId: string,
+  actorId: string,
+  input: { pages: number; manualTotal?: Prisma.Decimal; reason: string },
+) {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUniqueOrThrow({ where: { id: orderId } });
+    if (order.status !== "DEVIS_A_VALIDER") throw new QuoteLockedError();
+
+    const total = input.manualTotal ?? order.totalAmount.mul(input.pages).div(order.pages);
+    const quote = splitQuote(total);
+    if (quote.totalAmount.lte(0)) throw new Error("Le total du devis doit être positif.");
+    if (input.pages === order.pages && quote.totalAmount.equals(order.totalAmount)) throw new Error("NO_CHANGE");
+
+    // Mise à jour conditionnelle : si le client accepte au même instant, une seule des deux opérations réussit.
+    const updated = await tx.order.updateMany({
+      where: { id: orderId, status: "DEVIS_A_VALIDER", pages: order.pages, totalAmount: order.totalAmount },
+      data: { pages: input.pages, totalAmount: quote.totalAmount, advanceAmount: quote.advanceAmount, balanceAmount: quote.balanceAmount },
+    });
+    if (updated.count !== 1) throw new QuoteLockedError();
+
+    const summary = `Devis ajusté : ${order.pages}→${input.pages} page(s), ${order.totalAmount.toString()}→${quote.totalAmount.toString()} TND — ${input.reason}`;
+    await tx.orderStatusHistory.create({ data: { orderId, status: "DEVIS_A_VALIDER", actorId, note: summary.slice(0, 250) } });
+    await tx.auditLog.create({
+      data: {
+        actorId,
+        action: "QUOTE_ADJUSTED",
+        resource: `order:${orderId}`,
+        metadata: {
+          reason: input.reason,
+          before: { pages: order.pages, total: order.totalAmount.toString() },
+          after: { pages: input.pages, total: quote.totalAmount.toString() },
+          manualTotal: Boolean(input.manualTotal),
+        },
+      },
+    });
+
+    const user = await tx.user.findUniqueOrThrow({ where: { id: order.userId }, select: { email: true, firstName: true } });
+    const baseUrl = (process.env.NEXTAUTH_URL || "http://localhost:3000").replace(/\/$/, "");
+    await enqueueEmail(tx, {
+      recipient: user.email,
+      template: "QUOTE_UPDATED",
+      payload: { name: user.firstName, reference: order.reference, total: quote.totalAmount.toString(), reason: input.reason, url: `${baseUrl}/dashboard/orders/${order.id}` },
+    });
+    return quote;
   });
 }

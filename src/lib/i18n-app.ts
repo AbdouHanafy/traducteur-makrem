@@ -134,6 +134,7 @@ const ROWS: Record<string, Row> = {
   "app.order.pagesOne": ["{count} page", "{count} صفحة", "{count} page", "{count} pagina"],
   "app.order.pagesMany": ["{count} pages", "{count} صفحات", "{count} pages", "{count} pagine"],
   "app.order.errAccept": ["Impossible d'accepter le devis.", "تعذّر قبول عرض السعر.", "Unable to accept the quote.", "Impossibile accettare il preventivo."],
+  "app.order.quoteChanged": ["Le devis a été ajusté par le cabinet. Relisez le nouveau montant ci-dessous avant de l'accepter.", "عدّل المكتب عرض السعر. اطّلعوا على المبلغ الجديد أدناه قبل قبوله.", "The firm has adjusted the quote. Please review the new amount below before accepting.", "Lo studio ha modificato il preventivo. Rivedi il nuovo importo qui sotto prima di accettarlo."],
   "app.order.errPay": ["Impossible de lancer le paiement.", "تعذّر بدء الدفع.", "Unable to start the payment.", "Impossibile avviare il pagamento."],
 
   // Paiement (bac à sable)

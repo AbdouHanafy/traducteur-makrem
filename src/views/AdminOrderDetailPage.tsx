@@ -47,6 +47,8 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [quoteForm, setQuoteForm] = useState({ pages: String(order.pages), total: "", reason: "" });
+  const [quoteMessage, setQuoteMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
 
   const sourceDoc = order.documents.find((d) => d.kind === "SOURCE");
   const translatedDoc = order.documents.find((d) => d.kind === "TRANSLATED");
@@ -61,6 +63,26 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
       setError(t("adm.order.errStart"));
       return;
     }
+    router.refresh();
+  }
+
+  async function adjustQuote(event: React.FormEvent) {
+    event.preventDefault();
+    setLoading(true);
+    setQuoteMessage(null);
+    const res = await fetch(`/api/admin/orders/${order.id}/quote`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pages: Number(quoteForm.pages), total: quoteForm.total.trim() ? Number(quoteForm.total) : undefined, reason: quoteForm.reason }),
+    });
+    const data = await res.json().catch(() => null);
+    setLoading(false);
+    if (!res.ok) {
+      setQuoteMessage({ kind: "error", text: data?.code === "QUOTE_LOCKED" ? t("adm.quote.locked") : data?.code === "NO_CHANGE" ? t("adm.quote.noChange") : t("adm.quote.errSave") });
+      return;
+    }
+    setQuoteMessage({ kind: "ok", text: t("adm.quote.saved", { total: data.totalAmount }) });
+    setQuoteForm((current) => ({ ...current, total: "", reason: "" }));
     router.refresh();
   }
 
@@ -251,6 +273,31 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
             <h2 className="mb-3 text-[16.5px] text-navy">{t("order.fulfilment")}</h2>
             <dl className="grid gap-2 text-[13.5px]"><div><dt className="font-semibold text-ink">{t("order.destinationCountry")}</dt><dd className="text-muted">{order.destinationCountry}</dd></div>{order.receivingAuthority && <div><dt className="font-semibold text-ink">{t("order.receivingAuthority")}</dt><dd className="text-muted">{order.receivingAuthority}</dd></div>}<div><dt className="font-semibold text-ink">{t("order.purpose")}</dt><dd className="whitespace-pre-wrap text-muted">{order.purpose}</dd></div><div><dt className="font-semibold text-ink">{t("order.certificationNeeds")}</dt><dd className="text-muted">{t(`order.cert.${order.certificationNeeds.toLowerCase()}`)}</dd></div><div><dt className="font-semibold text-ink">{t("order.deliveryMethod")}</dt><dd className="text-muted">{t(`order.delivery.${order.deliveryMethod.toLowerCase()}`)}</dd></div>{order.deliveryAddress && <div><dt className="font-semibold text-ink">{t("order.deliveryAddress")}</dt><dd className="whitespace-pre-wrap text-muted">{order.deliveryAddress}</dd></div>}{order.clientNotes && <div><dt className="font-semibold text-ink">{t("order.clientNotes")}</dt><dd className="whitespace-pre-wrap text-muted">{order.clientNotes}</dd></div>}</dl>
           </section>
+          {order.status === "DEVIS_A_VALIDER" && (
+            <section className="rounded-2xl border border-caution-line bg-caution-soft/40 p-6">
+              <h2 className="mb-1 text-[16.5px] text-navy">{t("adm.quote.title")}</h2>
+              <p className="mb-4 text-[12.5px] text-muted">{t("adm.quote.intro", { total: order.totalAmount })}</p>
+              <form onSubmit={adjustQuote} className="grid gap-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="quote-pages" className="mb-1 block text-[12.5px] font-semibold text-ink">{t("adm.quote.pages")}</label>
+                    <input id="quote-pages" type="number" min={1} max={500} required value={quoteForm.pages} onChange={(event) => setQuoteForm((current) => ({ ...current, pages: event.target.value }))} className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[13.5px] outline-none focus:border-blue" />
+                  </div>
+                  <div>
+                    <label htmlFor="quote-total" className="mb-1 block text-[12.5px] font-semibold text-ink">{t("adm.quote.total")}</label>
+                    <input id="quote-total" type="number" min={0} step="0.001" value={quoteForm.total} onChange={(event) => setQuoteForm((current) => ({ ...current, total: event.target.value }))} placeholder={t("adm.quote.totalAuto")} className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[13.5px] outline-none focus:border-blue" />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="quote-reason" className="mb-1 block text-[12.5px] font-semibold text-ink">{t("adm.quote.reason")}</label>
+                  <textarea id="quote-reason" rows={2} required minLength={3} maxLength={500} value={quoteForm.reason} onChange={(event) => setQuoteForm((current) => ({ ...current, reason: event.target.value }))} placeholder={t("adm.quote.reasonHint")} className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[13.5px] outline-none focus:border-blue" />
+                </div>
+                {quoteMessage && <p role="status" className={`text-[12.5px] ${quoteMessage.kind === "ok" ? "text-ok" : "text-danger"}`}>{quoteMessage.text}</p>}
+                <button type="submit" disabled={loading} className="w-fit rounded-lg bg-navy px-4 py-2.5 text-[13px] font-semibold text-white transition hover:bg-navy-2 disabled:opacity-60">{t("adm.quote.submit")}</button>
+              </form>
+            </section>
+          )}
+
           <section className="rounded-2xl border border-line bg-white p-6">
             <h2 className="mb-3 text-[16.5px] text-navy">{t("adm.order.client")}</h2>
             <p className="text-[14px] font-medium text-ink">
