@@ -66,7 +66,7 @@ export function renderEmail(template: EmailTemplate, payload: Payload): { subjec
       break;
     case "TRANSLATION_READY":
       subject = `Traduction prête — ${String(payload.reference ?? "")}`;
-      body = `<p>${escapeHtml(greeting)}</p><p>Votre traduction est prête. Le fichier sera téléchargeable après règlement du solde.</p>${link(payload.url, "Voir et régler le solde")}`;
+      body = `<p>${escapeHtml(greeting)}</p><p>Votre traduction est prête. Consultez un aperçu protégé pour vérifier qu’elle correspond à votre demande ; le fichier sera téléchargeable après règlement du solde.</p>${link(payload.url, "Voir l’aperçu et régler le solde")}`;
       text = `${greeting}\n\nVotre traduction est prête. ${String(payload.url ?? "")}`;
       break;
   }

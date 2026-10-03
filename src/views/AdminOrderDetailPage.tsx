@@ -26,6 +26,7 @@ export interface AdminOrderDetailData {
   advancePaid: boolean;
   balancePaid: boolean;
   fileAccess: TranslatedFileAccess;
+  revision: { note: string; requestedAt: string } | null;
   user: { firstName: string; lastName: string; email: string; phone: string | null };
   service: { name: string };
   documents: { id: string; kind: "SOURCE" | "TRANSLATED"; originalName: string }[];
@@ -47,6 +48,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [previewCopy, setPreviewCopy] = useState<File | null>(null);
   const [quoteForm, setQuoteForm] = useState({ pages: String(order.pages), total: "", reason: "" });
   const [quoteMessage, setQuoteMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
 
@@ -96,6 +98,7 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
     setError(null);
     const formData = new FormData();
     formData.set("file", file);
+    if (previewCopy) formData.set("previewCopy", previewCopy);
     const res = await fetch(`/api/admin/orders/${order.id}/document`, { method: "POST", body: formData });
     setLoading(false);
     if (!res.ok) {
@@ -185,6 +188,27 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
         </div>
       )}
 
+      {order.revision && (
+        <section role="alert" className="mb-6 rounded-2xl border border-caution-line bg-caution-soft p-5">
+          <h2 className="text-[15px] font-semibold text-caution">{t("adm.revision.title")}</h2>
+          <p className="mt-1 text-[12px] text-caution">{new Date(order.revision.requestedAt).toLocaleString()}</p>
+          <blockquote className="mt-3 whitespace-pre-wrap rounded-lg bg-white px-4 py-3 text-[13.5px] text-ink">{order.revision.note}</blockquote>
+          <form onSubmit={uploadTranslated} className="mt-4 grid gap-2.5">
+            <label htmlFor="revision-file" className="text-[13px] font-semibold text-ink">{t("adm.revision.replace")}</label>
+            <input
+              id="revision-file"
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              className="w-full rounded-lg border border-dashed border-line bg-white px-3.5 py-2.5 text-[13.5px] text-ink outline-none"
+            />
+            <label htmlFor="revision-preview-copy" className="text-[13px] font-semibold text-ink">{t("adm.preview.copyLabel")}</label>
+            <input id="revision-preview-copy" type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => setPreviewCopy(e.target.files?.[0] ?? null)} className="w-full rounded-lg border border-dashed border-line bg-white px-3.5 py-2.5 text-[13.5px] text-ink outline-none" />
+            <button type="submit" disabled={loading} className="inline-flex w-fit items-center justify-center rounded-xl bg-ok px-4 py-2.5 text-[13.5px] font-semibold text-white disabled:opacity-60">{t("adm.revision.submit")}</button>
+          </form>
+        </section>
+      )}
+
       <div className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
         <section className="rounded-2xl border border-line bg-white p-6">
           <h2 className="mb-5 text-[16.5px] text-navy">{t("adm.order.tracking")}</h2>
@@ -253,6 +277,9 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
                         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
                         className="w-full rounded-lg border border-dashed border-line bg-mist px-3.5 py-2.5 text-[13.5px] text-ink outline-none"
                       />
+                      <label htmlFor="preview-copy" className="text-[12.5px] font-semibold text-ink">{t("adm.preview.copyLabel")}</label>
+                      <input id="preview-copy" type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => setPreviewCopy(e.target.files?.[0] ?? null)} className="w-full rounded-lg border border-dashed border-line bg-mist px-3.5 py-2.5 text-[13.5px] text-ink outline-none" />
+                      <p className="-mt-1 text-[11.5px] text-muted">{t("adm.preview.copyHint")}</p>
                       <button
                         type="submit"
                         disabled={loading}

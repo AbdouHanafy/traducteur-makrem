@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { requireStaffSession } from "@/lib/rbac";
 import { limit, rejectOversize, HOUR } from "@/lib/rate-limit";
-import { findOrderById, attachTranslatedDocument } from "@/repositories/orders";
+import { findOrderById, attachTranslatedDocument, replaceTranslatedDocument } from "@/repositories/orders";
 import { validateUpload, UploadValidationError, MAX_UPLOAD_BYTES } from "@/lib/upload";
 import { deletePrivateFile, writePrivateFile, readPrivateFile } from "@/lib/storage/privateStorage";
 import { generateAndStorePreview } from "@/lib/pdf-preview";
 import { assertMalwareFree } from "@/lib/malware-scan";
+import { renderClientPreview } from "@/lib/pdf-preview";
+import { writeClientPreview } from "@/lib/storage/privateStorage";
 
 /**
  * Dépôt du fichier final par le traducteur — jamais déclenché par un bouton client (voir
@@ -48,7 +50,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const storageKey = await writePrivateFile(upload.buffer, upload.extension);
 
   try {
-    await attachTranslatedDocument(order.id, result.session.user.id, {
+    // Après une demande de modification du client, le dépôt remplace la version précédente.
+    const save = order.revisionRequestedAt ? replaceTranslatedDocument : attachTranslatedDocument;
+    await save(order.id, result.session.user.id, {
       storageKey,
       originalName: file.name,
       mimeType: upload.mimeType,
@@ -68,6 +72,20 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       // La commande a déjà transitionné (fichier bien enregistré) : un échec de rendu
       // d'aperçu ne doit pas faire perdre le dépôt, juste être visible dans les logs.
       console.error("Échec de génération de l'aperçu filigrané :", e);
+    }
+  }
+
+  // Copie d'aperçu sans cachet ni signature, fournie par le traducteur (obligatoire pour un scan).
+  const previewCopy = formData.get("previewCopy");
+  if (previewCopy instanceof File && previewCopy.size > 0) {
+    try {
+      const copy = await validateUpload(previewCopy);
+      await assertMalwareFree(copy.buffer, copy.mimeType, copy.sha256);
+      const pages = await renderClientPreview(copy.buffer, copy.mimeType, order.reference, { allowImage: true });
+      await writeClientPreview(storageKey, pages);
+    } catch (e) {
+      console.error("Échec de génération de l'aperçu client depuis la copie fournie :", e);
+      return NextResponse.json({ ok: true, previewCopyFailed: true });
     }
   }
 

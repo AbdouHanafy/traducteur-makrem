@@ -33,9 +33,10 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         advancePaid: order.advancePaid,
         balancePaid: hasConfirmedBalanceProof(order),
         fileAccess: getTranslatedFileAccess(order),
+        revision: order.revisionRequestedAt ? { note: order.revisionNote ?? "", requestedAt: order.revisionRequestedAt.toISOString() } : null,
         user: order.user,
         service: { name: order.service.name },
-        documents: order.documents.map((d) => ({ id: d.id, kind: d.kind, originalName: d.originalName })),
+        documents: order.documents.filter((d) => d.kind === "SOURCE" || d.status === "READY").map((d) => ({ id: d.id, kind: d.kind, originalName: d.originalName })),
       }}
     />
   );

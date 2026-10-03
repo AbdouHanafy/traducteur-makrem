@@ -133,6 +133,13 @@ docker-compose.yml  MySQL local, lié à 127.0.0.1 uniquement, volume persistant
 - Limites : Better Auth (`src/lib/auth.ts`) sur connexion/inscription/mot de passe + plafond par email
   à la connexion + champ piège anti-robot ; `src/lib/rate-limit.ts` sur commandes, paiements, téléchargements,
   envois de fichiers (corps refusé avant lecture si trop gros) et changement de langue.
+- **Aperçu avant paiement** : le client consulte, avant de régler le solde, une version protégée de la traduction
+  (`/api/orders/[id]/documents/[documentId]/client-preview`) : basse résolution, filigrane en mosaïque, non
+  téléchargeable, propriétaire uniquement. **Cachet, signature et images sont retirés** du rendu des PDF (une capture
+  d'écran ne peut pas servir de document). Un scan (image ou PDF scanné) ne peut pas être nettoyé automatiquement :
+  l'admin joint une « copie d'aperçu » sans cachet ni signature, sinon le client n'a pas d'aperçu (le paiement n'est
+  alors pas bloqué). Le solde exige d'avoir vu l'aperçu (`PREVIEW_REQUIRED`) ; « Demander une modification »
+  suspend le solde (`REVISION_PENDING`) jusqu'à ce que l'admin remplace le fichier.
 - Limiteur **en mémoire** : correct pour une seule instance. Le reverse proxy doit écraser
   `X-Forwarded-For`. Avec plusieurs instances, passer à Redis/base de données.
 

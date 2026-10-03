@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { loadEnvConfig } from "@next/env";
+import { pdfText } from "./pdf-fixtures";
 
 loadEnvConfig(process.cwd());
 const B = "http://localhost:3000";
@@ -124,20 +125,59 @@ async function main() {
   check("upload refused before translation started (409)", upEarly.status === 409, String(upEarly.status));
   check("admin starts translation", (await admin.req(`/api/admin/orders/${orderId}/status`, { method: "POST" })).status === 200);
   check("start translation twice refused (409)", (await admin.req(`/api/admin/orders/${orderId}/status`, { method: "POST" })).status === 409);
-  const ups = await Promise.all([1, 2].map(() => admin.req(`/api/admin/orders/${orderId}/document`, { method: "POST", body: form({}, { data: pdf(), name: "traduction é.pdf", type: "application/pdf" }) })));
+  const ups = await Promise.all([1, 2].map(() => admin.req(`/api/admin/orders/${orderId}/document`, { method: "POST", body: form({}, { data: pdfText(), name: "traduction é.pdf", type: "application/pdf" }) })));
   const upCodes = ups.map((x) => x.status).sort();
   check("concurrent translated upload: exactly one 200", upCodes.filter((c) => c === 200).length === 1, upCodes.join(","));
   const tcount = await prisma.document.count({ where: { orderId, kind: "TRANSLATED" } });
   check("exactly one TRANSLATED document", tcount === 1, String(tcount));
   order = await prisma.order.findUniqueOrThrow({ where: { id: orderId }, include: { documents: true } });
   check("status FICHIER_EN_ATTENTE_DE_SOLDE", order.status === "FICHIER_EN_ATTENTE_DE_SOLDE", order.status);
-  const tr = order.documents.find((d) => d.kind === "TRANSLATED")!;
+  let tr = order.documents.find((d) => d.kind === "TRANSLATED")!;
 
   check("client download before balance = 402", (await client.req(`/api/orders/${orderId}/documents/${tr.id}/download`)).status === 402);
   check("client preview = 423 (locked)", (await client.req(`/api/orders/${orderId}/documents/${tr.id}/preview`)).status === 423);
   const pv = await admin.req(`/api/orders/${orderId}/documents/${tr.id}/preview?page=1`);
   check("admin watermark preview (200 jpeg)", pv.status === 200 && pv.headers.get("content-type") === "image/jpeg", String(pv.status));
   check("advance again refused (409)", (await client.req(`/api/orders/${orderId}/payment/advance`, { method: "POST" })).status === 409);
+  // --- Aperçu protégé avant paiement + demande de modification ---
+  const preUrl = (docId: string) => `/api/orders/${orderId}/documents/${docId}/client-preview`;
+  r = await client.req(`/api/orders/${orderId}/payment/balance`, { method: "POST" });
+  check("balance refused until the preview was viewed (409 PREVIEW_REQUIRED)", r.status === 409 && (await r.json()).code === "PREVIEW_REQUIRED", String(r.status));
+  check("client preview: anonymous = 401", (await anon.req(preUrl(tr.id) + "?meta=1")).status === 401);
+  check("client preview: other user = 403", (await other.req(preUrl(tr.id) + "?meta=1")).status === 403);
+  check("client preview: staff is not the owner = 403", (await admin.req(preUrl(tr.id) + "?meta=1")).status === 403);
+  r = await client.req(preUrl(tr.id) + "?meta=1");
+  const previewMeta = await r.json();
+  check("client preview meta (>= 1 page)", r.status === 200 && previewMeta.pageCount >= 1, JSON.stringify(previewMeta));
+  check("client preview: invalid page = 400", (await client.req(preUrl(tr.id) + "?page=999")).status === 400);
+  check("previewViewedAt not set by the metadata call alone", (await prisma.order.findUniqueOrThrow({ where: { id: orderId } })).previewViewedAt === null);
+  const clientPage = await client.req(preUrl(tr.id) + "?page=1");
+  const clientPageBytes = Buffer.from(await clientPage.arrayBuffer());
+  check("client preview page = watermarked low-res JPEG, no-store", clientPage.status === 200 && clientPage.headers.get("content-type") === "image/jpeg" && /no-store/.test(clientPage.headers.get("cache-control") ?? "") && clientPageBytes[0] === 0xff && clientPageBytes[1] === 0xd8, String(clientPage.status));
+  const viewedOrder = await prisma.order.findUniqueOrThrow({ where: { id: orderId } });
+  check("viewing a page records previewViewedAt + audit", viewedOrder.previewViewedAt !== null && (await prisma.auditLog.count({ where: { action: "PREVIEW_VIEWED", resource: `order:${orderId}` } })) === 1);
+  check("the real file is still locked after the preview (402)", (await client.req(`/api/orders/${orderId}/documents/${tr.id}/download`)).status === 402);
+
+  check("revision: note too short = 400", (await client.req(`/api/orders/${orderId}/revision`, { method: "POST", json: { note: "ab" } })).status === 400);
+  check("revision: other user = 403", (await other.req(`/api/orders/${orderId}/revision`, { method: "POST", json: { note: "Nom mal orthographié" } })).status === 403);
+  r = await client.req(`/api/orders/${orderId}/revision`, { method: "POST", json: { note: "Le nom du père est mal orthographié." } });
+  check("client requests a modification", r.status === 200, await r.text());
+  r = await client.req(`/api/orders/${orderId}/revision`, { method: "POST", json: { note: "Deuxième demande identique." } });
+  check("a second request while one is pending = 409", r.status === 409 && (await r.json()).code === "REVISION_NOT_ALLOWED");
+  r = await client.req(`/api/orders/${orderId}/payment/balance`, { method: "POST" });
+  check("balance suspended while a modification is pending (409 REVISION_PENDING)", r.status === 409 && (await r.json()).code === "REVISION_PENDING");
+  check("admin order page shows the request (200)", (await admin.req(`/admin/orders/${orderId}`)).status === 200);
+  const replaced = await admin.req(`/api/admin/orders/${orderId}/document`, { method: "POST", body: form({}, { data: pdfText(), name: "traduction é.pdf", type: "application/pdf" }) });
+  check("admin replaces the file after the request", replaced.status === 200, await replaced.text());
+  const afterReplace = await prisma.order.findUniqueOrThrow({ where: { id: orderId }, include: { documents: true } });
+  const newTr = afterReplace.documents.find((d) => d.kind === "TRANSLATED" && d.status === "READY")!;
+  check("old version superseded, one READY translation, request cleared", newTr.id !== tr.id && afterReplace.documents.filter((d) => d.kind === "TRANSLATED" && d.status === "READY").length === 1 && afterReplace.revisionRequestedAt === null && afterReplace.previewViewedAt === null && afterReplace.status === "FICHIER_EN_ATTENTE_DE_SOLDE");
+  check("old version preview is gone (404)", (await client.req(preUrl(tr.id) + "?meta=1")).status === 404);
+  tr = newTr;
+  r = await client.req(`/api/orders/${orderId}/payment/balance`, { method: "POST" });
+  check("the new version must be previewed again (409 PREVIEW_REQUIRED)", r.status === 409 && (await r.json()).code === "PREVIEW_REQUIRED");
+  check("client views the new version", (await client.req(preUrl(tr.id) + "?page=1")).status === 200);
+
   r = await client.req(`/api/orders/${orderId}/payment/balance`, { method: "POST" });
   const bal = await r.json();
   check("balance payment created", r.status === 200, JSON.stringify(bal));
@@ -391,7 +431,7 @@ async function main() {
   check("ORDER_RECEIVED queued once per order", (await outbox("ORDER_RECEIVED", clientEmail)) >= 1);
   check("QUOTE_ACCEPTED queued", (await outbox("QUOTE_ACCEPTED", clientEmail)) >= 1);
   check("PAYMENT_CONFIRMED queued for the advance and the balance", (await outbox("PAYMENT_CONFIRMED", clientEmail)) === 2, String(await outbox("PAYMENT_CONFIRMED", clientEmail)));
-  check("TRANSLATION_READY queued", (await outbox("TRANSLATION_READY", clientEmail)) === 1);
+  check("TRANSLATION_READY queued (initial + replacement)", (await outbox("TRANSLATION_READY", clientEmail)) === 2);
   const queuedRow = await prisma.emailOutbox.findFirstOrThrow({ where: { template: "TRANSLATION_READY", recipient: clientEmail } });
   check("outbox row stores status, subject and link payload only", queuedRow.status === "PENDING" && queuedRow.subject.length > 0 && JSON.stringify(queuedRow.payload).includes("/dashboard/orders/"));
   const jobs = (token?: string) => fetch(`${B}/api/internal/jobs/email-outbox`, { method: "POST", headers: token ? { authorization: `Bearer ${token}` } : {} });

@@ -331,6 +331,10 @@ model Order {
   deliveryAddress     String?             @db.Text
   clientNotes         String?             @db.Text
   legalHold            Boolean             @default(false)
+  // Aperçu protégé avant paiement du solde : consulté par le client / modification demandée.
+  previewViewedAt     DateTime?
+  revisionRequestedAt DateTime?
+  revisionNote        String?             @db.Text
   status     OrderStatus @default(DEMANDE)
 
   // Snapshot financier — figé à la validation du devis, jamais recalculé rétroactivement.

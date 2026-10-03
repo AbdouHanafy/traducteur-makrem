@@ -37,8 +37,10 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         balanceAmount: order.balanceAmount.toString(),
         advancePaid: order.advancePaid,
         balancePaid: getTranslatedFileAccess(order) === "UNLOCKED",
+        previewViewed: order.previewViewedAt !== null,
+        revisionRequested: order.revisionRequestedAt !== null,
         service: { name: order.service.name },
-        documents: order.documents.map((d) => ({ id: d.id, kind: d.kind, originalName: d.originalName })),
+        documents: order.documents.filter((d) => d.kind === "SOURCE" || d.status === "READY").map((d) => ({ id: d.id, kind: d.kind, originalName: d.originalName })),
         statusHistory: order.statusHistory.map((h) => ({
           status: h.status,
           createdAt: h.createdAt.toISOString(),

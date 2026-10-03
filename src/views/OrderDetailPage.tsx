@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import LockedPreview from "@/views/components/LockedPreview";
+import ProtectedPreview from "@/views/components/ProtectedPreview";
 import { getDateLocale } from "@/lib/i18n";
 import { useI18n } from "@/views/components/I18nProvider";
 
@@ -25,6 +25,8 @@ export interface OrderDetailData {
   balanceAmount: string;
   advancePaid: boolean;
   balancePaid: boolean;
+  previewViewed: boolean;
+  revisionRequested: boolean;
   service: { name: string };
   documents: { id: string; kind: "SOURCE" | "TRANSLATED"; originalName: string }[];
   statusHistory: { status: string; createdAt: string }[];
@@ -35,6 +37,13 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
   const { t, locale } = useI18n();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewed, setViewed] = useState(order.previewViewed);
+  const [previewUnavailable, setPreviewUnavailable] = useState(false);
+  const [revisionOpen, setRevisionOpen] = useState(false);
+  const [revisionNote, setRevisionNote] = useState("");
+  const [revisionSent, setRevisionSent] = useState(false);
+  const markViewed = useCallback(() => setViewed(true), []);
+  const markUnavailable = useCallback(() => setPreviewUnavailable(true), []);
 
   const sourceDoc = order.documents.find((d) => d.kind === "SOURCE");
   const translatedDoc = order.documents.find((d) => d.kind === "TRANSLATED");
@@ -58,13 +67,38 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
     router.refresh();
   }
 
+  async function sendRevision(event: React.FormEvent) {
+    event.preventDefault();
+    if (revisionNote.trim().length < 5) {
+      setError(t("app.revision.errNote"));
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    const res = await fetch(`/api/orders/${order.id}/revision`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ note: revisionNote }),
+    });
+    setLoading(false);
+    if (!res.ok) {
+      setError(t("app.revision.errGeneric"));
+      return;
+    }
+    setRevisionSent(true);
+    setRevisionOpen(false);
+    router.refresh();
+  }
+
   async function pay(phase: "advance" | "balance") {
     setLoading(true);
     setError(null);
     const res = await fetch(`/api/orders/${order.id}/payment/${phase}`, { method: "POST" });
     setLoading(false);
     if (!res.ok) {
-      setError(t("app.order.errPay"));
+      const data = await res.json().catch(() => null);
+      setError(data?.code === "PREVIEW_REQUIRED" ? t("app.preview.errRequired") : data?.code === "REVISION_PENDING" ? t("app.preview.errPending") : t("app.order.errPay"));
+      if (data?.code === "REVISION_PENDING") router.refresh();
       return;
     }
     const data = await res.json();
@@ -126,8 +160,27 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
                 </svg>
                 {t("app.order.downloadCertified")}
               </a>
+            ) : order.status === "FICHIER_EN_ATTENTE_DE_SOLDE" && !order.revisionRequested && !revisionSent ? (
+              <div className="grid gap-4">
+                <ProtectedPreview orderId={order.id} documentId={translatedDoc.id} onViewed={markViewed} onUnavailable={markUnavailable} />
+                {!revisionOpen ? (
+                  <button type="button" onClick={() => setRevisionOpen(true)} className="w-fit text-start text-[13px] font-semibold text-blue hover:text-blue-2">{t("app.revision.cta")}</button>
+                ) : (
+                  <form onSubmit={sendRevision} className="grid gap-3 rounded-xl border border-line bg-surface p-4">
+                    <label htmlFor="revision-note" className="text-[13.5px] font-semibold text-ink">{t("app.revision.label")}</label>
+                    <textarea id="revision-note" required minLength={5} maxLength={2000} rows={4} value={revisionNote} onChange={(event) => setRevisionNote(event.target.value)} className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none focus:border-blue focus:ring-3 focus:ring-blue/10" />
+                    <div className="flex flex-wrap gap-2">
+                      <button type="submit" disabled={loading} className="rounded-xl bg-navy px-5 py-2.5 text-[13.5px] font-semibold text-white disabled:opacity-60">{t("app.revision.submit")}</button>
+                      <button type="button" onClick={() => setRevisionOpen(false)} className="rounded-xl border border-line bg-white px-5 py-2.5 text-[13.5px] font-semibold text-navy">{t("app.revision.cancel")}</button>
+                    </div>
+                  </form>
+                )}
+              </div>
             ) : (
-              <LockedPreview fileName={translatedDoc.originalName} />
+              <div className="grid gap-3">
+                <span className="w-fit rounded-full bg-caution-soft px-3 py-1 text-[11px] font-bold uppercase tracking-[.08em] text-caution">{t("app.revision.pending")}</span>
+                <p role="status" className="text-[13.5px] text-muted">{t("app.revision.sent")}</p>
+              </div>
             )}
           </section>
         </div>
@@ -175,15 +228,18 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
                   {t("app.order.payAdvance", { amount: order.advanceAmount })}
                 </button>
               )}
-              {order.status === "FICHIER_EN_ATTENTE_DE_SOLDE" && (
+              {order.status === "FICHIER_EN_ATTENTE_DE_SOLDE" && !order.revisionRequested && !revisionSent && (
                 <button
                   type="button"
-                  disabled={loading}
+                  disabled={loading || (!viewed && !previewUnavailable)}
                   onClick={() => pay("balance")}
                   className="inline-flex items-center justify-center rounded-xl bg-ok px-5 py-3 text-[14.5px] font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-60"
                 >
                   {t("app.order.payBalance", { amount: order.balanceAmount })}
                 </button>
+              )}
+              {order.status === "FICHIER_EN_ATTENTE_DE_SOLDE" && !order.revisionRequested && !revisionSent && !viewed && !previewUnavailable && (
+                <p className="text-[12px] text-muted">{t("app.preview.mustView")}</p>
               )}
             </div>
           </section>

@@ -81,3 +81,38 @@ export async function readPreviewMeta(storageKey: string): Promise<{ pageCount: 
     return null;
   }
 }
+
+/** Aperçu client (filigrane dense, basse résolution) : dérivé du fichier, jamais le fichier lui-même. */
+function clientPreviewKey(storageKey: string, pageNumber: number): string {
+  return `${storageKey}.client.p${pageNumber}.jpg`;
+}
+
+function clientPreviewMetaKey(storageKey: string): string {
+  return `${storageKey}.client.meta.json`;
+}
+
+export async function writeClientPreview(storageKey: string, pages: Buffer[]): Promise<void> {
+  for (let i = 0; i < pages.length; i++) {
+    const fullPath = resolveSafePath(clientPreviewKey(storageKey, i + 1));
+    await mkdir(path.dirname(fullPath), { recursive: true });
+    await writeFile(fullPath, pages[i]);
+  }
+  // Le fichier méta est écrit en dernier : sa présence garantit que toutes les pages existent.
+  await writeFile(resolveSafePath(clientPreviewMetaKey(storageKey)), JSON.stringify({ pageCount: pages.length }));
+}
+
+export async function readClientPreviewMeta(storageKey: string): Promise<{ pageCount: number } | null> {
+  try {
+    return JSON.parse(await readFile(resolveSafePath(clientPreviewMetaKey(storageKey)), "utf-8"));
+  } catch {
+    return null;
+  }
+}
+
+export async function readClientPreviewPage(storageKey: string, pageNumber: number): Promise<Buffer | null> {
+  try {
+    return await readFile(resolveSafePath(clientPreviewKey(storageKey, pageNumber)));
+  } catch {
+    return null;
+  }
+}

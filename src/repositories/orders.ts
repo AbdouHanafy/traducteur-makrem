@@ -130,7 +130,7 @@ export function listOrdersForUser(userId: string) {
 export function listOrdersWithDocumentsForUser(userId: string) {
   return prisma.order.findMany({
     where: { userId },
-    include: { service: true, documents: true, payments: true },
+    include: { service: true, documents: { where: { OR: [{ kind: "SOURCE" }, { status: "READY" }] } }, payments: true },
     orderBy: { createdAt: "desc" },
   });
 }
@@ -308,5 +308,64 @@ export async function adjustQuote(
       payload: { name: user.firstName, reference: order.reference, total: quote.totalAmount.toString(), reason: input.reason, url: `${baseUrl}/dashboard/orders/${order.id}` },
     });
     return quote;
+  });
+}
+
+export class RevisionNotAllowedError extends Error {
+  constructor() {
+    super("Une modification ne peut être demandée qu'avant le paiement du solde, une seule fois par version.");
+  }
+}
+
+/** Le client a vu l'aperçu et demande une correction avant de payer : le solde est suspendu côté serveur. */
+export async function requestRevision(orderId: string, actorId: string, note: string) {
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.order.updateMany({
+      where: { id: orderId, status: "FICHIER_EN_ATTENTE_DE_SOLDE", balancePaid: false, revisionRequestedAt: null },
+      data: { revisionRequestedAt: new Date(), revisionNote: note },
+    });
+    if (updated.count !== 1) throw new RevisionNotAllowedError();
+    await tx.orderStatusHistory.create({ data: { orderId, status: "FICHIER_EN_ATTENTE_DE_SOLDE", actorId, note: "Modification demandée par le client" } });
+    await tx.auditLog.create({ data: { actorId, action: "REVISION_REQUESTED", resource: `order:${orderId}`, metadata: { note } } });
+  });
+}
+
+/** Le traducteur remplace le fichier après une demande de modification : l'ancienne version est écartée, le client revoit l'aperçu. */
+export async function replaceTranslatedDocument(
+  orderId: string,
+  actorId: string,
+  document: CreateOrderInput["document"],
+) {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUniqueOrThrow({ where: { id: orderId } });
+    const reopened = await tx.order.updateMany({
+      where: { id: orderId, status: "FICHIER_EN_ATTENTE_DE_SOLDE", balancePaid: false, revisionRequestedAt: { not: null } },
+      data: { revisionRequestedAt: null, revisionNote: null, previewViewedAt: null },
+    });
+    if (reopened.count !== 1) throw new Error("Aucune modification n'est en attente sur cette commande.");
+
+    await tx.document.updateMany({ where: { orderId, kind: "TRANSLATED", status: "READY" }, data: { status: "REJECTED" } });
+    await tx.document.create({
+      data: {
+        orderId,
+        kind: "TRANSLATED",
+        status: "READY",
+        storageKey: document.storageKey,
+        originalName: document.originalName,
+        mimeType: document.mimeType,
+        sizeBytes: document.sizeBytes,
+        sha256: document.sha256,
+        uploadedById: actorId,
+      },
+    });
+    await tx.orderStatusHistory.create({ data: { orderId, status: "FICHIER_EN_ATTENTE_DE_SOLDE", actorId, note: "Nouvelle version déposée" } });
+    await tx.auditLog.create({ data: { actorId, action: "TRANSLATION_REPLACED", resource: `order:${orderId}` } });
+    const user = await tx.user.findUniqueOrThrow({ where: { id: order.userId }, select: { email: true, firstName: true } });
+    const baseUrl = (process.env.NEXTAUTH_URL || "http://localhost:3000").replace(/\/$/, "");
+    await enqueueEmail(tx, {
+      recipient: user.email,
+      template: "TRANSLATION_READY",
+      payload: { name: user.firstName, reference: order.reference, url: `${baseUrl}/dashboard/orders/${order.id}` },
+    });
   });
 }
