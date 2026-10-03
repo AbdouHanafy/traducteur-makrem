@@ -41,6 +41,28 @@ export async function createPaymentRecord(data: CreatePaymentRecordInput) {
   }
 }
 
+/** Acompte encaissé en espèces au cabinet : trace un paiement CASH puis applique la même confirmation que le paiement en ligne. */
+export async function recordCashAdvance(orderId: string, actorId: string) {
+  const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId } });
+  if (order.status !== "EN_ATTENTE_ACOMPTE" || order.advancePaid) throw new Error("Acompte non exigible pour cette commande.");
+
+  // Une tentative en ligne restée ouverte est écartée pour ne pas pouvoir encaisser deux fois.
+  const pending = await prisma.payment.findMany({ where: { orderId, phase: "ADVANCE", status: "PENDING" } });
+  for (const attempt of pending) await retirePayment(attempt.id);
+
+  const payment = await createPaymentRecord({
+    orderId,
+    phase: "ADVANCE",
+    amount: order.advanceAmount,
+    currency: "TND",
+    provider: "CASH",
+    providerRef: `cash_${orderId}_${Date.now()}`,
+    checkoutUrl: "",
+    metadata: { recordedBy: actorId },
+  });
+  return confirmPaymentTransaction(payment.id, actorId);
+}
+
 export function findPaymentByProviderRef(providerRef: string) {
   return prisma.payment.findUnique({ where: { providerRef } });
 }

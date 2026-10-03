@@ -26,6 +26,7 @@ export interface OrderDetailData {
   advancePaid: boolean;
   balancePaid: boolean;
   previewViewed: boolean;
+  advanceInPerson: boolean;
   revisionRequested: boolean;
   service: { name: string };
   documents: { id: string; kind: "SOURCE" | "TRANSLATED"; originalName: string }[];
@@ -218,7 +219,10 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
                   {t("app.order.acceptQuote")}
                 </button>
               )}
-              {order.status === "EN_ATTENTE_ACOMPTE" && (
+              {order.status === "EN_ATTENTE_ACOMPTE" && order.advanceInPerson && (
+                <p role="status" className="rounded-xl border border-caution-line bg-caution-soft px-4 py-3 text-[13px] leading-5 text-caution">{t("app.order.advanceInPerson", { amount: order.advanceAmount })}</p>
+              )}
+              {order.status === "EN_ATTENTE_ACOMPTE" && !order.advanceInPerson && (
                 <button
                   type="button"
                   disabled={loading}

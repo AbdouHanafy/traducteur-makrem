@@ -68,6 +68,19 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
     router.refresh();
   }
 
+  async function confirmCashAdvance() {
+    if (!window.confirm(t("adm.cash.confirm", { amount: order.advanceAmount }))) return;
+    setLoading(true);
+    setError(null);
+    const res = await fetch(`/api/admin/orders/${order.id}/cash-advance`, { method: "POST" });
+    setLoading(false);
+    if (!res.ok) {
+      setError(t("adm.cash.error"));
+      return;
+    }
+    router.refresh();
+  }
+
   async function adjustQuote(event: React.FormEvent) {
     event.preventDefault();
     setLoading(true);
@@ -186,6 +199,14 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
         <div className="mb-6 rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
           {error}
         </div>
+      )}
+
+      {order.status === "EN_ATTENTE_ACOMPTE" && (
+        <section className="mb-6 rounded-2xl border border-caution-line bg-caution-soft p-5">
+          <h2 className="text-[15px] font-semibold text-caution">{t("adm.cash.title", { amount: order.advanceAmount })}</h2>
+          <p className="mt-1 text-[13px] text-caution">{t("adm.cash.hint")}</p>
+          <button type="button" disabled={loading} onClick={confirmCashAdvance} className="mt-3 inline-flex items-center justify-center rounded-xl bg-ok px-5 py-2.5 text-[13.5px] font-semibold text-white disabled:opacity-60">{t("adm.cash.button")}</button>
+        </section>
       )}
 
       {order.revision && (

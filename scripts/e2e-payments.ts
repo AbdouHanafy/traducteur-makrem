@@ -90,6 +90,7 @@ async function startServer(konnectPort: number) {
     env: {
       ...process.env,
       PAYMENT_PROVIDER: "konnect",
+      ADVANCE_PAYMENT_MODE: "online",
       KONNECT_ENV: "sandbox",
       KONNECT_API_BASE_URL: `http://127.0.0.1:${konnectPort}`,
       KONNECT_API_KEY: "test-key",

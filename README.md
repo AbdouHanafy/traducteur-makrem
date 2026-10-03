@@ -133,6 +133,10 @@ docker-compose.yml  MySQL local, lié à 127.0.0.1 uniquement, volume persistant
 - Limites : Better Auth (`src/lib/auth.ts`) sur connexion/inscription/mot de passe + plafond par email
   à la connexion + champ piège anti-robot ; `src/lib/rate-limit.ts` sur commandes, paiements, téléchargements,
   envois de fichiers (corps refusé avant lecture si trop gros) et changement de langue.
+- **Acompte en espèces** : les 50 % se règlent sur place. Le client voit la consigne (pas de bouton de paiement) ;
+  l'admin clique « J'ai reçu l'acompte en espèces » (`POST /api/admin/orders/[id]/cash-advance`, paiement `CASH`,
+  audit + e-mail de confirmation). `ADVANCE_PAYMENT_MODE=online` réactive l'acompte en ligne (utilisé par les tests ;
+  mettre cette variable dans `.env` local avant `npm run test:e2e`). Le solde reste payé en ligne.
 - **Aperçu avant paiement** : le client consulte, avant de régler le solde, une version protégée de la traduction
   (`/api/orders/[id]/documents/[documentId]/client-preview`) : basse résolution, filigrane en mosaïque, non
   téléchargeable, propriétaire uniquement. **Cachet, signature et images sont retirés** du rendu des PDF (une capture

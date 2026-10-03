@@ -231,6 +231,16 @@ async function main() {
   const p2 = await (await client.req(`/api/orders/${o2}/payment/advance`, { method: "POST" })).json();
   check("pending payment reused on second click", p1.redirectUrl === p2.redirectUrl, `${p1.redirectUrl} vs ${p2.redirectUrl}`);
   check("only one PENDING payment row", (await prisma.payment.count({ where: { orderId: o2 } })) === 1);
+
+  // Acompte encaissé en espèces au cabinet (enregistré par l'admin)
+  check("client cannot record a cash deposit (403)", (await client.req(`/api/admin/orders/${o2}/cash-advance`, { method: "POST" })).status === 403);
+  check("anonymous cannot record a cash deposit (401)", (await anon.req(`/api/admin/orders/${o2}/cash-advance`, { method: "POST" })).status === 401);
+  r = await admin.req(`/api/admin/orders/${o2}/cash-advance`, { method: "POST" });
+  check("admin records the cash deposit", r.status === 200, await r.text());
+  const cashOrder = await prisma.order.findUniqueOrThrow({ where: { id: o2 }, include: { payments: true } });
+  check("cash deposit: ACOMPTE_PAYE, CASH payment SUCCEEDED, online attempt retired", cashOrder.status === "ACOMPTE_PAYE" && cashOrder.advancePaid && cashOrder.payments.some((p) => p.provider === "CASH" && p.status === "SUCCEEDED") && !cashOrder.payments.some((p) => p.status === "PENDING"));
+  check("cash deposit recorded twice = 409", (await admin.req(`/api/admin/orders/${o2}/cash-advance`, { method: "POST" })).status === 409);
+  check("audit has the cash confirmation", (await prisma.auditLog.count({ where: { action: "PAYMENT_CONFIRMED", resource: `payment:${cashOrder.payments.find((p) => p.provider === "CASH")!.id}` } })) === 1);
   const refOk = /^CMD-\d{4}-[0-9A-F]{8}$/.test((await prisma.order.findUniqueOrThrow({ where: { id: o2 } })).reference);
   check("order reference format", refOk);
 
@@ -430,7 +440,7 @@ async function main() {
   const clientEmail = email.toLowerCase();
   check("ORDER_RECEIVED queued once per order", (await outbox("ORDER_RECEIVED", clientEmail)) >= 1);
   check("QUOTE_ACCEPTED queued", (await outbox("QUOTE_ACCEPTED", clientEmail)) >= 1);
-  check("PAYMENT_CONFIRMED queued for the advance and the balance", (await outbox("PAYMENT_CONFIRMED", clientEmail)) === 2, String(await outbox("PAYMENT_CONFIRMED", clientEmail)));
+  check("PAYMENT_CONFIRMED queued for the advances (online + cash) and the balance", (await outbox("PAYMENT_CONFIRMED", clientEmail)) === 3, String(await outbox("PAYMENT_CONFIRMED", clientEmail)));
   check("TRANSLATION_READY queued (initial + replacement)", (await outbox("TRANSLATION_READY", clientEmail)) === 2);
   const queuedRow = await prisma.emailOutbox.findFirstOrThrow({ where: { template: "TRANSLATION_READY", recipient: clientEmail } });
   check("outbox row stores status, subject and link payload only", queuedRow.status === "PENDING" && queuedRow.subject.length > 0 && JSON.stringify(queuedRow.payload).includes("/dashboard/orders/"));

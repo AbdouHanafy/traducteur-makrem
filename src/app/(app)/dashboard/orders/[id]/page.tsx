@@ -3,6 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { buildMetadata } from "@/lib/seo";
 import { getTranslatedFileAccess } from "@/lib/order-file-access";
+import { advanceIsInPerson } from "@/lib/payment-mode";
 import { findOrderById } from "@/repositories/orders";
 import OrderDetailPage from "@/views/OrderDetailPage";
 
@@ -37,6 +38,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         balanceAmount: order.balanceAmount.toString(),
         advancePaid: order.advancePaid,
         balancePaid: getTranslatedFileAccess(order) === "UNLOCKED",
+        advanceInPerson: advanceIsInPerson(),
         previewViewed: order.previewViewedAt !== null,
         revisionRequested: order.revisionRequestedAt !== null,
         service: { name: order.service.name },

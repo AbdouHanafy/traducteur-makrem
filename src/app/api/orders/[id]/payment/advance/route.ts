@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireOrderOwner } from "@/lib/rbac";
 import { limit, MINUTE } from "@/lib/rate-limit";
+import { advanceIsInPerson } from "@/lib/payment-mode";
 import { PaymentAlreadyConfirmedError, startOrderPayment } from "@/lib/payments/start";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -19,6 +20,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   if (order.status !== "EN_ATTENTE_ACOMPTE" || order.advancePaid) {
     return NextResponse.json({ error: "Acompte non exigible pour cette commande." }, { status: 409 });
+  }
+
+  if (advanceIsInPerson()) {
+    return NextResponse.json({ error: "L'acompte se règle sur place, en espèces.", code: "ADVANCE_IN_PERSON" }, { status: 409 });
   }
 
   try {
