@@ -11,34 +11,91 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/makram_arfaoui_ci
+  AUTH_SECRET: ci-only-secret-that-is-at-least-32-characters-long
+  NEXTAUTH_URL: http://localhost:3000
+  PRIVATE_STORAGE_ROOT: /tmp/makram-arfaoui-private-storage
+  PAYMENT_PROVIDER: mock
+  EMAIL_DELIVERY_MODE: log
+  JOBS_SECRET: ci-only-jobs-secret-at-least-32-characters-long
+
 jobs:
   quality:
+    name: Lint, types, build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/makram_arfaoui_ci
-      AUTH_SECRET: ci-only-secret-that-is-at-least-32-characters-long
-      NEXTAUTH_URL: https://ci.example.test
-      PRIVATE_STORAGE_ROOT: /tmp/makram-arfaoui-private-storage
-      PAYMENT_PROVIDER: mock
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
+      - run: npm ci
       - name: Validate Prisma schema
         run: npx prisma validate
-
       - name: Lint and type-check
         run: npm run check
-
       - name: Build
         run: npm run build
+
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: makram_arfaoui_ci
+          MYSQL_USER: ci
+          MYSQL_PASSWORD: ci
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      CHROME_PATH: /usr/bin/google-chrome
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Let the CI user create Prisma shadow databases
+        run: mysql -h 127.0.0.1 -uroot -proot -e "GRANT ALL ON *.* TO 'ci'@'%'; FLUSH PRIVILEGES;"
+      - name: Apply migrations and seed
+        run: |
+          mkdir -p "$PRIVATE_STORAGE_ROOT"
+          npx prisma migrate deploy
+          npx prisma db seed
+      - name: Start the dev server
+        run: |
+          nohup npx next dev -p 3000 > /tmp/next-dev.log 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://localhost:3000/api/health/live && break; sleep 2; done
+      - name: API + business-rule tests
+        run: npx tsx scripts/e2e.ts
+      - name: Browser tests (editor, public site, accessibility)
+        run: |
+          npx tsx scripts/e2e-editor.ts
+          npx tsx scripts/e2e-browser.ts
+      - name: Stop the dev server
+        if: always()
+        run: pkill -f "next dev" || true
+      - name: Payment integration tests (fake Konnect)
+        run: npx tsx scripts/e2e-payments.ts
+      - name: Production build + cache behaviour
+        run: |
+          npm run build
+          NEXTAUTH_URL=http://localhost:3001 PORT=3001 nohup npx next start -p 3001 > /tmp/next-start.log 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://localhost:3001/api/health/live && break; sleep 2; done
+          E2E_BASE=http://localhost:3001 npx tsx scripts/e2e-cache.ts
+      - name: Upload server logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-logs
+          path: /tmp/next-*.log

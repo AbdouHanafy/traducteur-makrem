@@ -389,19 +389,27 @@ stateDiagram-v2
     EN_ATTENTE_ACOMPTE --> ANNULEE
 ```
 
-### 6.4 Webhook (`POST /api/payments/webhook`)
+### 6.4 Webhook (`GET /api/payments/webhook?payment_ref=…`) — Konnect
 
-1. Vérifier la signature (secret côté serveur, jamais exposé au frontend).
-2. Charger le `Payment` par `providerRef` — si déjà `SUCCEEDED`, **no-op** (idempotence, couvre le "Cas 4" du §42).
-3. Revérifier le montant reçu contre `order.advanceAmount`/`balanceAmount` en DB (jamais celui du payload seul) — "Cas 5".
-4. Revérifier la devise (`TND`).
-5. Enregistrer `Payment.status = SUCCEEDED`, `confirmedAt`.
-6. Mettre à jour `Order.advancePaid`/`balancePaid` + transition de statut + `OrderStatusHistory`.
-7. Si `balancePaid` devient vrai : passer les `Document(kind=TRANSLATED)` à disponibles pour téléchargement.
-8. Notifier le client (email).
-9. `AuditLog`.
+Konnect n'envoie ni corps ni signature : il appelle simplement l'URL avec `payment_ref`. L'authenticité
+est donc établie **en relisant le paiement chez Konnect avec notre clé API** (server-to-server), jamais
+en croyant la requête entrante. `POST` est refusé (405). Les montants/commandes sont comparés à notre base.
 
-Toute l'opération 3-9 dans une transaction Prisma.
+1. Charger le `Payment` par `providerRef` (inconnu → 404) et vérifier `provider = konnect`.
+2. Relire le paiement chez Konnect (`GET /payments/:ref`). Statut ≠ `completed` → 202, rien ne change.
+3. `judgeKonnectPayment` : transaction réussie, devise `TND`, montant atteint ≥ montant attendu (en millimes),
+   `orderId` = `<commande>:<phase>`. Toute incohérence → 409, aucune écriture.
+4. `confirmPaymentTransaction` (une seule transaction Prisma) : revérifie montant/devise/état de la
+   commande, réclame le paiement (`updateMany` conditionnel → idempotent), met à jour `advancePaid` /
+   `balancePaid`, le statut, l'historique, l'`AuditLog` et met l'e-mail `PAYMENT_CONFIRMED` dans l'outbox.
+5. Un rejouage est un no-op (`alreadyProcessed`). Un paiement terminé juste après l'expiration reste honoré
+   (`acceptRetired`).
+
+**Un seul paiement actif par commande/phase/prestataire** : `Payment.activeKey` (UNIQUE, NULL une fois
+terminé). Une tentative expirée (durée de vie Konnect + 2 min) est d'abord réconciliée avec Konnect, puis
+retirée (`FAILED`), pour qu'un client qui abandonne ne soit jamais bloqué.
+
+Reste à traiter côté exploitation : remboursement, et alerte si un client a payé deux sessions pour la même phase.
 
 ---
 
@@ -455,6 +463,7 @@ Ces points ne peuvent pas être tranchés par l'ingénierie seule :
 
 ---
 
-## 10. Prochaine étape
+## 10. État actuel
 
-Dès validation de ce document, la Phase 1 (scaffold) peut démarrer dans `C:\Works\makram-arfaoui` : `create-next-app`, Prisma, et migration du design system (palette/typo/topbar) du prototype vers de vrais composants React.
+Ce document est la conception d'origine. L'application est construite ; l'état réel, les écarts et les
+travaux restants avant mise en production sont dans `README.md` et `PROJECT_AUDIT_ACTION_PLAN.md`.

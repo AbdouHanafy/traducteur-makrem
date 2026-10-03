@@ -323,7 +323,12 @@ async function main() {
   const low = await r.json().catch(() => ({}));
   check("unreadable colours blocked by policy (422)", r.status === 422 && low.code === "LOW_CONTRAST" && low.pairs?.includes("whiteOnBlue"), `${r.status} ${JSON.stringify(low)}`);
   r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: {}, policy: "strict" } });
-  check("strict AA policy rejects the default palette (422)", r.status === 422, String(r.status));
+  check("the default palette meets WCAG AA, so strict mode accepts it (200)", r.status === 200, String(r.status));
+  r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: { muted: "#74839b" }, policy: "strict" } });
+  const weak = await r.json().catch(() => ({}));
+  check("strict AA policy rejects a 3.8:1 secondary-text colour (422)", r.status === 422 && weak.pairs?.includes("mutedOnPaper"), `${r.status} ${JSON.stringify(weak)}`);
+  r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: { muted: "#74839b" }, policy: "block" } });
+  check("the default 'block' policy still allows 3.8:1 (not hard to read)", r.status === 200, String(r.status));
   r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: { blue: "#eeeeee" }, policy: "off" } });
   check("policy 'off' lets any colours through (200)", r.status === 200, String(r.status));
   r = await admin.req("/api/admin/theme", { method: "PUT", json: { values: {}, policy: "block" } });

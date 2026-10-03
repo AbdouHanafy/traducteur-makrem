@@ -21,6 +21,7 @@
     "db:studio": "prisma studio",
     "test:e2e": "tsx scripts/e2e.ts",
     "test:editor": "tsx scripts/e2e-editor.ts",
+    "test:browser": "tsx scripts/e2e-browser.ts",
     "test:cache": "tsx scripts/e2e-cache.ts",
     "test:payments": "tsx scripts/e2e-payments.ts",
     "media:service-covers": "tsx --conditions react-server scripts/generate-service-covers.ts"
@@ -44,6 +45,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

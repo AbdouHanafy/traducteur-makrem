@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { LOCALE_OPTIONS, type Locale } from "@/lib/i18n";
+import { usePathname, useRouter } from "next/navigation";
+import { LOCALE_OPTIONS, LOCALES, type Locale } from "@/lib/i18n";
 import { useI18n } from "@/views/components/I18nProvider";
 
 function FlagIcon({ locale }: { locale: Locale }) {
@@ -57,6 +57,7 @@ function FlagIcon({ locale }: { locale: Locale }) {
 
 export default function LanguageSwitcher({ dark = false }: { dark?: boolean }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { locale, t } = useI18n();
   const [pending, setPending] = useState(false);
   const [open, setOpen] = useState(false);
@@ -91,7 +92,13 @@ export default function LanguageSwitcher({ dark = false }: { dark?: boolean }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ locale: nextLocale }),
       });
-      if (response.ok) router.refresh();
+      if (response.ok) {
+        // Sur une URL déjà préfixée (/fr/services, ce que les moteurs de recherche indexent), la langue
+        // vient du chemin et non du cookie : il faut aussi changer le préfixe, sinon rien ne bouge.
+        const prefixed = new RegExp(`^/(${LOCALES.join("|")})(?=/|$)`).exec(pathname);
+        if (prefixed) router.push(`/${nextLocale}${pathname.slice(prefixed[0].length)}${window.location.search}`);
+        else router.refresh();
+      }
       else console.error("Changement de langue impossible.");
     } finally {
       setPending(false);

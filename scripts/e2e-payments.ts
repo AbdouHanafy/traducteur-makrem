@@ -85,6 +85,7 @@ let server: ChildProcess | null = null;
 async function startServer(konnectPort: number) {
   server = spawn("npx", ["next", "dev", "-p", String(PORT)], {
     shell: true,
+    detached: process.platform !== "win32", // POSIX : groupe de processus propre, arrêtable d'un coup
     env: {
       ...process.env,
       PAYMENT_PROVIDER: "konnect",
@@ -106,7 +107,10 @@ async function startServer(konnectPort: number) {
 }
 function stopServer() {
   if (!server?.pid) return;
-  try { execSync(`taskkill /pid ${server.pid} /T /F`, { stdio: "ignore" }); } catch { /* déjà arrêté */ }
+  try {
+    if (process.platform === "win32") execSync(`taskkill /pid ${server.pid} /T /F`, { stdio: "ignore" });
+    else process.kill(-server.pid, "SIGTERM");
+  } catch { /* déjà arrêté */ }
 }
 
 // ---------------------------------------------------------------- scénarios

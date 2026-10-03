@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 import { DEFAULT_LOCALE, isLocale, LOCALE_COOKIE, type Locale } from "@/lib/i18n";
+import { EDIT_QUERY_PARAM } from "@/lib/i18n-edit";
 
 /**
  * Deux rôles (ARCHITECTURE.md §7) :
@@ -44,6 +45,13 @@ export function proxy(request: NextRequest) {
   const locale = detectLocale(request);
   const hasLocaleCookie = isLocale(request.cookies.get(LOCALE_COOKIE)?.value);
 
+  // Langue explicitement choisie par l'URL (/fr/services : lien partagé, résultat Google...).
+  const urlLocaleSegment = pathname.split("/")[1];
+  const urlLocale = !isProtected && isLocale(urlLocaleSegment) ? urlLocaleSegment : null;
+  // L'aperçu de l'éditeur de textes charge d'autres langues dans une iframe : il ne doit pas changer
+  // la langue de l'administrateur.
+  const isEditorPreview = request.nextUrl.searchParams.has(EDIT_QUERY_PARAM);
+
   let response: NextResponse;
   if (isProtected || DYNAMIC_PREFIXES.some((prefix) => startsWithSegment(pathname, prefix))) {
     const requestHeaders = new Headers(request.headers);
@@ -61,8 +69,12 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  if (!hasLocaleCookie) {
-    response.cookies.set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  // L'URL prime sur la langue du navigateur : sinon un visiteur arrivé sur /fr/commander avec un
+  // navigateur anglais verrait ensuite tout son espace client en anglais.
+  const cookieLocale = urlLocale && !isEditorPreview ? urlLocale : locale;
+  const cookieNeedsUpdate = urlLocale && !isEditorPreview ? request.cookies.get(LOCALE_COOKIE)?.value !== urlLocale : !hasLocaleCookie;
+  if (cookieNeedsUpdate) {
+    response.cookies.set(LOCALE_COOKIE, cookieLocale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   }
   return response;
 }

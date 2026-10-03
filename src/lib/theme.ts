@@ -31,7 +31,7 @@ export const THEME_TOKENS: ThemeToken[] = [
   token("ink", "text", "#14203a"),
   token("muted", "text", "#5b6a83"),
   token("muted-light", "text", "#b4c4e0"),
-  token("ok", "states", "#1e9e6a"),
+  token("ok", "states", "#127a53"),
   token("ok-soft", "states", "#e3f5ec"),
   token("ok-light", "states", "#7ce0b1"),
   token("warn", "states", "#c9822b"),

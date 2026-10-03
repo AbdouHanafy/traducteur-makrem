@@ -71,7 +71,7 @@ export default function WorkspaceShell({ mode, user, groups, children, primaryAc
     <div className="grid gap-6">
       {groups.map((group, index) => (
         <div key={group.label ?? index}>
-          {group.label && <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">{group.label}</div>}
+          {group.label && <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-light/80">{group.label}</div>}
           <nav className="grid gap-1" aria-label={group.label}>
             {group.items.map((item) => {
               const active = isActive(pathname, item.href);
