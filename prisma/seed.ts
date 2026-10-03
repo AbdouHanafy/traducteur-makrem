@@ -13,6 +13,7 @@
 import { PrismaClient } from "@prisma/client";
 import { auth } from "../src/lib/auth";
 import { hashPassword } from "../src/lib/password";
+import { SEED_ARTICLES } from "./seed-articles";
 
 const prisma = new PrismaClient();
 
@@ -192,6 +193,16 @@ async function main() {
   if (faqCount === 0) {
     for (let i = 0; i < faqs.length; i++) {
       await prisma.faqItem.create({ data: { ...faqs[i], order: i } });
+    }
+  }
+
+  // Articles d'exemple (modifiables dans /admin/articles) — seulement si aucun article n'existe.
+  if ((await prisma.article.count()) === 0) {
+    for (let i = 0; i < SEED_ARTICLES.length; i++) {
+      const { translations, ...article } = SEED_ARTICLES[i];
+      await prisma.article.create({
+        data: { ...article, translations, order: i, published: true, publishedAt: new Date(Date.now() - (SEED_ARTICLES.length - i) * 86_400_000) },
+      });
     }
   }
 
