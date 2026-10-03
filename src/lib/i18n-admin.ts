@@ -513,6 +513,22 @@ const ROWS: Record<string, Row> = {
   "adm.edit.section.app": ["Espace client", "فضاء الحريف", "Client area", "Area clienti"],
   "adm.edit.section.legal": ["Pages légales", "الصفحات القانونية", "Legal pages", "Pagine legali"],
 
+  // Délais & coefficients
+  "adm.nav.pricing": ["Délais & coefficients", "الآجال والمعاملات", "Deadlines & surcharges", "Scadenze e coefficienti"],
+  "adm.pricing.eyebrow": ["Tarification", "التسعير", "Pricing", "Tariffe"],
+  "adm.pricing.title": ["Délais & coefficients", "الآجال والمعاملات", "Deadlines & surcharges", "Scadenze e coefficienti"],
+  "adm.pricing.intro": ["Le prix d'une commande = tarif par page du service × nombre de pages × coefficient du délai choisi. Le prix par page se règle dans « Services & tarifs ».", "سعر الطلب = سعر الصفحة للخدمة × عدد الصفحات × معامل الأجل المختار. يُضبط سعر الصفحة في «الخدمات والأسعار».", "An order's price = the service's price per page × number of pages × the chosen deadline's coefficient. The price per page is set under \"Services & prices\".", "Il prezzo di un ordine = tariffa per pagina del servizio × numero di pagine × coefficiente della scadenza scelta. La tariffa per pagina si imposta in «Servizi e tariffe»."],
+  "adm.pricing.offered": ["Proposé aux clients", "متاح للحرفاء", "Offered to clients", "Proposto ai clienti"],
+  "adm.pricing.multiplier": ["Coefficient", "المعامل", "Coefficient", "Coefficiente"],
+  "adm.pricing.range": ["Entre 0,5 et 5 (1 = tarif normal, 1,3 = +30 %)", "بين 0.5 و5 (1 = السعر العادي، 1.3 = +30٪)", "Between 0.5 and 5 (1 = normal price, 1.3 = +30%)", "Tra 0,5 e 5 (1 = prezzo normale, 1,3 = +30%)"],
+  "adm.pricing.example": ["Exemple", "مثال", "Example", "Esempio"],
+  "adm.pricing.exampleLine": ["{service} — {pages} pages : {total} TND", "{service} — {pages} صفحات: {total} د.ت", "{service} — {pages} pages: {total} TND", "{service} — {pages} pagine: {total} TND"],
+  "adm.pricing.noExample": ["Ajoutez un service avec un prix pour voir un exemple.", "أضيفوا خدمة بسعر لعرض مثال.", "Add a service with a price to see an example.", "Aggiungi un servizio con un prezzo per vedere un esempio."],
+  "adm.pricing.saved": ["« {name} » enregistré. Les nouveaux devis utilisent ce coefficient.", "تم حفظ «{name}». ستستعمل عروض الأسعار الجديدة هذا المعامل.", "\"{name}\" saved. New quotes use this coefficient.", "«{name}» salvato. I nuovi preventivi usano questo coefficiente."],
+  "adm.pricing.errSave": ["Impossible d'enregistrer ce délai.", "تعذّر حفظ هذا الأجل.", "Unable to save this deadline.", "Impossibile salvare questa scadenza."],
+  "adm.pricing.lastActive": ["Au moins un délai doit rester proposé aux clients.", "يجب أن يبقى أجل واحد على الأقل متاحًا للحرفاء.", "At least one deadline must stay offered to clients.", "Almeno una scadenza deve restare proposta ai clienti."],
+  "adm.pricing.existingOrders": ["Les commandes déjà passées gardent le prix calculé à leur création : modifier un coefficient n'a aucun effet sur elles.", "تحتفظ الطلبات السابقة بالسعر المحتسب عند إنشائها: تعديل المعامل لا يؤثر فيها.", "Existing orders keep the price calculated when they were created: changing a coefficient does not affect them.", "Gli ordini già effettuati mantengono il prezzo calcolato alla creazione: modificare un coefficiente non li riguarda."],
+
   // Traductions de contenu
   "adm.tr.legend": ["Traductions", "الترجمات", "Translations", "Traduzioni"],
   "adm.tr.hint": ["Le français est la langue de base. Un champ vide reprend le texte français.", "الفرنسية هي اللغة الأساسية. الحقل الفارغ يعتمد النص الفرنسي.", "French is the base language. An empty field falls back to the French text.", "Il francese è la lingua di base. Un campo vuoto usa il testo francese."],

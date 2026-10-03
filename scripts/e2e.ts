@@ -453,6 +453,42 @@ async function main() {
   r = await fetch(`${B}/opengraph-image`);
   check("Open Graph image is served", r.status === 200 && (r.headers.get("content-type") ?? "").startsWith("image/"), `${r.status} ${r.headers.get("content-type")}`);
 
+  // --- pricing rules (delay coefficients) ---
+  const patchRule = (key: string, json: unknown, c: Client = admin) => c.req(`/api/admin/pricing-rules/${key}`, { method: "PATCH", json });
+  const originalRules = await prisma.pricingRule.findMany();
+  const express = originalRules.find((rule) => rule.key === "delay.express")!;
+  r = await patchRule("delay.express", { multiplier: 1.8, active: true });
+  check("coefficient updated (200)", r.status === 200 && Number((await r.json()).rule.multiplier) === 1.8, String(r.status));
+  check("pricing change is audited with before/after", (await prisma.auditLog.count({ where: { action: "PRICING_RULE_UPDATED", resource: "pricingRule:delay.express" } })) >= 1);
+  check("coefficient below 0.5 rejected (400)", (await patchRule("delay.express", { multiplier: 0.1, active: true })).status === 400);
+  check("coefficient above 5 rejected (400)", (await patchRule("delay.express", { multiplier: 13, active: true })).status === 400);
+  check("non-numeric coefficient rejected (400)", (await patchRule("delay.express", { multiplier: "abc", active: true })).status === 400);
+  check("unknown delay rule is 404", (await patchRule("delay.nope", { multiplier: 1, active: true })).status === 404);
+  check("client cannot change prices (403)", (await patchRule("delay.express", { multiplier: 1, active: true }, client)).status === 403);
+  check("anonymous cannot change prices (401)", (await patchRule("delay.express", { multiplier: 1, active: true }, new Client())).status === 401);
+  // Client dédié : les plafonds anti-abus (15 commandes/heure/utilisateur) restent actifs pendant les tests.
+  const pricingClient = new Client();
+  await pricingClient.req("/api/auth/sign-up/email", { method: "POST", json: { name: "Pricing Test", email: `pricing.${stamp}@test.local`, password: "Passw0rd!Long", firstName: "Pricing", lastName: "Test", termsAccepted: true } });
+  const quoted = await (await pricingClient.req("/api/orders", { method: "POST", body: mkForm({ delayKey: "delay.express", pages: "10" }) })).json();
+  const expressOrder = await prisma.order.findUniqueOrThrow({ where: { id: quoted.id } });
+  const expectedTotal = service.pricePerPage.mul(10).mul(1.8).toDecimalPlaces(3);
+  check("a new order is quoted with the new coefficient", expressOrder.totalAmount.equals(expectedTotal), `${expressOrder.totalAmount} vs ${expectedTotal}`);
+  await patchRule("delay.express", { multiplier: 2.5, active: true });
+  check("an existing order keeps the price it was created with", (await prisma.order.findUniqueOrThrow({ where: { id: quoted.id } })).totalAmount.equals(expectedTotal));
+  await patchRule("delay.express", { multiplier: 1.8, active: false });
+  r = await pricingClient.req("/api/orders", { method: "POST", body: mkForm({ delayKey: "delay.express" }) });
+  check("a deactivated delay can no longer be ordered (400)", r.status === 400 && (await r.json()).code === "INVALID_DELAY");
+  const orderPage = await html("/commander", "site_locale=fr");
+  check("the order form only offers active delays", orderPage.text.includes("Standard") && !orderPage.text.includes("Express (48"));
+  for (const rule of originalRules.filter((item) => item.key !== "delay.standard")) await patchRule(rule.key, { multiplier: Number(rule.multiplier), active: false });
+  r = await patchRule("delay.standard", { multiplier: 1, active: false });
+  check("the last active delay cannot be deactivated (409)", r.status === 409 && (await r.json()).code === "LAST_ACTIVE_RULE", String(r.status));
+  for (const rule of originalRules) await patchRule(rule.key, { multiplier: Number(rule.multiplier), active: rule.active });
+  const restored = await prisma.pricingRule.findUniqueOrThrow({ where: { key: "delay.express" } });
+  check("original coefficients restored after the test", restored.multiplier?.equals(express.multiplier!) === true && restored.active === express.active);
+  page = await asText(admin, "/admin/pricing", "fr");
+  check("pricing admin page renders the three delays", page.status === 200 && page.text.includes("coefficients") && page.text.includes("delay.express") && page.text.includes("delay.urgent"), String(page.status));
+
   // --- visual editor: single-text API ---
   const entry = (json: unknown, c: Client = admin) => c.req("/api/admin/site-content/entry", { method: "PATCH", json });
   r = await entry({ locale: "fr", key: "hero.description", value: `Texte e2e ${stamp}` });

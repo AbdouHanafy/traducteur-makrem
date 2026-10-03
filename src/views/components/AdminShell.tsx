@@ -22,6 +22,7 @@ export default function AdminShell({ user, children }: { user: { name: string; e
         { href: "/admin/theme", label: t("adm.nav.theme"), icon: "media" },
         { href: "/admin/partners", label: t("adm.nav.partners"), icon: "reviews" },
         { href: "/admin/services", label: t("adm.nav.services"), icon: "services" },
+        { href: "/admin/pricing", label: t("adm.nav.pricing"), icon: "orders" },
         { href: "/admin/articles", label: t("adm.nav.articles"), icon: "articles" },
         { href: "/admin/testimonials", label: t("adm.nav.testimonials"), icon: "reviews" },
         { href: "/admin/faq", label: t("adm.nav.faq"), icon: "faq" },
