@@ -29,6 +29,7 @@ const ROWS: Record<string, Row> = {
   "adm.disable": ["Désactiver", "تعطيل", "Disable", "Disattiva"],
   "adm.reenable": ["Réactiver", "إعادة التفعيل", "Re-enable", "Riattiva"],
   "adm.errorGeneric": ["Une erreur est survenue.", "حدث خطأ.", "An error occurred.", "Si è verificato un errore."],
+  "adm.errorNetwork": ["Connexion impossible. Vérifiez votre réseau puis réessayez.", "تعذّر الاتصال. تحقّقوا من الشبكة ثم أعيدوا المحاولة.", "Connection failed. Check your network and try again.", "Connessione non riuscita. Controlla la rete e riprova."],
   "adm.name": ["Nom", "الاسم", "Name", "Nome"],
   "adm.firstName": ["Prénom", "الاسم الأول", "First name", "Nome"],
   "adm.lastName": ["Nom", "اللقب", "Last name", "Cognome"],

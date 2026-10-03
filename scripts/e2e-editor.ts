@@ -109,6 +109,34 @@ async function main() {
   const urlAfter = page.frames().find((f) => f !== page.mainFrame())?.url() ?? "";
   check("clicking a link in the preview edits its text instead of navigating", urlBefore === urlAfter, `${urlBefore} -> ${urlAfter}`);
 
+  // 7) échecs d'enregistrement : l'erreur s'affiche, le formulaire reste ouvert, rien n'est annoncé comme réussi
+  await page.goto(`${B}/admin/faq`, { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Ajouter une question" }).click();
+  await page.getByPlaceholder("Question", { exact: true }).fill(`Question de test ${Date.now()}`);
+  await page.getByPlaceholder("Réponse", { exact: true }).fill("x".repeat(3100));
+  await page.getByRole("button", { name: "Ajouter", exact: true }).last().click();
+  const alert = page.locator("div[role=alert]", { hasText: /\S/ }).first(); // ignore l'annonceur de route de Next (role=alert, vide)
+  await alert.waitFor({ timeout: 10000 });
+  check("a rejected save shows an error banner", ((await alert.innerText()) ?? "").length > 0);
+  check("...and keeps the form open with the user's text", (await page.getByPlaceholder("Question", { exact: true }).count()) === 1 && (await page.getByPlaceholder("Réponse", { exact: true }).inputValue()).length === 3100);
+  await page.getByPlaceholder("Réponse", { exact: true }).fill("Une réponse valide.");
+  await page.getByRole("button", { name: "Ajouter", exact: true }).last().click();
+  await page.getByPlaceholder("Réponse", { exact: true }).waitFor({ state: "detached", timeout: 10000 });
+  check("after fixing the text the save succeeds and the form closes", true);
+  await page.getByText("Une réponse valide.").first().waitFor({ timeout: 10000 });
+  check("the new question is listed", true);
+  await page.context().route("**/api/admin/faq/**", (route) => route.abort());
+  await page.getByRole("button", { name: "Descendre" }).first().click();
+  await page.locator("div[role=alert]", { hasText: /\S/ }).first().waitFor({ timeout: 10000 });
+  check("a network failure is reported instead of failing silently", true);
+  await page.context().unroute("**/api/admin/faq/**");
+  // nettoyage : la question de test est supprimée
+  page.once("dialog", (dialog) => dialog.accept());
+  const testCard = page.getByText("Une réponse valide.").first().locator("xpath=ancestor::div[contains(@class,'p-5')][1]");
+  await testCard.getByRole("button", { name: "Supprimer" }).click();
+  await page.getByText("Une réponse valide.").waitFor({ state: "detached", timeout: 10000 });
+  check("the test question was removed again (and only it)", true);
+
   await browser.close();
   console.log(`\n${pass} passed, ${fail} failed`);
 }

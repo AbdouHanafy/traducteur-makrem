@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { jsonRequest, useAdminAction } from "@/views/components/useAdminAction";
 import { useI18n } from "@/views/components/I18nProvider";
 import TranslationEditor from "@/views/components/TranslationEditor";
 import type { TranslationsMap } from "@/lib/localize";
@@ -94,48 +94,31 @@ function FaqForm({
 }
 
 export default function AdminFaqPage({ items }: { items: FaqRow[] }) {
-  const router = useRouter();
   const { t } = useI18n();
+  const { run, banner } = useAdminAction();
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   async function createFaq(values: FaqValues) {
-    await fetch("/api/admin/faq", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
-    setAdding(false);
-    router.refresh();
+    await run(jsonRequest("/api/admin/faq", "POST", values), () => setAdding(false));
   }
 
   async function updateFaq(id: string, values: FaqValues) {
-    await fetch(`/api/admin/faq/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
-    setEditingId(null);
-    router.refresh();
+    await run(jsonRequest(`/api/admin/faq/${id}`, "PATCH", values), () => setEditingId(null));
   }
 
   async function deleteFaq(id: string) {
     if (!confirm(t("adm.faq.deleteConfirm"))) return;
-    await fetch(`/api/admin/faq/${id}`, { method: "DELETE" });
-    router.refresh();
+    await run(jsonRequest(`/api/admin/faq/${id}`, "DELETE"));
   }
 
   async function move(id: string, direction: "up" | "down") {
-    await fetch(`/api/admin/faq/${id}/move`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ direction }),
-    });
-    router.refresh();
+    await run(jsonRequest(`/api/admin/faq/${id}/move`, "POST", { direction }));
   }
 
   return (
     <div className="mx-auto max-w-[760px] px-6 py-14">
+      {banner}
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-[26px] text-navy">{t("adm.faq.title")}</h1>
         {!adding && (

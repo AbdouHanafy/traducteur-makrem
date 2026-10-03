@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { jsonRequest, useAdminAction } from "@/views/components/useAdminAction";
 import { useI18n } from "@/views/components/I18nProvider";
 import MediaPicker from "@/views/components/MediaPicker";
 import TranslationEditor from "@/views/components/TranslationEditor";
@@ -128,57 +128,35 @@ function CustomSectionForm({
 const EMPTY_FORM: CustomFormValues = { eyebrow: "", title: "", body: "", imageUrl: "", ctaLabel: "", ctaHref: "", translations: {} };
 
 export default function AdminHomeSectionsPage({ sections }: { sections: HomeSectionRow[] }) {
-  const router = useRouter();
   const { t } = useI18n();
+  const { run, banner } = useAdminAction();
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   async function createSection(values: CustomFormValues) {
-    await fetch("/api/admin/home-sections", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
-    setAdding(false);
-    router.refresh();
+    await run(jsonRequest("/api/admin/home-sections", "POST", values), () => setAdding(false));
   }
 
   async function updateSection(id: string, values: CustomFormValues) {
-    await fetch(`/api/admin/home-sections/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
-    setEditingId(null);
-    router.refresh();
+    await run(jsonRequest(`/api/admin/home-sections/${id}`, "PATCH", values), () => setEditingId(null));
   }
 
   async function deleteSection(id: string) {
     if (!confirm(t("adm.home.deleteConfirm"))) return;
-    await fetch(`/api/admin/home-sections/${id}`, { method: "DELETE" });
-    router.refresh();
+    await run(jsonRequest(`/api/admin/home-sections/${id}`, "DELETE"));
   }
 
   async function move(id: string, direction: "up" | "down") {
-    await fetch(`/api/admin/home-sections/${id}/move`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ direction }),
-    });
-    router.refresh();
+    await run(jsonRequest(`/api/admin/home-sections/${id}/move`, "POST", { direction }));
   }
 
   async function toggleVisible(id: string, visible: boolean) {
-    await fetch(`/api/admin/home-sections/${id}/visibility`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ visible }),
-    });
-    router.refresh();
+    await run(jsonRequest(`/api/admin/home-sections/${id}/visibility`, "POST", { visible }));
   }
 
   return (
     <div className="mx-auto max-w-[820px] px-6 py-14">
+      {banner}
       <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-[22px] text-navy sm:text-[26px]">{t("adm.home.title")}</h1>
         {!adding && (

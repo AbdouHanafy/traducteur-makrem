@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { jsonRequest, useAdminAction } from "@/views/components/useAdminAction";
 import { useI18n } from "@/views/components/I18nProvider";
 
 interface ArticleRow {
@@ -13,26 +13,21 @@ interface ArticleRow {
 }
 
 export default function AdminArticlesListPage({ articles }: { articles: ArticleRow[] }) {
-  const router = useRouter();
   const { t } = useI18n();
+  const { run, banner } = useAdminAction();
 
   async function move(id: string, direction: "up" | "down") {
-    await fetch(`/api/admin/articles/${id}/move`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ direction }),
-    });
-    router.refresh();
+    await run(jsonRequest(`/api/admin/articles/${id}/move`, "POST", { direction }));
   }
 
   async function deleteArticle(id: string) {
     if (!confirm(t("adm.articles.deleteConfirm"))) return;
-    await fetch(`/api/admin/articles/${id}`, { method: "DELETE" });
-    router.refresh();
+    await run(jsonRequest(`/api/admin/articles/${id}`, "DELETE"));
   }
 
   return (
     <div className="mx-auto max-w-[1000px] px-6 py-14">
+      {banner}
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-[26px] text-navy">{t("adm.articles.title")}</h1>
         <Link

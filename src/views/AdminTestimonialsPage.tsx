@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { jsonRequest, useAdminAction } from "@/views/components/useAdminAction";
 import { useI18n } from "@/views/components/I18nProvider";
 import TranslationEditor from "@/views/components/TranslationEditor";
 import type { TranslationsMap } from "@/lib/localize";
@@ -132,48 +132,31 @@ function TestimonialForm({
 const EMPTY_FORM: FormValues = { authorName: "", authorRole: "", quote: "", rating: 5, active: true, translations: {} };
 
 export default function AdminTestimonialsPage({ items }: { items: TestimonialRow[] }) {
-  const router = useRouter();
   const { t } = useI18n();
+  const { run, banner } = useAdminAction();
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   async function create(values: FormValues) {
-    await fetch("/api/admin/testimonials", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
-    setAdding(false);
-    router.refresh();
+    await run(jsonRequest("/api/admin/testimonials", "POST", values), () => setAdding(false));
   }
 
   async function update(id: string, values: FormValues) {
-    await fetch(`/api/admin/testimonials/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
-    setEditingId(null);
-    router.refresh();
+    await run(jsonRequest(`/api/admin/testimonials/${id}`, "PATCH", values), () => setEditingId(null));
   }
 
   async function remove(id: string) {
     if (!confirm(t("adm.testimonials.deleteConfirm"))) return;
-    await fetch(`/api/admin/testimonials/${id}`, { method: "DELETE" });
-    router.refresh();
+    await run(jsonRequest(`/api/admin/testimonials/${id}`, "DELETE"));
   }
 
   async function move(id: string, direction: "up" | "down") {
-    await fetch(`/api/admin/testimonials/${id}/move`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ direction }),
-    });
-    router.refresh();
+    await run(jsonRequest(`/api/admin/testimonials/${id}/move`, "POST", { direction }));
   }
 
   return (
     <div className="mx-auto max-w-[820px] px-6 py-14">
+      {banner}
       <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-[22px] text-navy sm:text-[26px]">{t("adm.testimonials.title")}</h1>
         {!adding && (

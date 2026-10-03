@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { jsonRequest, useAdminAction } from "@/views/components/useAdminAction";
 import { useState } from "react";
 import { useI18n } from "@/views/components/I18nProvider";
 
@@ -16,41 +16,31 @@ interface ServiceRow {
 }
 
 export default function AdminServicesListPage({ services }: { services: ServiceRow[] }) {
-  const router = useRouter();
   const { t } = useI18n();
+  const { run, banner } = useAdminAction();
   const [busyId, setBusyId] = useState<string | null>(null);
 
   async function toggleActive(service: ServiceRow) {
     setBusyId(service.id);
-    if (service.active) {
-      await fetch(`/api/admin/services/${service.id}`, { method: "DELETE" });
-    } else {
-      await fetch(`/api/admin/services/${service.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          slug: service.slug,
-          name: service.name,
-          description: service.description,
-          pricePerPage: service.pricePerPage,
-          imageUrl: service.imageUrl ?? "",
-          active: true,
-        }),
-      });
-    }
+    await run(
+      service.active
+        ? jsonRequest(`/api/admin/services/${service.id}`, "DELETE")
+        : jsonRequest(`/api/admin/services/${service.id}`, "PATCH", {
+            slug: service.slug,
+            name: service.name,
+            description: service.description,
+            pricePerPage: service.pricePerPage,
+            imageUrl: service.imageUrl ?? "",
+            active: true,
+          }),
+    );
     setBusyId(null);
-    router.refresh();
   }
 
   async function move(id: string, direction: "up" | "down") {
     setBusyId(id);
-    await fetch(`/api/admin/services/${id}/move`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ direction }),
-    });
+    await run(jsonRequest(`/api/admin/services/${id}/move`, "POST", { direction }));
     setBusyId(null);
-    router.refresh();
   }
 
   function moveButtons(id: string, index: number) {
@@ -64,6 +54,7 @@ export default function AdminServicesListPage({ services }: { services: ServiceR
 
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-14">
+      {banner}
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-[26px] text-navy">{t("adm.services.title")}</h1>
         <Link
