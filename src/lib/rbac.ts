@@ -2,6 +2,7 @@ import "server-only";
 
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import { adminNeedsTwoFactorSetup } from "@/lib/admin-security";
 import { findOrderById } from "@/repositories/orders";
 
 /**
@@ -35,6 +36,8 @@ export async function requireAdminSession() {
   if (!session) return { error: "unauthenticated" as const };
 
   if (session.user.role !== "ADMIN") return { error: "forbidden" as const };
+  // Un administrateur sans double authentification n'a accès à aucune API du back-office.
+  if (adminNeedsTwoFactorSetup(session.user)) return { error: "two_factor_required" as const };
 
   return { session };
 }

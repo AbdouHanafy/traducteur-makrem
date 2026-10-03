@@ -26,6 +26,7 @@ const initRequests: Array<{ headers: IncomingMessage["headers"]; body: Record<st
 let failInit = false;
 let failDetails = false;
 let counter = 0;
+const RUN_ID = Date.now().toString(36); // références uniques à chaque exécution (la base garde les paiements précédents)
 
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve) => { let data = ""; req.on("data", (chunk) => (data += chunk)); req.on("end", () => resolve(data)); });
@@ -37,7 +38,7 @@ const konnect = createServer(async (req: IncomingMessage, res: ServerResponse) =
     const body = JSON.parse(await readBody(req));
     initRequests.push({ headers: req.headers, body });
     if (failInit) return send(500, { message: "boom" });
-    const ref = `pay${String(++counter).padStart(6, "0")}abcdef`;
+    const ref = `pay${RUN_ID}${String(++counter).padStart(4, "0")}`;
     fake.set(ref, { status: "pending", reachedAmount: 0, token: body.token, orderId: body.orderId, amount: body.amount });
     return send(200, { payUrl: `https://pay.example.test/checkout/${ref}`, paymentRef: ref });
   }
@@ -97,7 +98,7 @@ async function startServer(konnectPort: number) {
       NEXTAUTH_URL: B,
       BETTER_AUTH_URL: B,
     },
-    stdio: "ignore",
+    stdio: process.env.E2E_SERVER_LOGS ? "inherit" : "ignore", // E2E_SERVER_LOGS=1 pour voir les journaux du serveur
   });
   for (let i = 0; i < 90; i++) {
     try { if ((await fetch(`${B}/api/health/live`)).ok) return; } catch { /* démarrage */ }
@@ -142,7 +143,7 @@ async function main() {
   const o1 = await prisma.order.findUniqueOrThrow({ where: { id: order1 } });
   let r = await client.req(`/api/orders/${order1}/payment/advance`, { method: "POST" });
   const start1 = await r.json();
-  check("advance payment starts via Konnect (200, https checkout URL)", r.status === 200 && /^https:\/\/pay\.example\.test\/checkout\/pay\d+/.test(start1.redirectUrl ?? ""), `${r.status} ${JSON.stringify(start1)}`);
+  check("advance payment starts via Konnect (200, https checkout URL)", r.status === 200 && /^https:\/\/pay\.example\.test\/checkout\/pay[a-z0-9]+/.test(start1.redirectUrl ?? ""), `${r.status} ${JSON.stringify(start1)}`);
   const init1 = initRequests.at(-1)!;
   check("API key sent to Konnect", init1.headers["x-api-key"] === "test-key");
   check("amount sent in millimes (advance x 1000)", init1.body.amount === o1.advanceAmount.mul(1000).toNumber(), `${init1.body.amount} vs ${o1.advanceAmount.mul(1000)}`);

@@ -79,6 +79,9 @@ model User {
   phone         String?
   /// Date d'acceptation des CGV et de la politique de confidentialité (inscription publique).
   termsAcceptedAt DateTime?
+  /// Double authentification (TOTP) activée — obligatoire pour les administrateurs en production.
+  twoFactorEnabled Boolean?  @default(false)
+  twoFactors    TwoFactor[]
   orders        Order[]
   auditLogs     AuditLog[]
   sessions      Session[]
@@ -88,6 +91,19 @@ model User {
 }
 
 // Tables Better Auth (générées pour correspondre à sa config — voir src/lib/auth.ts).
+model TwoFactor {
+  id                      String    @id @default(cuid())
+  secret                  String    @db.Text
+  backupCodes             String    @db.Text
+  userId                  String
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verified                Boolean?  @default(true)
+  failedVerificationCount Int?      @default(0)
+  lockedUntil             DateTime?
+
+  @@index([userId])
+}
+
 model Session {
   id        String   @id @default(cuid())
   userId    String

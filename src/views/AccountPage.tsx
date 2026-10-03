@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { useI18n } from "@/views/components/I18nProvider";
+import TwoFactorPanel from "@/views/components/TwoFactorPanel";
 
-export default function AccountPage({ email, name }: { email: string; name: string }) {
+export default function AccountPage({ email, name, twoFactorMandatory = false }: { email: string; name: string; twoFactorMandatory?: boolean }) {
   const { t } = useI18n();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -59,6 +60,8 @@ export default function AccountPage({ email, name }: { email: string; name: stri
         <p className="text-[14px] text-ink">{name}</p>
         <p className="text-[14px] text-muted">{email}</p>
       </div>
+
+      <div className="mb-6"><TwoFactorPanel mandatory={twoFactorMandatory} /></div>
 
       <div className="rounded-2xl border border-edge bg-white p-6 shadow-[0_8px_25px_rgba(20,40,77,0.04)]">
         <h2 className="mb-1 text-[15px] font-semibold text-navy">{t("app.account.changePassword")}</h2>

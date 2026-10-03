@@ -9,6 +9,7 @@ const rawProductionEnvSchema = z
     BETTER_AUTH_URL: z.string().optional(),
     PRIVATE_STORAGE_ROOT: z.string().trim().min(1, "PRIVATE_STORAGE_ROOT est obligatoire."),
     REQUIRE_EMAIL_VERIFICATION: z.literal("true", { error: "REQUIRE_EMAIL_VERIFICATION doit valoir true en production." }),
+    REQUIRE_ADMIN_2FA: z.literal("true", { error: "REQUIRE_ADMIN_2FA doit valoir true en production (double authentification des administrateurs)." }),
     EMAIL_DELIVERY_MODE: z.string().optional(),
     EMAIL_API_URL: z.url("EMAIL_API_URL doit etre une URL valide."),
     EMAIL_API_KEY: z.string().trim().min(1, "EMAIL_API_KEY est obligatoire."),

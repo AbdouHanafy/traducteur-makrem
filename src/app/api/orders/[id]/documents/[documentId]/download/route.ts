@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { adminNeedsTwoFactorSetup } from "@/lib/admin-security";
 import { limit, MINUTE } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { findOrderById } from "@/repositories/orders";
@@ -32,7 +33,7 @@ export async function GET(
   const order = await findOrderById(id);
   if (!order) return NextResponse.json({ error: "Introuvable." }, { status: 404 });
 
-  const isStaff = session.user.role === "ADMIN";
+  const isStaff = session.user.role === "ADMIN" && !adminNeedsTwoFactorSetup(session.user);
   if (order.userId !== session.user.id && !isStaff) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }

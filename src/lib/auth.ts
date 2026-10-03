@@ -3,6 +3,7 @@ import "server-only";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "@better-auth/prisma-adapter";
 import { nextCookies } from "better-auth/next-js";
+import { twoFactor } from "better-auth/plugins";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { checkRateLimit, MINUTE } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
@@ -74,6 +75,11 @@ export const auth = betterAuth({
       "/request-password-reset": { window: 10 * 60, max: 5 },
       "/reset-password": { window: 10 * 60, max: 10 },
       "/send-verification-email": { window: 10 * 60, max: 5 },
+      "/two-factor/verify-totp": { window: 60, max: 10 },
+      "/two-factor/verify-backup-code": { window: 60, max: 10 },
+      "/two-factor/enable": { window: 10 * 60, max: 10 },
+      "/two-factor/disable": { window: 10 * 60, max: 10 },
+      "/two-factor/generate-backup-codes": { window: 10 * 60, max: 10 },
     },
   },
   hooks: {
@@ -135,7 +141,16 @@ export const auth = betterAuth({
       },
     },
   },
-  plugins: [nextCookies()],
+  plugins: [
+    // Double authentification TOTP (application d'authentification) + codes de secours. Verrouillage
+    // du compte après 5 codes faux. Obligatoire pour les administrateurs : voir src/lib/admin-security.ts.
+    twoFactor({
+      issuer: "Maître Makram Arfaoui",
+      accountLockout: { enabled: true, maxFailedAttempts: 5, durationSeconds: 15 * 60 },
+      twoFactorCookieMaxAge: 10 * 60,
+    }),
+    nextCookies(),
+  ],
 });
 
 export type Session = NonNullable<

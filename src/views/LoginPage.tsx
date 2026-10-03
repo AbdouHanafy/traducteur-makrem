@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "@/lib/auth-client";
 import AuthShell from "@/views/components/AuthShell";
+import TwoFactorChallenge from "@/views/components/TwoFactorChallenge";
 import { useI18n } from "@/views/components/I18nProvider";
 
 export default function LoginPage() {
@@ -18,18 +19,25 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [challenge, setChallenge] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    const { error: signInError } = await signIn.email({ email, password });
+    const { data, error: signInError } = await signIn.email({ email, password });
 
     setLoading(false);
 
     if (signInError) {
       setError(signInError.status === 429 ? t("app.err.RATE_LIMITED") : t("login.error"));
+      return;
+    }
+
+    // Compte protégé par double authentification : le mot de passe ne suffit pas, il faut le code.
+    if ((data as { twoFactorRedirect?: boolean } | null)?.twoFactorRedirect) {
+      setChallenge(true);
       return;
     }
 
@@ -52,51 +60,55 @@ export default function LoginPage() {
         </Link>
       </p>
 
-      <form onSubmit={onSubmit} className="mt-7 grid gap-4.5" noValidate>
-        {error && (
-          <div role="alert" className="rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
-            {error}
+      {challenge ? (
+        <TwoFactorChallenge destination={callbackUrl} />
+      ) : (
+        <form onSubmit={onSubmit} className="mt-7 grid gap-4.5" noValidate>
+          {error && (
+            <div role="alert" className="rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="email" className="mb-1.5 block text-[13.5px] font-semibold text-ink">
+              {t("common.email")}
+            </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-3 focus:ring-blue/10"
+              placeholder="vous@exemple.com"
+            />
           </div>
-        )}
 
-        <div>
-          <label htmlFor="email" className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-            {t("common.email")}
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-3 focus:ring-blue/10"
-            placeholder="vous@exemple.com"
-          />
-        </div>
+          <div>
+            <div className="mb-1.5 flex items-center justify-between gap-3"><label htmlFor="password" className="block text-[13.5px] font-semibold text-ink">{t("common.password")}</label><Link href="/mot-de-passe-oublie" className="text-[12px] font-semibold text-blue hover:text-blue-2">{t("app.auth.forgot")}</Link></div>
+            <input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-3 focus:ring-blue/10"
+              placeholder="••••••••••"
+            />
+          </div>
 
-        <div>
-          <div className="mb-1.5 flex items-center justify-between gap-3"><label htmlFor="password" className="block text-[13.5px] font-semibold text-ink">{t("common.password")}</label><Link href="/mot-de-passe-oublie" className="text-[12px] font-semibold text-blue hover:text-blue-2">{t("app.auth.forgot")}</Link></div>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] text-ink outline-none transition focus:border-blue focus:ring-3 focus:ring-blue/10"
-            placeholder="••••••••••"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="mt-1.5 inline-flex items-center justify-center rounded-xl bg-blue px-6 py-3.5 text-[14px] font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.22)] transition hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {loading ? t("login.loading") : t("login.submit")}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-1.5 inline-flex items-center justify-center rounded-xl bg-blue px-6 py-3.5 text-[14px] font-semibold text-white shadow-[0_8px_22px_rgba(36,86,184,.22)] transition hover:bg-blue-2 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? t("login.loading") : t("login.submit")}
+          </button>
+        </form>
+      )}
     </AuthShell>
   );
 }

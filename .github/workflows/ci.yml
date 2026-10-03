@@ -87,6 +87,8 @@ jobs:
         run: pkill -f "next dev" || true
       - name: Payment integration tests (fake Konnect)
         run: npx tsx scripts/e2e-payments.ts
+      - name: Admin two-factor authentication tests
+        run: npx tsx scripts/e2e-mfa.ts
       - name: Production build + cache behaviour
         run: |
           npm run build

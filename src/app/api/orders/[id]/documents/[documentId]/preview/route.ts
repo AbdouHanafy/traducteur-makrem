@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { adminNeedsTwoFactorSetup } from "@/lib/admin-security";
 import { findOrderById } from "@/repositories/orders";
 import { findDocumentById } from "@/repositories/documents";
 import { previewStorageKey, readPreviewMeta, readPrivateFile } from "@/lib/storage/privateStorage";
@@ -22,7 +23,7 @@ export async function GET(
   const order = await findOrderById(id);
   if (!order) return NextResponse.json({ error: "Introuvable." }, { status: 404 });
 
-  const isStaff = session.user.role === "ADMIN";
+  const isStaff = session.user.role === "ADMIN" && !adminNeedsTwoFactorSetup(session.user);
   if (!isStaff) {
     return NextResponse.json({ error: "Aperçu verrouillé jusqu'au paiement du solde." }, { status: 423 });
   }

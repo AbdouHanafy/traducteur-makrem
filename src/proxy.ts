@@ -18,7 +18,7 @@ import { EDIT_QUERY_PARAM } from "@/lib/i18n-edit";
  * Fichier nommé `proxy.ts` (pas `middleware.ts`) : cette version de Next.js a renommé la
  * convention — voir node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md.
  */
-const PROTECTED_PREFIXES = ["/admin", "/dashboard"];
+const PROTECTED_PREFIXES = ["/admin", "/dashboard", "/security"];
 const DYNAMIC_PREFIXES = ["/paiement"];
 
 function startsWithSegment(pathname: string, prefix: string): boolean {

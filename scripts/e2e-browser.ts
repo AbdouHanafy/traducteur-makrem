@@ -6,6 +6,7 @@
  */
 import { chromium, type Page } from "playwright-core";
 import AxeBuilder from "@axe-core/playwright";
+import { totp } from "./totp";
 
 const B = process.env.E2E_BASE ?? "http://localhost:3000";
 const CHROME = process.env.CHROME_PATH ?? "C:/Program Files/Google/Chrome/Application/chrome.exe";
@@ -138,6 +139,53 @@ async function main() {
     await page.locator("form button[type=submit]").click();
     await page.getByRole("status").first().waitFor({ timeout: 10000 });
     check("recovery form confirms without revealing whether the account exists", (await page.getByRole("status").first().innerText()).length > 0);
+    await context.close();
+  }
+
+  // ------------------------------------------------------------------ double authentification via l'interface
+  {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 1000 } });
+    const page = await context.newPage();
+    const email = `ui.mfa.${stamp}@test.local`;
+    const password = "Passw0rd!Long";
+    await context.request.post(`${B}/api/auth/sign-up/email`, { data: { name: "UI Mfa", email, password, firstName: "UI", lastName: "Mfa", termsAccepted: true }, headers: { Origin: B, "x-forwarded-for": `10.${stamp % 250}.4.4` } });
+
+    await page.goto(`${B}/fr/dashboard/compte`, { waitUntil: "networkidle" }).catch(() => undefined);
+    await page.goto(`${B}/dashboard/compte`, { waitUntil: "networkidle" });
+    check("account page shows 2FA as disabled", (await page.getByText("Désactivée").count()) > 0);
+    await page.locator("#mfa-password").fill(password);
+    await page.getByRole("button", { name: "Activer la double authentification" }).click();
+    await page.getByRole("img", { name: /QR code/ }).waitFor({ timeout: 15000 });
+    check("enrolment shows a scannable QR code", (await page.getByRole("img", { name: /QR code/ }).getAttribute("src"))?.startsWith("data:image/png") === true);
+    const secret = (await page.locator("code").first().innerText()).trim();
+    check("the manual key is displayed as a fallback", /^[A-Z2-7]{16,}$/.test(secret), secret);
+    check("10 backup codes are shown", (await page.locator("ul.font-mono li").count()) === 10);
+    await page.locator("#mfa-confirm").fill("000000");
+    await page.getByRole("button", { name: "Confirmer et activer" }).click();
+    await page.getByRole("alert").filter({ hasText: /incorrect/i }).waitFor({ timeout: 10000 });
+    check("a wrong confirmation code shows an error and keeps the setup open", (await page.locator("#mfa-confirm").count()) === 1);
+    await page.locator("#mfa-confirm").fill(totp(secret));
+    await page.getByRole("button", { name: "Confirmer et activer" }).click();
+    await page.getByText("Double authentification activée").waitFor({ timeout: 15000 });
+    check("the right code enables 2FA", true);
+
+    // se déconnecter puis se reconnecter : le second facteur est demandé
+    await page.getByRole("button", { name: "Se déconnecter" }).first().click();
+    await page.waitForURL(`${B}/`, { timeout: 15000 }).catch(() => undefined);
+    await page.goto(`${B}/fr/login`, { waitUntil: "networkidle" });
+    await page.fill("#email", email);
+    await page.fill("#password", password);
+    await page.locator("form button[type=submit]").click();
+    await page.locator("#mfa-code").waitFor({ timeout: 15000 });
+    check("after the password, the code screen appears (no session yet)", /vérification/i.test(await page.locator("body").innerText()));
+    await page.locator("#mfa-code").fill("000000");
+    await page.locator("form button[type=submit]").click();
+    await page.getByRole("alert").filter({ hasText: /incorrect/i }).waitFor({ timeout: 10000 });
+    check("a wrong code at login shows an error", true);
+    await page.locator("#mfa-code").fill(totp(secret));
+    await page.locator("form button[type=submit]").click();
+    await page.waitForURL(/\/dashboard/, { timeout: 20000 });
+    check("the correct code completes the sign-in", /\/dashboard/.test(page.url()));
     await context.close();
   }
 

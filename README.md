@@ -177,6 +177,7 @@ premier push.
 |---|---|---|
 | `npm run test:e2e` | API, droits, workflow de commande, paiements mock, e-mails, mot de passe oublié, thème, éditeur de textes | MySQL seedée + `next dev` sur :3000 |
 | `npm run test:payments` | Intégration Konnect contre un faux serveur Konnect : montants, rejouage, concurrence, expiration, paiement tardif, pannes | MySQL seedée, aucun `next dev` actif (il lance le sien sur :3002) |
+| `npm run test:mfa` | Double authentification des admins : TOTP réel, codes de secours, verrouillage, blocage des pages et API sans 2FA | MySQL seedée, aucun `next dev` actif (il lance le sien sur :3003) |
 | `npm run test:editor` | Éditeur visuel des textes dans Chrome | idem e2e + Chrome installé |
 | `npm run test:browser` | Site public dans Chrome : langue, clavier, tunnel de commande, axe-core (4 langues) | idem e2e + Chrome installé |
 | `npm run test:cache` | Cache de production et invalidation | `next build` puis `next start` sur :3001 (`E2E_BASE=http://localhost:3001`) |
@@ -190,7 +191,7 @@ avec `tsx --conditions react-server` car `server-only` refuse d'être importé h
   quarantaine avant de marquer un document `READY` ;
 - planification de l'envoi des e-mails : appeler `POST /api/internal/jobs/email-outbox` avec
   `Authorization: Bearer $JOBS_SECRET` toutes les minutes (cron de l'hébergeur) ;
-- double authentification de l'administrateur ;
+- activer `REQUIRE_ADMIN_2FA=true` en production (le contrôle `npm run env:check` l'exige) puis faire enrôler chaque administrateur au premier accès ;
 - validation juridique finale des pages légales et des coordonnées publiques ;
 - recette Konnect avec le compte marchand réel, rapprochement et procédure de remboursement ;
 - supervision, alertes, sauvegardes et exercice de restauration du stockage privé.

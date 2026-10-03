@@ -24,6 +24,7 @@
     "test:browser": "tsx scripts/e2e-browser.ts",
     "test:cache": "tsx scripts/e2e-cache.ts",
     "test:payments": "tsx scripts/e2e-payments.ts",
+    "test:mfa": "tsx scripts/e2e-mfa.ts",
     "media:service-covers": "tsx --conditions react-server scripts/generate-service-covers.ts"
   },
   "prisma": {
@@ -39,6 +40,7 @@
     "next": "16.3.5",
     "pdfjs-dist": "^6.3.289",
     "prisma": "^6.19.3",
+    "qrcode": "^1.5.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",
@@ -48,6 +50,7 @@
     "@axe-core/playwright": "^4.13.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
