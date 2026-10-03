@@ -1,4 +1,7 @@
 import { PrismaClient } from "@prisma/client";
+import { loadEnvConfig } from "@next/env";
+
+loadEnvConfig(process.cwd());
 const B = "http://localhost:3000";
 const prisma = new PrismaClient();
 let pass = 0, fail = 0;
@@ -7,8 +10,11 @@ function check(name: string, ok: boolean, extra = "") {
 
 class Client {
   jar = new Map<string, string>();
+  // Chaque client simule sa propre adresse IP : les limites par IP restent actives sans que les
+  // exécutions successives des tests se partagent (et épuisent) le même compteur.
+  readonly ip = `10.${Math.floor(Math.random() * 250) + 1}.${Math.floor(Math.random() * 250) + 1}.${Math.floor(Math.random() * 250) + 1}`;
   async req(path: string, init: RequestInit & { json?: unknown } = {}) {
-    const headers: Record<string, string> = { Origin: B, ...(init.headers as Record<string, string>) };
+    const headers: Record<string, string> = { Origin: B, "x-forwarded-for": this.ip, ...(init.headers as Record<string, string>) };
     if (this.jar.size) headers.cookie = [...this.jar].map(([k, v]) => `${k}=${v}`).join("; ");
     let body = init.body;
     if (init.json !== undefined) { headers["content-type"] = "application/json"; body = JSON.stringify(init.json); }
@@ -61,7 +67,7 @@ async function main() {
 
   const service = await prisma.service.findFirst({ where: { active: true, pricePerPage: { gt: 0 } } });
   if (!service) throw new Error("no orderable service");
-  const base = { serviceId: service.id, sourceLang: "ar", targetLang: "fr", pages: "3", delayKey: "delay.standard" };
+  const base = { serviceId: service.id, sourceLang: "ar", targetLang: "fr", pages: "3", delayKey: "delay.standard", destinationCountry: "France", receivingAuthority: "Préfecture de Paris", purpose: "Dossier de naturalisation", certificationNeeds: "CERTIFIED", deliveryMethod: "DIGITAL", deliveryAddress: "", clientNotes: "Merci de respecter la graphie des noms propres." };
   const file = { data: pdf(), name: "acte.pdf", type: "application/pdf" };
   let r = await client.req("/api/orders", { method: "POST", body: form({ ...base, targetLang: "ar" }, file) });
   check("same source/target language rejected (400)", r.status === 400, String(r.status));
@@ -99,7 +105,8 @@ async function main() {
   const ref = adv.redirectUrl.split("/paiement/mock/")[1].split("?")[0];
   check("payment page renders for owner", (await client.req(adv.redirectUrl)).status === 200);
   check("other user cannot confirm payment (403)", (await other.req("/api/payments/mock/confirm", { method: "POST", json: { providerRef: ref } })).status === 403);
-  check("webhook disabled with mock provider (404)", (await anon.req("/api/payments/webhook", { method: "POST", json: { providerRef: ref } })).status === 404);
+  check("webhook disabled with mock provider (404)", (await anon.req(`/api/payments/webhook?payment_ref=${ref}`)).status === 404);
+  check("old POST webhook is gone (405)", (await anon.req("/api/payments/webhook", { method: "POST", json: { providerRef: ref } })).status === 405);
   r = await client.req("/api/payments/mock/confirm", { method: "POST", json: { providerRef: ref } });
   check("owner confirms advance", r.status === 200, await r.text());
   r = await client.req("/api/payments/mock/confirm", { method: "POST", json: { providerRef: ref } });
@@ -350,6 +357,96 @@ async function main() {
   check("font file removed from disk", (await fetch(`${B}${uploadedFont.url}`)).status === 404);
   page = await asText(admin, "/admin/theme", "fr");
   check("theme page offers layout, Arabic fonts and custom fonts", page.text.includes("Mise en page") && page.text.includes("Cairo") && page.text.includes("Vos propres polices"));
+
+  // --- order intake details (fulfilment) ---
+  const mkForm = (patch: Record<string, string | null>) => {
+    const f = form({ ...base }, file);
+    for (const [k, v] of Object.entries(patch)) { if (v === null) f.delete(k); else f.set(k, v); }
+    return f;
+  };
+  const submitOrder = async (patch: Record<string, string | null>) => client.req("/api/orders", { method: "POST", body: mkForm(patch) });
+  const intakeOrder = await prisma.order.findUniqueOrThrow({ where: { id: orderId } });
+  check("intake fields persisted on the order", intakeOrder.destinationCountry === "France" && intakeOrder.receivingAuthority === "Préfecture de Paris" && intakeOrder.purpose === "Dossier de naturalisation" && intakeOrder.certificationNeeds === "CERTIFIED" && intakeOrder.deliveryMethod === "DIGITAL" && !!intakeOrder.clientNotes);
+  check("missing destination country rejected (400)", (await submitOrder({ destinationCountry: null })).status === 400);
+  check("missing purpose rejected (400)", (await submitOrder({ purpose: "" })).status === 400);
+  check("invalid certification option rejected (400)", (await submitOrder({ certificationNeeds: "HACK" })).status === 400);
+  check("invalid delivery method rejected (400)", (await submitOrder({ deliveryMethod: "DRONE" })).status === 400);
+  check("courier delivery requires an address (400)", (await submitOrder({ deliveryMethod: "COURIER", deliveryAddress: "" })).status === 400);
+  check("courier delivery with address accepted (201)", (await submitOrder({ deliveryMethod: "COURIER", deliveryAddress: "12 rue de la Paix, 75002 Paris" })).status === 201);
+  check("oversized notes rejected (400)", (await submitOrder({ clientNotes: "x".repeat(3001) })).status === 400);
+  const adminOrderPage = await asText(admin, `/admin/orders/${orderId}`, "fr");
+  check("admin order page shows the intake details", adminOrderPage.text.includes("France") && adminOrderPage.text.includes("Dossier de naturalisation") && adminOrderPage.text.includes("Préfecture de Paris"));
+  const clientOrderPage = await asText(client, `/dashboard/orders/${orderId}`, "fr");
+  check("client order page shows the intake details", clientOrderPage.text.includes("France") && clientOrderPage.text.includes("Dossier de naturalisation"));
+  check("other clients cannot read the intake details (no 200 with data)", !(await asText(other, `/dashboard/orders/${orderId}`, "fr")).text.includes("Dossier de naturalisation"));
+
+  // --- transactional e-mail outbox ---
+  const outbox = (template: string, recipient: string) => prisma.emailOutbox.count({ where: { template, recipient } });
+  const clientEmail = email.toLowerCase();
+  check("ORDER_RECEIVED queued once per order", (await outbox("ORDER_RECEIVED", clientEmail)) >= 1);
+  check("QUOTE_ACCEPTED queued", (await outbox("QUOTE_ACCEPTED", clientEmail)) >= 1);
+  check("PAYMENT_CONFIRMED queued for the advance and the balance", (await outbox("PAYMENT_CONFIRMED", clientEmail)) === 2, String(await outbox("PAYMENT_CONFIRMED", clientEmail)));
+  check("TRANSLATION_READY queued", (await outbox("TRANSLATION_READY", clientEmail)) === 1);
+  const queuedRow = await prisma.emailOutbox.findFirstOrThrow({ where: { template: "TRANSLATION_READY", recipient: clientEmail } });
+  check("outbox row stores status, subject and link payload only", queuedRow.status === "PENDING" && queuedRow.subject.length > 0 && JSON.stringify(queuedRow.payload).includes("/dashboard/orders/"));
+  const jobs = (token?: string) => fetch(`${B}/api/internal/jobs/email-outbox`, { method: "POST", headers: token ? { authorization: `Bearer ${token}` } : {} });
+  check("e-mail job refuses anonymous callers (401)", (await jobs()).status === 401);
+  check("e-mail job refuses a wrong secret (401)", (await jobs("x".repeat(40))).status === 401);
+  check("e-mail job refuses GET (405)", (await fetch(`${B}/api/internal/jobs/email-outbox`)).status === 405);
+  const jobsSecret = process.env.JOBS_SECRET ?? "";
+  check("JOBS_SECRET is configured for the test environment", jobsSecret.length >= 32);
+  // Un lot = 25 messages max, et la base de dev peut contenir d'anciens messages : on vide la file.
+  let processed = { ok: false, sent: 0, failed: 0 };
+  for (let round = 0; round < 40; round++) {
+    const batch = await (await jobs(jobsSecret)).json();
+    processed = { ok: batch.ok === true, sent: processed.sent + batch.sent, failed: processed.failed + batch.failed };
+    if (batch.sent === 0) break;
+  }
+  check("e-mail job delivers pending messages (dev log transport)", processed.ok && processed.sent >= 4 && processed.failed === 0, JSON.stringify(processed));
+  check("delivered rows are SENT with a timestamp", (await prisma.emailOutbox.findUniqueOrThrow({ where: { id: queuedRow.id } })).status === "SENT");
+  const again = await (await jobs(jobsSecret)).json();
+  check("running the job again sends nothing twice", again.sent === 0, JSON.stringify(again));
+
+  // --- forgot / reset password ---
+  const resetEmail = `reset.${stamp}@test.local`;
+  const resetUser = new Client();
+  await resetUser.req("/api/auth/sign-up/email", { method: "POST", json: { name: "Reset User", email: resetEmail, password: "OldPassw0rd!Long", firstName: "Reset", lastName: "User", termsAccepted: true } });
+  check("forgot-password page renders", (await html("/mot-de-passe-oublie", "site_locale=fr")).status === 200);
+  check("reset-password page renders", (await html("/reinitialiser-mot-de-passe?token=abc", "site_locale=fr")).status === 200);
+  r = await new Client().req("/api/auth/request-password-reset", { method: "POST", json: { email: resetEmail, redirectTo: "/reinitialiser-mot-de-passe" } });
+  check("password reset request accepted (200)", r.status === 200, String(r.status));
+  r = await new Client().req("/api/auth/request-password-reset", { method: "POST", json: { email: `ghost.${stamp}@test.local`, redirectTo: "/reinitialiser-mot-de-passe" } });
+  check("unknown e-mail gets the same answer (no account enumeration)", r.status === 200, String(r.status));
+  check("...and no e-mail is queued for it", (await outbox("RESET_PASSWORD", `ghost.${stamp}@test.local`)) === 0);
+  const resetRow = await prisma.emailOutbox.findFirstOrThrow({ where: { template: "RESET_PASSWORD", recipient: resetEmail } });
+  const resetUrl = String((resetRow.payload as { url?: string }).url ?? "");
+  const token = resetUrl.split("/reset-password/")[1]?.split("?")[0] ?? "";
+  check("reset e-mail carries a one-time link to this site", resetUrl.startsWith(B) && token.length > 10, resetUrl);
+  r = await new Client().req("/api/auth/reset-password", { method: "POST", json: { token: "not-a-real-token", newPassword: "NewPassw0rd!Long" } });
+  check("invalid token rejected", r.status >= 400, String(r.status));
+  r = await new Client().req("/api/auth/reset-password", { method: "POST", json: { token, newPassword: "short" } });
+  check("too-short new password rejected", r.status >= 400, String(r.status));
+  r = await new Client().req("/api/auth/reset-password", { method: "POST", json: { token, newPassword: "NewPassw0rd!Long" } });
+  check("valid token sets the new password (200)", r.status === 200, String(r.status));
+  check("new password logs in", (await new Client().login(resetEmail, "NewPassw0rd!Long")) === 200);
+  check("old password no longer works", (await new Client().login(resetEmail, "OldPassw0rd!Long")) !== 200);
+  r = await new Client().req("/api/auth/reset-password", { method: "POST", json: { token, newPassword: "Another0ne!Long" } });
+  check("a reset link cannot be used twice", r.status >= 400, String(r.status));
+  check("sessions opened before the reset were revoked", (await resetUser.req("/api/auth/get-session")).status !== 200 || (await (await resetUser.req("/api/auth/get-session")).text()) === "null");
+
+  // --- health, errors, structured data ---
+  r = await fetch(`${B}/api/health/live`);
+  check("liveness probe", r.status === 200 && (await r.json()).ok === true && (r.headers.get("cache-control") ?? "").includes("no-store"));
+  r = await fetch(`${B}/api/health/ready`);
+  check("readiness probe checks database + storage", r.status === 200 && (await r.json()).ok === true);
+  r = await fetch(`${B}/fr/page-qui-nexiste-pas`);
+  check("unknown page returns a styled 404", r.status === 404 && (await r.text()).includes("<html"));
+  page = await html("/", "site_locale=fr");
+  const ld = [...page.text.matchAll(/<script type="application\/ld\+json"[^>]*>(.*?)<\/script>/g)].map((m) => { try { return JSON.parse(m[1].replaceAll("\\u003c", "<")); } catch { return null; } });
+  check("home page embeds valid JSON-LD", ld.length > 0 && ld.every((item) => item && item["@context"]), JSON.stringify(ld).slice(0, 120));
+  check("JSON-LD contains no invented ratings or reviews", !JSON.stringify(ld).includes("aggregateRating") && !JSON.stringify(ld).includes('"review"'));
+  r = await fetch(`${B}/opengraph-image`);
+  check("Open Graph image is served", r.status === 200 && (r.headers.get("content-type") ?? "").startsWith("image/"), `${r.status} ${r.headers.get("content-type")}`);
 
   // --- visual editor: single-text API ---
   const entry = (json: unknown, c: Client = admin) => c.req("/api/admin/site-content/entry", { method: "PATCH", json });

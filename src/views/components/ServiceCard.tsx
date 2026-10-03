@@ -11,23 +11,13 @@ export interface ServiceCardData {
   pricePerPage: string;
 }
 
-const SERVICE_COPY: Record<string, { name: string; description: string }> = {
-  "etat-civil": { name: "services.civil", description: "services.civilDetail" },
-  "diplomes-releves": { name: "services.diplomas", description: "services.diplomasDetail" },
-  "contrats-actes": { name: "services.contracts", description: "services.contractsDetail" },
-  "documents-judiciaires": { name: "services.court", description: "services.courtDetail" },
-  interpretariat: { name: "services.interpreting", description: "services.interpretingDetail" },
-};
-
 /**
  * Carte service partagée — utilisée sur la home (teaser) et sur /services (détail), pour que
  * les deux restent visuellement identiques sans dupliquer le balisage à chaque évolution.
  */
 export default function ServiceCard({ service, anchor = true }: { service: ServiceCardData; anchor?: boolean }) {
-  const { locale, t } = useI18n();
-  const localizedCopy = SERVICE_COPY[service.slug];
-  const name = locale === "fr" || !localizedCopy ? service.name : t(localizedCopy.name);
-  const description = locale === "fr" || !localizedCopy ? service.description : t(localizedCopy.description);
+  const { t } = useI18n();
+  const { name, description } = service;
   return (
     <div
       id={anchor ? service.slug : undefined}

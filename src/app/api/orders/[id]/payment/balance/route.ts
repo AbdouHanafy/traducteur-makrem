@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireOrderOwner } from "@/lib/rbac";
 import { limit, MINUTE } from "@/lib/rate-limit";
-import { startOrderPayment } from "@/lib/payments/start";
+import { PaymentAlreadyConfirmedError, startOrderPayment } from "@/lib/payments/start";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,5 +21,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Solde non exigible pour cette commande." }, { status: 409 });
   }
 
-  return NextResponse.json(await startOrderPayment(order, "BALANCE"));
+  try {
+    return NextResponse.json(await startOrderPayment(order, "BALANCE"));
+  } catch (error) {
+    if (error instanceof PaymentAlreadyConfirmedError) {
+      return NextResponse.json({ error: error.message, code: "PAYMENT_ALREADY_CONFIRMED" }, { status: 409 });
+    }
+    console.error(JSON.stringify({ level: "error", event: "payment_start_failed", orderId: order.id, message: error instanceof Error ? error.message : "unknown" }));
+    return NextResponse.json({ error: "Le paiement n'a pas pu être initialisé. Réessayez dans un instant.", code: "PAYMENT_UNAVAILABLE" }, { status: 502 });
+  }
 }

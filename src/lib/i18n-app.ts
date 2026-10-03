@@ -8,6 +8,21 @@ import type { Locale } from "@/lib/i18n";
 type Row = readonly [fr: string, ar: string, en: string, it: string];
 
 const ROWS: Record<string, Row> = {
+  // Récupération de compte
+  "app.auth.forgot": ["Mot de passe oublié ?", "هل نسيتم كلمة المرور؟", "Forgot your password?", "Password dimenticata?"],
+  "app.auth.forgotTitle": ["Retrouver votre accès", "استرجاع الدخول", "Recover your access", "Recupera l’accesso"],
+  "app.auth.forgotHint": ["Saisissez votre email. Si le compte existe, nous enverrons un lien valable une heure.", "أدخلوا بريدكم الإلكتروني. إذا كان الحساب موجوداً سنرسل رابطاً صالحاً لمدة ساعة.", "Enter your email. If the account exists, we will send a link valid for one hour.", "Inserisci l’email. Se l’account esiste, invieremo un link valido per un’ora."],
+  "app.auth.sendReset": ["Envoyer le lien", "إرسال الرابط", "Send reset link", "Invia il link"],
+  "app.auth.sending": ["Envoi…", "جارٍ الإرسال…", "Sending…", "Invio…"],
+  "app.auth.resetSent": ["Si cette adresse existe, un email vient d’être programmé. Vérifiez aussi vos indésirables.", "إذا كان هذا العنوان موجوداً فسيتم إرسال رسالة. تحققوا أيضاً من البريد غير المرغوب فيه.", "If this address exists, an email has been queued. Check your spam folder too.", "Se l’indirizzo esiste, l’email è stata programmata. Controlla anche lo spam."],
+  "app.auth.resetTitle": ["Choisir un nouveau mot de passe", "اختيار كلمة مرور جديدة", "Choose a new password", "Scegli una nuova password"],
+  "app.auth.newPassword": ["Nouveau mot de passe", "كلمة المرور الجديدة", "New password", "Nuova password"],
+  "app.auth.confirmPassword": ["Confirmer le mot de passe", "تأكيد كلمة المرور", "Confirm password", "Conferma password"],
+  "app.auth.resetSubmit": ["Mettre à jour le mot de passe", "تحديث كلمة المرور", "Update password", "Aggiorna password"],
+  "app.auth.resetSuccess": ["Votre mot de passe a été mis à jour. Vous pouvez maintenant vous connecter.", "تم تحديث كلمة المرور. يمكنكم الآن تسجيل الدخول.", "Your password has been updated. You can now sign in.", "La password è stata aggiornata. Ora puoi accedere."],
+  "app.auth.invalidToken": ["Ce lien est invalide ou expiré. Demandez un nouveau lien.", "هذا الرابط غير صالح أو منتهي الصلاحية. اطلبوا رابطاً جديداً.", "This link is invalid or expired. Request a new one.", "Il link non è valido o è scaduto. Richiedine uno nuovo."],
+  "app.auth.passwordMismatch": ["Les mots de passe ne correspondent pas.", "كلمتا المرور غير متطابقتين.", "Passwords do not match.", "Le password non coincidono."],
+  "app.auth.backLogin": ["Retour à la connexion", "العودة إلى تسجيل الدخول", "Back to sign in", "Torna all’accesso"],
   // Navigation / coque de l'espace connecté
   "app.nav.dashboard": ["Tableau de bord", "لوحة التحكم", "Dashboard", "Pannello di controllo"],
   "app.nav.groupTranslations": ["Mes traductions", "ترجماتي", "My translations", "Le mie traduzioni"],
@@ -195,8 +210,11 @@ const ROWS: Record<string, Row> = {
   // Libellés d'accessibilité
   "app.aria.mainNav": ["Navigation principale", "التنقل الرئيسي", "Main navigation", "Navigazione principale"],
   "app.aria.mobileNav": ["Navigation mobile", "التنقل على الهاتف", "Mobile navigation", "Navigazione mobile"],
+  "app.aria.skipToContent": ["Aller au contenu", "الانتقال إلى المحتوى", "Skip to content", "Vai al contenuto"],
   "app.aria.prevReview": ["Avis précédent", "الرأي السابق", "Previous review", "Recensione precedente"],
   "app.aria.nextReview": ["Avis suivant", "الرأي التالي", "Next review", "Recensione successiva"],
+  "app.aria.reviewRating": ["{rating} sur 5", "{rating} من 5", "{rating} out of 5", "{rating} su 5"],
+  "app.aria.showReview": ["Voir l’avis {number}", "عرض الرأي {number}", "Show review {number}", "Mostra la recensione {number}"],
 };
 
 const LOCALE_INDEX: Record<Locale, number> = { fr: 0, ar: 1, en: 2, it: 3 };

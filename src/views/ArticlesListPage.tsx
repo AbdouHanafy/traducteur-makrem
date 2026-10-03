@@ -18,7 +18,7 @@ export default function ArticlesListPage({ articles }: { articles: ArticleListIt
   return (
     <>
       <Topbar />
-      <main className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1">
         <PublicPageHero eyebrow={t("page.articles.eyebrow")} title={t("page.articles.title")} description={t("page.articles.description")} />
 
         <section className="py-[calc(4rem*var(--section-scale))] sm:py-[calc(5rem*var(--section-scale))]">

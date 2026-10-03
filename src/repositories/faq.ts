@@ -1,3 +1,5 @@
+import "server-only";
+
 import { prisma } from "@/lib/prisma";
 import type { TranslationsMap } from "@/lib/localize";
 import { withTranslations } from "@/repositories/_json";

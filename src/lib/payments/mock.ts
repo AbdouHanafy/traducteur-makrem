@@ -1,3 +1,5 @@
+import "server-only";
+
 import { randomUUID } from "node:crypto";
 import type { CreatePaymentInput, CreatePaymentResult, PaymentProvider } from "./provider";
 
@@ -20,12 +22,4 @@ export const mockPaymentProvider: PaymentProvider = {
       redirectUrl: mockRedirectUrl(providerRef, orderId, phase),
     };
   },
-  redirectUrlFor: (providerRef, orderId, phase) => mockRedirectUrl(providerRef, orderId, phase),
 };
-
-export function getPaymentProvider(): PaymentProvider {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("Le provider de paiement mock est interdit en production. Configurez un provider réel.");
-  }
-  return mockPaymentProvider;
-}

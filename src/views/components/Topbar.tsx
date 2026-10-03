@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { useSession } from "@/lib/auth-client";
 import BrandLogo from "@/views/components/BrandLogo";
@@ -50,6 +50,8 @@ export default function Topbar() {
   const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(pathname.startsWith("/services"));
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileDialogRef = useRef<HTMLElement>(null);
   const mounted = useSyncExternalStore(subscribeToHydration, () => true, () => false);
   const accountHref = session?.user.role === "ADMIN" ? "/admin" : session ? "/dashboard" : "/login";
   const accountLabel = session?.user.role === "ADMIN" ? t("nav.admin") : session ? t("nav.account") : t("nav.login");
@@ -57,17 +59,44 @@ export default function Topbar() {
   useEffect(() => {
     if (!mobileOpen) return;
     const previous = document.body.style.overflow;
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const menuButton = mobileMenuButtonRef.current;
+    const dialog = mobileDialogRef.current;
     document.body.style.overflow = "hidden";
-    const onKeyDown = (event: KeyboardEvent) => event.key === "Escape" && setMobileOpen(false);
+    const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const initialFocusable = dialog ? Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelector)) : [];
+    (initialFocusable[0] ?? dialog)?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileOpen(false);
+        return;
+      }
+      const focusable = dialog ? Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelector)) : [];
+      if (event.key !== "Tab" || focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.body.style.overflow = previous;
       document.removeEventListener("keydown", onKeyDown);
+      (previouslyFocused ?? menuButton)?.focus();
     };
   }, [mobileOpen]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-edge bg-white/90 backdrop-blur-xl">
+    <>
+      <a href="#main-content" className="fixed start-4 top-4 z-[100] -translate-y-24 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-navy shadow-lg transition-transform focus:translate-y-0">
+        {t("app.aria.skipToContent")}
+      </a>
+      <header className="sticky top-0 z-50 border-b border-edge bg-white/90 backdrop-blur-xl">
       <div className="mx-auto flex h-[76px] max-w-(--site-width) items-center px-4 sm:px-6 lg:px-8">
         <Brand />
 
@@ -97,7 +126,7 @@ export default function Topbar() {
           <Link href="/commander" className="inline-flex items-center gap-2 rounded-xl bg-navy px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-[0_8px_20px_rgba(20,40,77,0.16)] transition hover:-translate-y-0.5 hover:bg-navy-2">{t("nav.order")} <span aria-hidden="true">→</span></Link>
         </div>
 
-        <button type="button" className="ml-auto grid h-10 w-10 place-items-center rounded-xl border border-line bg-white text-navy shadow-sm lg:hidden" aria-label={t("app.shell.openMenu")} aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
+        <button ref={mobileMenuButtonRef} type="button" className="ml-auto grid h-10 w-10 place-items-center rounded-xl border border-line bg-white text-navy shadow-sm lg:hidden" aria-label={t("app.shell.openMenu")} aria-expanded={mobileOpen} aria-controls="mobile-navigation" onClick={() => setMobileOpen(true)}><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
       </div>
 
       {mounted && createPortal(
@@ -111,6 +140,8 @@ export default function Topbar() {
             />
           )}
           <aside
+            ref={mobileDialogRef}
+            id="mobile-navigation"
             role="dialog"
             aria-modal="true"
             aria-label={t("app.aria.mobileNav")}
@@ -137,6 +168,7 @@ export default function Topbar() {
         </>,
         document.body,
       )}
-    </header>
+      </header>
+    </>
   );
 }

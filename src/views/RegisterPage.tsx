@@ -75,7 +75,7 @@ export default function RegisterPage() {
 
       <form onSubmit={onSubmit} className="mt-7 grid gap-4.5" noValidate>
         {error && (
-          <div className="rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
+          <div role="alert" className="rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
             {error}
           </div>
         )}

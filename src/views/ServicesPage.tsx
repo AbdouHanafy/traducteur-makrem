@@ -12,7 +12,7 @@ export default function ServicesPage({ services }: { services: ServiceCardData[]
   return (
     <>
       <Topbar />
-      <main className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1">
         <PublicPageHero eyebrow={t("page.services.eyebrow")} title={t("page.services.title")} description={t("page.services.description")} />
 
         <section className="py-[calc(4rem*var(--section-scale))] sm:py-[calc(5rem*var(--section-scale))]">

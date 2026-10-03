@@ -13,6 +13,13 @@ export interface OrderDetailData {
   sourceLang: string;
   targetLang: string;
   pages: number;
+  destinationCountry: string;
+  receivingAuthority: string | null;
+  purpose: string;
+  certificationNeeds: string;
+  deliveryMethod: string;
+  deliveryAddress: string | null;
+  clientNotes: string | null;
   totalAmount: string;
   advanceAmount: string;
   balanceAmount: string;
@@ -78,6 +85,10 @@ export default function OrderDetailPage({ order }: { order: OrderDetailData }) {
 
       <div className="grid gap-6 md:grid-cols-[1.3fr_1fr]">
         <div className="grid gap-6">
+          <section className="rounded-2xl border border-line bg-white p-6">
+            <h2 className="mb-4 text-[16.5px] text-navy">{t("order.fulfilment")}</h2>
+            <dl className="grid gap-2 text-[13.5px]"><div><dt className="font-semibold text-ink">{t("order.destinationCountry")}</dt><dd className="text-muted">{order.destinationCountry}</dd></div>{order.receivingAuthority && <div><dt className="font-semibold text-ink">{t("order.receivingAuthority")}</dt><dd className="text-muted">{order.receivingAuthority}</dd></div>}<div><dt className="font-semibold text-ink">{t("order.purpose")}</dt><dd className="whitespace-pre-wrap text-muted">{order.purpose}</dd></div><div><dt className="font-semibold text-ink">{t("order.deliveryMethod")}</dt><dd className="text-muted">{t(`order.delivery.${order.deliveryMethod.toLowerCase()}`)}</dd></div></dl>
+          </section>
           <section className="rounded-2xl border border-line bg-white p-6">
             <h2 className="mb-4 text-[16.5px] text-navy">{t("app.order.source")}</h2>
             {sourceDoc ? (

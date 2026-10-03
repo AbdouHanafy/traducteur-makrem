@@ -4,22 +4,20 @@ Voir [ARCHITECTURE.md](ARCHITECTURE.md) pour l'analyse du prototype, l'architect
 plan d'implémentation complet. La maquette d'origine est archivée dans
 [`reference/original-prototype.html`](reference/original-prototype.html).
 
-**État actuel : le parcours complet fonctionne, de la commande au fichier débloqué.** Pages
-publiques, authentification (Better Auth), wizard de commande (`/commander`), devis auto,
-paiement 50/50 via un provider mock (vrai aller-retour serveur, pas de simulation frontend),
-verrouillage total du fichier traduit tant que le solde n'est pas confirmé, et un espace
-traducteur minimal (`/admin/orders`) pour déposer le fichier final. Testé de bout en bout avec
-Playwright, y compris les cas IDOR (un tiers ne peut ni voir ni télécharger la commande d'un
-autre). Ce qui manque encore : CRUD admin pour les prix, KPI dashboard, notifications email,
-provider de paiement réel.
+**État actuel : le parcours principal est implémenté, de la commande au fichier débloqué.** Il
+comprend les pages publiques multilingues, Better Auth, le devis automatique, le paiement 50/50,
+le verrouillage du fichier final, le tableau de bord client et le backoffice (commandes, contenus,
+utilisateurs, thème et médiathèque). Le provider mock reste réservé au développement ; Konnect est
+le provider prévu pour la production. Avant une mise en ligne réelle, il reste notamment à valider
+les textes légaux et coordonnées, configurer les secrets et le stockage persistant, brancher les
+notifications, ajouter l'analyse antivirus des documents et exécuter la recette de production.
 
 ## Stack
 
 Next.js (App Router) · TypeScript · Tailwind CSS v4 · Prisma 6.19.3 (MySQL 8.0, Docker) ·
 Better Auth (email/mot de passe, argon2id via `@node-rs/argon2`) · `pdfjs-dist` +
 `@napi-rs/canvas` (aperçus filigranés, voir ARCHITECTURE.md §5.1) · `file-type` (validation MIME
-réelle des uploads) — conventions alignées sur le projet calmatrip (page/view split,
-repositories, schemas Zod à venir).
+réelle des uploads) — pages fines, repositories serveur et schémas Zod pour les entrées.
 
 ## Démarrage local
 
@@ -39,10 +37,14 @@ npm run dev
 npm run dev           # serveur de dev
 npm run build         # build de production
 npm run lint          # eslint
+npm run typecheck     # vérification TypeScript sans émission
+npm run check         # lint + typecheck
+npm run env:check     # préflight strict des variables de production
 npm run db:up         # docker compose up -d (MySQL)
 npm run db:down       # docker compose down
 npm run db:logs       # logs du conteneur MySQL
 npm run db:migrate    # prisma migrate dev
+npm run db:deploy     # applique les migrations déjà versionnées en production
 npm run db:generate   # prisma generate
 npm run db:seed       # prisma db seed (prisma/seed.ts)
 npm run db:studio     # prisma studio
@@ -69,13 +71,13 @@ besoin de revérifier que Prisma écrit/lit réellement dans MySQL.
 src/
   app/            routes App Router — pages fines, metadata via buildMetadata()
   views/          logique UI (composants + assemblage de page)
-  repositories/   (à venir Phase 3+) seule couche autorisée à toucher Prisma
-  schemas/        (à venir) validation Zod
-  lib/            prisma.ts, seo.ts, et futurs payments/, storage/, notifications.ts
+  repositories/   couche serveur d'accès à Prisma (`server-only`)
+  schemas/        validation Zod des entrées HTTP et formulaires
+  lib/            authentification, paiements, stockage, cache, i18n et utilitaires
 prisma/
   schema.prisma   modèle de données (voir ARCHITECTURE.md §4)
   migrations/     historique des migrations Prisma
-  seed.ts         3 comptes de démo (mot de passe non défini, voir Phase 3) + services
+  seed.ts         comptes et données de démonstration pour le développement local
 docker/
   mysql-init/     script exécuté au 1er démarrage du conteneur (droits shadow DB Prisma)
 docker-compose.yml  MySQL local, lié à 127.0.0.1 uniquement, volume persistant
@@ -114,8 +116,12 @@ docker-compose.yml  MySQL local, lié à 127.0.0.1 uniquement, volume persistant
   arrondi des coins, largeur et espacement, politique de lisibilité (WCAG) appliquée aussi côté serveur.
   Les fichiers téléversés sont servis par `src/app/uploads/[...path]` (Next ne sert `public/` que pour les
   fichiers présents au démarrage).
-- Tests bout en bout : `npm run test:e2e` (serveur dev + MySQL + seed) et
-  `E2E_BASE=http://localhost:3001 tsx scripts/e2e-cache.ts` sur un `next build && next start`.
+- Tests bout en bout : démarrer MySQL, appliquer les migrations, seed puis lancer le serveur dans
+  un terminal séparé avant `npm run test:e2e`. L'éditeur visuel se vérifie avec
+  `npm run test:editor`. Le cache se vérifie sur un serveur de production local avec
+  `E2E_BASE=http://localhost:3001 npm run test:cache` après `next build` et
+  `next start -p 3001`. Ces scripts modifient la base ciblée : ne jamais les lancer contre la
+  production.
 
 ## Pages légales et protection contre les abus
 
@@ -136,8 +142,38 @@ docker-compose.yml  MySQL local, lié à 127.0.0.1 uniquement, volume persistant
 `admin@makram-arfaoui.local` (ADMIN — assure aussi la traduction) et
 `client-demo@makram-arfaoui.local` (CLIENT).
 
-## Prochaines phases
+## Déploiement et exploitation
 
-Voir la table des phases dans ARCHITECTURE.md §8 — la suite logique est le wizard de commande
-(Phase 4) et le CRUD services/pricing admin (Phase 3), `/dashboard` n'étant pour l'instant
-qu'un placeholder qui prouve que la session fonctionne.
+Avant chaque déploiement :
+
+```bash
+npm ci
+npm run check
+npm run build
+npm run env:check
+npm run db:deploy
+```
+
+`env:check` refuse notamment un secret d'authentification trop court, une URL publique non HTTPS,
+le provider mock et une configuration Konnect incomplète. Il ne contacte ni la base ni Konnect.
+Les secrets restent dans le gestionnaire de secrets de l'hébergeur, jamais dans Git.
+
+Le stockage `PRIVATE_STORAGE_ROOT` doit être un volume persistant hors du webroot, sauvegardé et
+restaurable. Une sauvegarde n'est considérée valide qu'après un test de restauration. Les fichiers
+de `public/uploads/` sont eux aussi créés à l'exécution et doivent être persistés ou externalisés.
+Après déploiement, vérifier au minimum : connexion, création d'une commande de recette, contrôle
+d'accès à un document, initialisation/confirmation d'un paiement de test autorisé et téléchargement
+du fichier débloqué. En cas d'échec, restaurer la version applicative précédente ; ne revenir sur une
+migration qu'avec une procédure SQL revue et une sauvegarde récente.
+
+La CI GitHub exécute la validation Prisma, ESLint, TypeScript et le build. Les tests E2E nécessitent
+encore une base isolée et un serveur lancé explicitement ; ils ne sont donc pas présentés comme un
+test unitaire autonome.
+
+## Travaux restants avant production
+
+- analyse antivirus avec quarantaine avant de marquer un document `READY` ;
+- notifications email et suivi des échecs ;
+- validation juridique finale des pages légales et des coordonnées publiques ;
+- recette Konnect avec le compte marchand réel, rapprochement et procédure de remboursement ;
+- supervision, alertes, sauvegardes et exercice de restauration du stockage privé.

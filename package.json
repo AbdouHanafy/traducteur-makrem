@@ -7,20 +7,26 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck",
+    "env:check": "tsx scripts/check-production-env.ts",
     "postinstall": "prisma generate",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:logs": "docker compose logs -f mysql",
     "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "test:e2e": "tsx scripts/e2e.ts",
     "test:editor": "tsx scripts/e2e-editor.ts",
-    "media:service-covers": "tsx scripts/generate-service-covers.ts"
+    "test:cache": "tsx scripts/e2e-cache.ts",
+    "test:payments": "tsx scripts/e2e-payments.ts",
+    "media:service-covers": "tsx --conditions react-server scripts/generate-service-covers.ts"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx --conditions react-server prisma/seed.ts"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.7.6",
@@ -34,6 +40,7 @@
     "prisma": "^6.19.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {

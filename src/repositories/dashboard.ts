@@ -1,3 +1,5 @@
+import "server-only";
+
 import { prisma } from "@/lib/prisma";
 
 /** Statuts où la balle est dans le camp du traducteur — même définition que la liste

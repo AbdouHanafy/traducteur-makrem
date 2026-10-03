@@ -48,6 +48,7 @@ export default function OrderWizardPage({ services, delayMultipliers }: { servic
   const availableDelays = DELAY_OPTIONS.filter((delay) => delay.key in delayMultipliers);
   const [delayKey, setDelayKey] = useState<string>(availableDelays[0]?.key ?? DELAY_OPTIONS[0].key);
   const [file, setFile] = useState<File | null>(null);
+  const [details, setDetails] = useState({ destinationCountry: "", receivingAuthority: "", purpose: "", certificationNeeds: "UNSURE", deliveryMethod: "DIGITAL", deliveryAddress: "", clientNotes: "" });
   const [account, setAccount] = useState({ fullName: "", email: "", phone: "", password: "" });
   const [accepted, setAccepted] = useState(false);
   const [honeypot, setHoneypot] = useState("");
@@ -61,6 +62,10 @@ export default function OrderWizardPage({ services, delayMultipliers }: { servic
 
   function updateAccount(field: keyof typeof account) {
     return (event: React.ChangeEvent<HTMLInputElement>) => setAccount((current) => ({ ...current, [field]: event.target.value }));
+  }
+
+  function updateDetails(field: keyof typeof details) {
+    return (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setDetails((current) => ({ ...current, [field]: event.target.value }));
   }
 
   async function onSubmit(event: React.FormEvent) {
@@ -97,6 +102,7 @@ export default function OrderWizardPage({ services, delayMultipliers }: { servic
     formData.set("targetLang", targetLang);
     formData.set("pages", String(pages));
     formData.set("delayKey", delayKey);
+    for (const [key, value] of Object.entries(details)) formData.set(key, value);
     formData.set("file", file);
     const response = await fetch("/api/orders", { method: "POST", body: formData });
     setLoading(false);
@@ -117,16 +123,16 @@ export default function OrderWizardPage({ services, delayMultipliers }: { servic
   return (
     <>
       <Topbar />
-      <main className="flex-1 bg-surface">
+      <main id="main-content" tabIndex={-1} className="flex-1 bg-surface">
         <section className="relative overflow-hidden bg-[linear-gradient(145deg,var(--color-navy-2)_0%,var(--color-navy)_70%,color-mix(in_srgb,var(--color-navy)_63%,var(--color-blue))_100%)] py-[calc(3rem*var(--section-scale))] text-white sm:py-[calc(3.5rem*var(--section-scale))]">
           <div className="absolute -right-24 -top-32 h-80 w-80 rounded-full border-[55px] border-white/[0.035]" />
           <div className="relative mx-auto max-w-(--site-width) px-4 sm:px-6 lg:px-8">
             <p className="mb-2 text-[10.5px] font-bold uppercase tracking-[.18em] text-accent-light">{t("order.eyebrow")}</p>
             <h1 className="max-w-[24ch] text-[clamp(28px,4vw,42px)] text-white">{t("order.title")}</h1>
             <p className="mt-3 max-w-[62ch] text-[14px] leading-6 text-slate-300">{t("order.subtitle")}</p>
-            <div className="mt-7 flex max-w-[620px] items-center">
-              {[t("order.stepNeed"), t("order.stepContact"), t("order.stepQuote")].map((label, index) => <div key={label} className="flex min-w-0 flex-1 items-center last:flex-none"><span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-bold ${index === 0 ? "bg-white text-navy" : "border border-white/25 bg-white/5 text-slate-300"}`}>{index + 1}</span><span className={`ms-2 hidden text-[11px] font-medium sm:block ${index === 0 ? "text-white" : "text-slate-400"}`}>{label}</span>{index < 2 && <span className="mx-3 h-px flex-1 bg-white/20" />}</div>)}
-            </div>
+            <ul className="mt-7 flex max-w-[760px] flex-wrap gap-x-5 gap-y-2 text-[11px] font-medium text-slate-200">
+              {[t("order.fulfilment"), t("order.stepNeed"), t("order.sourceDocument"), t("order.stepContact")].map((label) => <li key={label} className="flex items-center gap-2"><span className="grid h-5 w-5 place-items-center rounded-full border border-white/30 bg-white/10 text-[10px]" aria-hidden="true">✓</span>{label}</li>)}
+            </ul>
           </div>
         </section>
 
@@ -140,7 +146,24 @@ export default function OrderWizardPage({ services, delayMultipliers }: { servic
                   {error && <div role="alert" className="rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13px] text-danger">{error}</div>}
 
                   <section className="rounded-2xl border border-edge bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
-                    <div className="mb-6 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">01</span><div><h2 className="text-[17px] text-navy">{t("order.stepNeed")}</h2><p className="text-[11.5px] text-muted">{t("order.needHint")}</p></div></div>
+                    <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">01</span><div><h2 className="text-[17px] text-navy">{t("order.fulfilment")}</h2><p className="text-[11.5px] text-muted">{t("order.fulfilmentHint")}</p></div></div>
+                    <div className="grid gap-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div><label htmlFor="destinationCountry" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.destinationCountry")}</label><input id="destinationCountry" required maxLength={100} value={details.destinationCountry} onChange={updateDetails("destinationCountry")} className={fieldClass} /></div>
+                        <div><label htmlFor="receivingAuthority" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.receivingAuthority")}</label><input id="receivingAuthority" maxLength={160} value={details.receivingAuthority} onChange={updateDetails("receivingAuthority")} className={fieldClass} /></div>
+                      </div>
+                      <div><label htmlFor="purpose" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.purpose")}</label><textarea id="purpose" required rows={3} maxLength={1000} value={details.purpose} onChange={updateDetails("purpose")} className={fieldClass} /></div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div><label htmlFor="certificationNeeds" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.certificationNeeds")}</label><select id="certificationNeeds" value={details.certificationNeeds} onChange={updateDetails("certificationNeeds")} className={fieldClass}><option value="UNSURE">{t("order.cert.unsure")}</option><option value="NONE">{t("order.cert.none")}</option><option value="CERTIFIED">{t("order.cert.certified")}</option><option value="LEGALIZATION">{t("order.cert.legalization")}</option><option value="APOSTILLE">{t("order.cert.apostille")}</option></select></div>
+                        <div><label htmlFor="deliveryMethod" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.deliveryMethod")}</label><select id="deliveryMethod" value={details.deliveryMethod} onChange={updateDetails("deliveryMethod")} className={fieldClass}><option value="DIGITAL">{t("order.delivery.digital")}</option><option value="PICKUP">{t("order.delivery.pickup")}</option><option value="COURIER">{t("order.delivery.courier")}</option></select></div>
+                      </div>
+                      {details.deliveryMethod === "COURIER" && <div><label htmlFor="deliveryAddress" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.deliveryAddress")}</label><textarea id="deliveryAddress" required rows={3} maxLength={1000} value={details.deliveryAddress} onChange={updateDetails("deliveryAddress")} className={fieldClass} /></div>}
+                      <div><label htmlFor="clientNotes" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.clientNotes")}</label><textarea id="clientNotes" rows={3} maxLength={3000} value={details.clientNotes} onChange={updateDetails("clientNotes")} className={fieldClass} /></div>
+                    </div>
+                  </section>
+
+                  <section className="rounded-2xl border border-edge bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
+                    <div className="mb-6 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">02</span><div><h2 className="text-[17px] text-navy">{t("order.stepNeed")}</h2><p className="text-[11.5px] text-muted">{t("order.needHint")}</p></div></div>
                     <div className="grid gap-5">
                       <div><label htmlFor="service" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.service")}</label><select id="service" value={serviceId} onChange={(event) => setServiceId(event.target.value)} className={fieldClass}>{services.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}</select></div>
                       <div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr] sm:items-end">
@@ -153,12 +176,12 @@ export default function OrderWizardPage({ services, delayMultipliers }: { servic
                   </section>
 
                   <section className="rounded-2xl border border-edge bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
-                    <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">02</span><div><h2 className="text-[17px] text-navy">{t("order.sourceDocument")}</h2><p className="text-[11.5px] text-muted">{t("order.privateFile")}</p></div></div>
+                    <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">03</span><div><h2 className="text-[17px] text-navy">{t("order.sourceDocument")}</h2><p className="text-[11.5px] text-muted">{t("order.privateFile")}</p></div></div>
                     <FileDropzone file={file} onChange={setFile} accept=".pdf,.jpg,.jpeg,.png" hint={t("order.fileHint")} />
                   </section>
 
                   {needsAccount && <section className="rounded-2xl border border-edge bg-white p-5 shadow-[0_8px_28px_rgba(20,40,77,0.045)] sm:p-7">
-                    <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">03</span><div><h2 className="text-[17px] text-navy">{t("order.stepContact")}</h2><p className="text-[11.5px] text-muted">{t("order.contactHint")}</p></div></div>
+                    <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-soft text-[12px] font-bold text-blue">04</span><div><h2 className="text-[17px] text-navy">{t("order.stepContact")}</h2><p className="text-[11.5px] text-muted">{t("order.contactHint")}</p></div></div>
                     <div className="grid gap-4"><div><label htmlFor="fullName" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.fullName")}</label><input id="fullName" required value={account.fullName} onChange={updateAccount("fullName")} autoComplete="name" placeholder="Sarra Ben Ali" className={fieldClass} /></div><div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="orderEmail" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("common.email")}</label><input id="orderEmail" required type="email" value={account.email} onChange={updateAccount("email")} autoComplete="email" placeholder="you@example.com" className={fieldClass} /></div><div><label htmlFor="orderPhone" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("common.phone")}</label><input id="orderPhone" required type="tel" value={account.phone} onChange={updateAccount("phone")} autoComplete="tel" placeholder="(+216) 22 200 170" className={fieldClass} /></div></div><div><label htmlFor="orderPassword" className="mb-1.5 block text-[12.5px] font-semibold text-ink">{t("order.accountPassword")}</label><input id="orderPassword" required type="password" minLength={10} value={account.password} onChange={updateAccount("password")} autoComplete="new-password" placeholder={t("register.passwordHint")} className={fieldClass} /></div><p className="text-[11.5px] text-muted">{t("order.existing")} <Link href="/login?callbackUrl=/commander" className="font-semibold text-blue">{t("register.login")}</Link> {t("order.loginHint")}</p></div><ConsentFields accepted={accepted} onAcceptedChange={setAccepted} honeypot={honeypot} onHoneypotChange={setHoneypot} />
                   </section>}
                 </div>

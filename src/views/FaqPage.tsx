@@ -17,13 +17,17 @@ export default function FaqPage({ faqs }: { faqs: FaqEntry[] }) {
   return (
     <>
       <Topbar />
-      <main className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1">
         <PublicPageHero eyebrow={t("nav.faq")} title={t("page.faq.title")} description={t("page.faq.description")} narrow />
 
         <section className="py-[calc(4rem*var(--section-scale))] sm:py-[calc(5rem*var(--section-scale))]">
           <div className="mx-auto max-w-[880px] px-4 sm:px-6 lg:px-8">
             <div className="grid gap-3">
-              {faqs.map((item) => (
+              {faqs.length === 0 ? (
+                <div className="rounded-2xl border border-line bg-white px-6 py-8 text-center text-[14.5px] text-muted">
+                  {t("page.faq.empty")}
+                </div>
+              ) : faqs.map((item) => (
                 <details
                   key={item.id}
                   className="group rounded-2xl border border-line bg-white px-5 py-4 shadow-[0_5px_20px_rgba(20,40,77,0.03)] transition open:border-blue/20 open:shadow-[0_12px_30px_rgba(20,40,77,0.07)] sm:px-6 sm:py-5"

@@ -44,7 +44,7 @@ export default function ContactPage() {
   return (
     <>
       <Topbar />
-      <main className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1">
         <PublicPageHero eyebrow={t("nav.contact")} title={t("page.contact.title")} description={t("page.contact.description")} />
 
         <section className="py-[calc(4rem*var(--section-scale))] sm:py-[calc(5rem*var(--section-scale))]">
@@ -52,9 +52,7 @@ export default function ContactPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {CHANNELS.map((c) => {
                 const lines = c.lineKeys.map((key) => t(key));
-                const href = c.id === "phone"
-                  ? `tel:${lines[0].replace(/[^+\d]/g, "")}`
-                  : c.id === "email" ? `mailto:${lines[0]}` : undefined;
+                const href = c.id === "email" ? `mailto:${lines[0]}` : undefined;
                 const cardClass =
                   "block rounded-3xl border border-line bg-white px-6 py-7 shadow-[0_8px_28px_rgba(20,40,77,0.04)] transition hover:-translate-y-0.5 hover:border-blue/25 hover:shadow-[0_14px_35px_rgba(20,40,77,0.08)]";
                 const content = (
@@ -66,9 +64,11 @@ export default function ContactPage() {
                     </div>
                     <h2 className="text-[16.5px] text-navy">{t(c.labelKey)}</h2>
                     <div className="mt-2 text-[14.5px] text-muted">
-                      {lines.map((l) => (
-                        <div key={l}>{l}</div>
-                      ))}
+                      {lines.map((line) => c.id === "phone" ? (
+                        <a key={line} href={`tel:${line.replace(/[^+\d]/g, "")}`} className="block rounded-sm hover:text-blue focus-visible:text-blue">
+                          {line}
+                        </a>
+                      ) : <div key={line}>{line}</div>)}
                     </div>
                   </>
                 );

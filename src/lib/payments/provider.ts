@@ -1,3 +1,5 @@
+import "server-only";
+
 import type { Prisma } from "@prisma/client";
 
 /**
@@ -18,11 +20,11 @@ export interface CreatePaymentInput {
 export interface CreatePaymentResult {
   redirectUrl: string;
   providerRef: string;
+  /** Données non sensibles utiles à la réconciliation. Ne jamais y stocker de secret. */
+  metadata?: Record<string, string | number | boolean | null>;
 }
 
 export interface PaymentProvider {
   name: string;
   createPayment(input: CreatePaymentInput): Promise<CreatePaymentResult>;
-  /** URL de reprise d'un paiement déjà créé (évite d'empiler des paiements PENDING). */
-  redirectUrlFor(providerRef: string, orderId: string, phase: PaymentPhaseValue): string;
 }

@@ -20,7 +20,7 @@ export default function ArticleDetailPage({ article }: { article: ArticleDetailD
   return (
     <>
       <Topbar />
-      <main className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1">
         <PublicPageHero eyebrow={t("page.article.eyebrow")} title={article.title} narrow>
             <Link href="/articles" className="mb-4 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-accent-light hover:text-white">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">

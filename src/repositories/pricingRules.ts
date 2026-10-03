@@ -1,3 +1,5 @@
+import "server-only";
+
 import { prisma } from "@/lib/prisma";
 
 export { DELAY_OPTIONS, type DelayKey } from "@/lib/delay-options";

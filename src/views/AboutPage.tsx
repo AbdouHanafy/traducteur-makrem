@@ -30,7 +30,7 @@ export default function AboutPage() {
   return (
     <>
       <Topbar />
-      <main className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1">
         <PublicPageHero eyebrow={t("page.about.eyebrow")} title={t("page.about.title")} description={t("page.about.description")} />
 
         <section className="py-[calc(4rem*var(--section-scale))] sm:py-[calc(5rem*var(--section-scale))]">

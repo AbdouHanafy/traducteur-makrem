@@ -1,3 +1,5 @@
+import "server-only";
+
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "@better-auth/prisma-adapter";
 import { nextCookies } from "better-auth/next-js";
@@ -5,6 +7,7 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 import { checkRateLimit, MINUTE } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/password";
+import { enqueueEmail } from "@/lib/email/outbox";
 
 /**
  * Better Auth (ARCHITECTURE.md §2, remplace NextAuth v5) — Credentials email/mot de passe,
@@ -29,11 +32,33 @@ export const auth = betterAuth({
   secret: authSecret,
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: process.env.REQUIRE_EMAIL_VERIFICATION === "true",
     minPasswordLength: 10,
     maxPasswordLength: 72,
     password: {
       hash: (password) => hashPassword(password),
       verify: ({ hash, password }) => verifyPassword(hash, password),
+    },
+    sendResetPassword: async ({ user, url }) => {
+      await enqueueEmail(prisma, {
+        recipient: user.email,
+        template: "RESET_PASSWORD",
+        payload: { name: user.name, url },
+      });
+    },
+    resetPasswordTokenExpiresIn: 60 * 60,
+    revokeSessionsOnPasswordReset: true,
+  },
+  emailVerification: {
+    sendOnSignUp: process.env.REQUIRE_EMAIL_VERIFICATION === "true",
+    autoSignInAfterVerification: true,
+    expiresIn: 60 * 60 * 24,
+    sendVerificationEmail: async ({ user, url }) => {
+      await enqueueEmail(prisma, {
+        recipient: user.email,
+        template: "VERIFY_EMAIL",
+        payload: { name: user.name, url },
+      });
     },
   },
   // Actif aussi en développement (par défaut Better Auth ne limite qu'en production).

@@ -13,6 +13,13 @@ export interface AdminOrderDetailData {
   pages: number;
   sourceLang: string;
   targetLang: string;
+  destinationCountry: string;
+  receivingAuthority: string | null;
+  purpose: string;
+  certificationNeeds: string;
+  deliveryMethod: string;
+  deliveryAddress: string | null;
+  clientNotes: string | null;
   totalAmount: string;
   advanceAmount: string;
   balanceAmount: string;
@@ -240,6 +247,10 @@ export default function AdminOrderDetailPage({ order }: { order: AdminOrderDetai
         </section>
 
         <div className="grid gap-6">
+          <section className="rounded-2xl border border-line bg-white p-6">
+            <h2 className="mb-3 text-[16.5px] text-navy">{t("order.fulfilment")}</h2>
+            <dl className="grid gap-2 text-[13.5px]"><div><dt className="font-semibold text-ink">{t("order.destinationCountry")}</dt><dd className="text-muted">{order.destinationCountry}</dd></div>{order.receivingAuthority && <div><dt className="font-semibold text-ink">{t("order.receivingAuthority")}</dt><dd className="text-muted">{order.receivingAuthority}</dd></div>}<div><dt className="font-semibold text-ink">{t("order.purpose")}</dt><dd className="whitespace-pre-wrap text-muted">{order.purpose}</dd></div><div><dt className="font-semibold text-ink">{t("order.certificationNeeds")}</dt><dd className="text-muted">{t(`order.cert.${order.certificationNeeds.toLowerCase()}`)}</dd></div><div><dt className="font-semibold text-ink">{t("order.deliveryMethod")}</dt><dd className="text-muted">{t(`order.delivery.${order.deliveryMethod.toLowerCase()}`)}</dd></div>{order.deliveryAddress && <div><dt className="font-semibold text-ink">{t("order.deliveryAddress")}</dt><dd className="whitespace-pre-wrap text-muted">{order.deliveryAddress}</dd></div>}{order.clientNotes && <div><dt className="font-semibold text-ink">{t("order.clientNotes")}</dt><dd className="whitespace-pre-wrap text-muted">{order.clientNotes}</dd></div>}</dl>
+          </section>
           <section className="rounded-2xl border border-line bg-white p-6">
             <h2 className="mb-3 text-[16.5px] text-navy">{t("adm.order.client")}</h2>
             <p className="text-[14px] font-medium text-ink">

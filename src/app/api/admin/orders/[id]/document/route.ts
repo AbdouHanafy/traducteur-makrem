@@ -5,6 +5,7 @@ import { findOrderById, attachTranslatedDocument } from "@/repositories/orders";
 import { validateUpload, UploadValidationError, MAX_UPLOAD_BYTES } from "@/lib/upload";
 import { deletePrivateFile, writePrivateFile, readPrivateFile } from "@/lib/storage/privateStorage";
 import { generateAndStorePreview } from "@/lib/pdf-preview";
+import { assertMalwareFree } from "@/lib/malware-scan";
 
 /**
  * Dépôt du fichier final par le traducteur — jamais déclenché par un bouton client (voir
@@ -36,11 +37,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   let upload;
   try {
     upload = await validateUpload(file);
+    await assertMalwareFree(upload.buffer, upload.mimeType, upload.sha256);
   } catch (e) {
     if (e instanceof UploadValidationError) {
       return NextResponse.json({ error: e.message }, { status: 400 });
     }
-    throw e;
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Analyse de sécurité impossible." }, { status: 422 });
   }
 
   const storageKey = await writePrivateFile(upload.buffer, upload.extension);

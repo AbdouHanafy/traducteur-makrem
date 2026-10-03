@@ -54,7 +54,7 @@ export default function LoginPage() {
 
       <form onSubmit={onSubmit} className="mt-7 grid gap-4.5" noValidate>
         {error && (
-          <div className="rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
+          <div role="alert" className="rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-[13.5px] text-danger">
             {error}
           </div>
         )}
@@ -76,9 +76,7 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <label htmlFor="password" className="mb-1.5 block text-[13.5px] font-semibold text-ink">
-            {t("common.password")}
-          </label>
+          <div className="mb-1.5 flex items-center justify-between gap-3"><label htmlFor="password" className="block text-[13.5px] font-semibold text-ink">{t("common.password")}</label><Link href="/mot-de-passe-oublie" className="text-[12px] font-semibold text-blue hover:text-blue-2">{t("app.auth.forgot")}</Link></div>
           <input
             id="password"
             type="password"

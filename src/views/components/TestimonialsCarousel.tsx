@@ -11,10 +11,10 @@ export interface TestimonialItem {
   rating: number | null;
 }
 
-function Stars({ value }: { value: number | null }) {
+function Stars({ value, label }: { value: number | null; label: string }) {
   if (!value) return null;
   return (
-    <div className="mb-3 flex justify-center gap-0.5 text-[14px] text-seal" aria-label={`${value} sur 5`}>
+    <div className="mb-3 flex justify-center gap-0.5 text-[14px] text-seal" aria-label={label}>
       {Array.from({ length: 5 }).map((_, i) => (
         <span key={i} className={i < value ? "" : "text-line"}>
           ★
@@ -80,7 +80,7 @@ export default function TestimonialsCarousel({ testimonials }: { testimonials: T
             {initials(current.authorName)}
           </div>
 
-          <Stars value={current.rating} />
+          <Stars value={current.rating} label={t("app.aria.reviewRating", { rating: current.rating ?? 0 })} />
 
           <p className="min-h-[80px] font-serif text-[18px] italic leading-snug text-navy sm:text-[20px]">
             &laquo; {current.quote} &raquo;
@@ -104,12 +104,12 @@ export default function TestimonialsCarousel({ testimonials }: { testimonials: T
             </button>
 
             <div className="flex items-center gap-2">
-              {testimonials.map((t, i) => (
+              {testimonials.map((testimonial, i) => (
                 <button
-                  key={t.id}
+                  key={testimonial.id}
                   type="button"
                   onClick={() => setIndex(i)}
-                  aria-label={`Voir l'avis ${i + 1}`}
+                  aria-label={t("app.aria.showReview", { number: i + 1 })}
                   aria-current={i === index}
                   className={`h-2 rounded-full transition-all ${i === index ? "w-5 bg-blue" : "w-2 bg-line hover:bg-muted"}`}
                 />

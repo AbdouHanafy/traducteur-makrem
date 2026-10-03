@@ -14,5 +14,6 @@ export function pageMetadata(locale: Locale, page: PageKey, path: string, noInde
     description: description === descriptionKey ? undefined : description,
     path,
     noIndex,
+    locale,
   });
 }

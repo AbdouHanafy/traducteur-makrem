@@ -56,6 +56,13 @@ enum DocumentStatus {
   REJECTED
 }
 
+enum EmailDeliveryStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+}
+
 // Champs id/email/name/emailVerified/image : forme imposée par Better Auth (voir
 // node_modules/@better-auth/core/src/db/schema/user.ts). role/firstName/lastName/phone
 // sont nos additionalFields (src/lib/auth.ts) ; `password` n'est plus stocké ici — Better
@@ -300,6 +307,14 @@ model Order {
   targetLang String
   pages      Int
   delayKey   String
+  destinationCountry String
+  receivingAuthority String?
+  purpose             String              @db.Text
+  certificationNeeds  String
+  deliveryMethod      String              @default("DIGITAL")
+  deliveryAddress     String?             @db.Text
+  clientNotes         String?             @db.Text
+  legalHold            Boolean             @default(false)
   status     OrderStatus @default(DEMANDE)
 
   // Snapshot financier — figé à la validation du devis, jamais recalculé rétroactivement.
@@ -359,6 +374,11 @@ model Payment {
   currency    String        @default("TND")
   provider    String
   providerRef String        @unique
+  /// URL de paiement retournée par le provider. Elle permet de reprendre un paiement PENDING
+  /// sans reconstruire une URL à partir d'hypothèses propres au provider.
+  checkoutUrl String?       @db.VarChar(1000)
+  /// Une seule tentative active par commande/phase/provider. Remis à NULL à la clôture.
+  activeKey   String?       @unique @db.VarChar(191)
   rawPayload  Json?
   createdAt   DateTime      @default(now())
   confirmedAt DateTime?
@@ -378,6 +398,28 @@ model AuditLog {
 
   @@index([actorId])
   @@index([resource])
+}
+
+/**
+ * Outbox transactionnelle : l'événement métier et l'email sont persistés ensemble, puis un
+ * worker avec reprise envoie le message. Aucun appel SMTP ne bloque une transaction paiement.
+ */
+model EmailOutbox {
+  id          String              @id @default(cuid())
+  recipient   String
+  template    String
+  subject     String
+  payload     Json
+  status      EmailDeliveryStatus @default(PENDING)
+  attempts    Int                 @default(0)
+  availableAt DateTime            @default(now())
+  lockedAt    DateTime?
+  sentAt      DateTime?
+  lastError   String?             @db.Text
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([status, availableAt])
 }
 
 /**

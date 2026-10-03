@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useI18n } from "@/views/components/I18nProvider";
 
 function formatSize(bytes: number): string {
@@ -26,6 +26,8 @@ export default function FileDropzone({
 }) {
   const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
+  const hintId = `${inputId}-hint`;
   const [dragOver, setDragOver] = useState(false);
 
   function openPicker() {
@@ -43,11 +45,15 @@ export default function FileDropzone({
     <div>
       <input
         ref={inputRef}
+        id={inputId}
         type="file"
         accept={accept}
+        aria-label={t("order.sourceDocument")}
+        aria-describedby={hintId}
         onChange={(e) => onChange(e.target.files?.[0] ?? null)}
         className="hidden"
       />
+      <span id={hintId} className="sr-only">{hint}</span>
 
       {file ? (
         <div className="flex items-center gap-3 rounded-xl border border-blue/20 bg-blue-soft/60 px-4 py-3.5">
@@ -83,6 +89,8 @@ export default function FileDropzone({
         <div
           role="button"
           tabIndex={0}
+          aria-label={t("order.sourceDocument")}
+          aria-describedby={hintId}
           onClick={openPicker}
           onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openPicker()}
           onDragOver={(e) => {

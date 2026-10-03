@@ -26,7 +26,7 @@ export default function LegalPage({ page }: { page: LegalPageKey }) {
   return (
     <>
       <Topbar />
-      <main className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1">
         <PublicPageHero eyebrow={t("legal.updated", { date: updated })} title={t(`legal.${page}.title`)} description={t(`legal.${page}.intro`, params)} narrow />
         <section className="py-[calc(3.5rem*var(--section-scale))]">
           <div className="mx-auto max-w-[820px] px-4 sm:px-6 lg:px-8">

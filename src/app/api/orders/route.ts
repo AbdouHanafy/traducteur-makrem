@@ -9,6 +9,7 @@ import { createOrderWithSourceDocument } from "@/repositories/orders";
 import { computeQuote } from "@/lib/pricing";
 import { validateUpload, UploadValidationError, MAX_UPLOAD_BYTES } from "@/lib/upload";
 import { deletePrivateFile, writePrivateFile } from "@/lib/storage/privateStorage";
+import { assertMalwareFree } from "@/lib/malware-scan";
 
 export async function POST(request: Request) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -28,6 +29,13 @@ export async function POST(request: Request) {
     targetLang: formData.get("targetLang"),
     pages: formData.get("pages"),
     delayKey: formData.get("delayKey"),
+    destinationCountry: formData.get("destinationCountry"),
+    receivingAuthority: formData.get("receivingAuthority") ?? "",
+    purpose: formData.get("purpose"),
+    certificationNeeds: formData.get("certificationNeeds"),
+    deliveryMethod: formData.get("deliveryMethod"),
+    deliveryAddress: formData.get("deliveryAddress") ?? "",
+    clientNotes: formData.get("clientNotes") ?? "",
   });
 
   if (!parsed.success) {
@@ -59,11 +67,12 @@ export async function POST(request: Request) {
   let upload;
   try {
     upload = await validateUpload(file);
+    await assertMalwareFree(upload.buffer, upload.mimeType, upload.sha256);
   } catch (e) {
     if (e instanceof UploadValidationError) {
       return NextResponse.json({ error: e.message, code: e.code }, { status: 400 });
     }
-    throw e;
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Analyse de sécurité impossible.", code: "FILE_SECURITY_REJECTED" }, { status: 422 });
   }
 
   const quote = computeQuote({
@@ -83,6 +92,13 @@ export async function POST(request: Request) {
       targetLang: parsed.data.targetLang,
       pages: parsed.data.pages,
       delayKey: parsed.data.delayKey,
+      destinationCountry: parsed.data.destinationCountry,
+      receivingAuthority: parsed.data.receivingAuthority || null,
+      purpose: parsed.data.purpose,
+      certificationNeeds: parsed.data.certificationNeeds,
+      deliveryMethod: parsed.data.deliveryMethod,
+      deliveryAddress: parsed.data.deliveryAddress || null,
+      clientNotes: parsed.data.clientNotes || null,
       totalAmount: quote.totalAmount,
       advanceAmount: quote.advanceAmount,
       balanceAmount: quote.balanceAmount,

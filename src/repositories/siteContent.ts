@@ -1,3 +1,5 @@
+import "server-only";
+
 import { prisma } from "@/lib/prisma";
 import { DICTIONARIES, LOCALES, type Locale } from "@/lib/i18n";
 import { SITE_CONTENT_KEYS, SITE_CONTENT_KEY_SET } from "@/lib/site-content";
