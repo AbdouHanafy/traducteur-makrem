@@ -25,6 +25,30 @@ The architecture should be hardened incrementally, not rewritten. The highest-va
 - The build emits repeated Better Auth default-secret errors because local `AUTH_SECRET` is empty. This must become a clean, explicit configuration failure in production/CI rather than noisy library warnings.
 - The installed Next.js 16.3.5 documentation was consulted before assessing Proxy, caching, Server/Client Components, metadata, data security, testing, and deployment conventions.
 
+## Implementation status (updated after verification, 3 October 2026)
+
+Legend: ✅ built **and** covered by an automated test · 🟡 built, needs an external service/decision to be complete · ⬜ not started.
+
+| # | Item | Status | Notes |
+|---|---|---|---|
+| P0-1 | Real payment provider | ✅ code · 🟡 live | Konnect init + server-to-server webhook verification, one active payment per order/phase (DB unique key), replay-safe, expiry reconciliation (late payments honoured). Tested against a fake Konnect (`npm run test:payments`, 35 checks). Needs merchant account + sandbox rehearsal; refunds/reconciliation reports not built. |
+| P0-2 | E-mail + account lifecycle | ✅ code · 🟡 live | Transactional outbox (same DB transaction), forgot/reset password, optional e-mail verification, admin 2FA (TOTP, backup codes, lockout, enforced on pages **and** APIs). Needs an e-mail provider and a cron calling `/api/internal/jobs/email-outbox`. Session/device listing not built. |
+| P0-3 | Durable, scanned, recoverable documents | 🟡 | Fail-closed malware adapter exists (dev: skipped). Needs the scanning service, object storage/encryption, backups + restore drill, retention purge. Not started: quarantine state machine (`SCANNING`). |
+| P0-4 | Legal / privacy / identity | 🟡 | Texts are editable templates; the lawyer must validate them and supply the registration number, host, retention periods. Purge job and data-subject workflow not built. |
+| P0-5 | Production env validation | ✅ | `npm run env:check`; production requires Konnect, HTTPS URL, e-mail, scanner, `REQUIRE_ADMIN_2FA`. |
+| P0-6 | Tests + CI | ✅ code · 🟡 first run | Five suites (API/business rules, Konnect, 2FA, Chrome editor, Chrome public site + axe) and a production-cache suite; CI workflow written but not yet run on GitHub. No unit-test runner (the suites are integration/e2e). |
+| P0-7 | Observability | 🟡 | Health probes, structured error log, `onRequestError`. Needs an error-tracking/APM account and alert rules. |
+| P1-8 | Order intake fields | ✅ | Plus **quote adjustment** by the admin with reason, audit and client e-mail; the client can only accept the amount they saw (race-tested). |
+| P1-9 | Wizard honesty / drafts | 🟡 | Checklist instead of fake steps; no save-and-resume. |
+| P1-10 | Service CMS consistency | 🟡 | **Delay coefficients are now editable** (`/admin/pricing`). Check the nav/service-card dynamic data still needs a manual review. |
+| P1-11 | Accessibility | ✅ | Skip link, focus trap, labels; axe-core finds no serious/critical issue on 7 pages × 4 languages; default palette meets WCAG AA. Manual screen-reader/RTL testing still recommended. |
+| P1-12 | Multilingual SEO | 🟡 | Locale-prefixed canonicals, hreflang, sitemap, JSON-LD, OG image. Language switch and cookie now follow prefixed URLs. Domain/`metadataBase` still the placeholder. |
+| P1-13 | Admin mutations / CSP / audit | 🟡 | Failed saves are now reported (no silent success). CSP is still partial (no nonces); audit coverage is partial (payments, downloads, pricing, quotes). |
+| P1-14 | Concurrency | ✅ | Conditional writes on payments, quote accept/adjust. |
+| P1-15..18 | Server components, trust, content, docs | ⬜/🟡 | README + ARCHITECTURE refreshed; the rest not started. |
+
+Bugs found and fixed while verifying the first pass: the seed command broke on `server-only`; a stale pending payment could block an order for good; `/opengraph-image` was rewritten to a 404; the language switcher did nothing on `/fr/…` URLs and the browser language overrode the URL language; a write-skew let a client accept an adjusted quote unseen; failed admin saves looked successful; footer/success colours failed WCAG AA.
+
 ## What is already good and should be kept
 
 - Server-side role and ownership checks exist in layouts, APIs, and document access—not only in Proxy (`src/lib/rbac.ts`, protected layouts, and download route).
